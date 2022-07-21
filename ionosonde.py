@@ -93,9 +93,26 @@ class ionosonde:
     
     
        
+#### Example
 
-# = 
+infile = "path_with_the_data"
 
-#(result)
-   
-        
+filename = "name_of_the_file"
+df = ionosonde(infile, filename).vertical_drift()
+
+#df1 = ionosonde(infile, f2).vertical_drift()
+fig, ax = plt.subplots()
+df[['3.0', '4.0', '5.0', 
+    '6.0', '7.0', '8.0']].plot(ax = ax)
+                                
+ax.legend()
+
+
+ax.set(xlabel = "Time (UT)", 
+       ylabel = "Real height (km)")
+
+
+df = df.between_time('19:00:00', '22:00:00')
+
+# maximum values
+print(df.idxmax(), df.max() )
