@@ -7,14 +7,14 @@ Created on Sat Jul  9 17:34:01 2022
 
 from ionosonde import *
 from prereversalEnhancement import *
-#from plotVerticaldrift import *
+from plotVerticaldrift import *
 
 
-def result_by_day(infile, filename):
+def result_per_day(infile, filename):
     
     iono = ionosonde(infile, filename)
 
-    result_by_day_ = []
+    outside_day = []
     
     for day in range(1, 32, 1):
         
@@ -25,8 +25,14 @@ def result_by_day(infile, filename):
             pass
         else:
             try:
+                #get PRE values
                 pre_table = PRE(df).table
-                result_by_day_.append(pre_table)
+                
+                # Save without show the plots
+                #plot(iono, day, save = True)
+                
+                # Extract out from the loop
+                outside_day.append(pre_table)
                 print(f"{day} was collected!")
             except:
                 print(f"{day} not was collected!")
@@ -35,18 +41,19 @@ def result_by_day(infile, filename):
             
         
         
-    return pd.concat(result_by_day_)
+    return pd.concat(outside_day)
 
-def result_by_month(infile, year = "2014"):
+def result_per_month(infile, year = "2014"):
     
     _, _, files = next(os.walk(infile))
     
-    result_by_month_ = []
+    outside_month = []
     
     for filename in files:
-        if year in filename:
+        if str(year) in filename:
             try:
-                result_by_month_.append(result_by_day(infile, filename))
+                # Get results by day
+                outside_month.append(result_per_day(infile, filename))
                 status = filename.replace("FZA0M_", "").replace(".txt", "")
                 print(f"Month {status} passed!")
             except:
@@ -55,7 +62,10 @@ def result_by_month(infile, year = "2014"):
                 
         
         
-    return pd.concat(result_by_month_)
+    return pd.concat(outside_month)
 
-infile = "Database/FZ_2014-2015_Processado/"
-#result_by_month(infile).to_csv("Fortaleza2014.2.txt", sep = " ", index = True)
+infile = "Database/SL_2014-2015_Processado/"
+site = "SaoLuis"
+year = 2015
+result_by_month(infile, year = year).to_csv(f"{site}{year}.txt", 
+                                           sep = " ", index = True)
