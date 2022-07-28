@@ -11,17 +11,31 @@ import os
 from pipeline import *
 
 
-def plotHistogram(peak, 
-                  binwidth = 5,
+def plotHistogram(
+                  filename, 
                   fontsize = 18,
-                  parameter = "Peak (m/s)",
+                  parameter = "vel",
                   save = False, 
-                  FigureName = "velocity"):
+                  site = "Fortaleza",
+                  ):
     
-    year = peak.index[0].year
+    if parameter == "vel":
+        
+        df = select_parameter(filename).peak()
+        
+        binwidth = 5
+        xlabel = 'Velocity'
+        unit = "m/s"
+    else:
+        df = select_parameter(filename).time()
+        binwidth = 0.3
+        xlabel = "Time"
+        unit = "UT"
     
-    max_value = round(peak.max().max())
-    min_value = round(peak.min().min())
+    year = df.index[0].year
+    
+    max_value = round(df.max().max())
+    min_value = round(df.min().min())
  
     bins = np.arange(min_value, 
                      max_value + binwidth, 
@@ -35,32 +49,28 @@ def plotHistogram(peak,
     plt.subplots_adjust(hspace = 0.2, wspace = 0.)
     
     args = dict(facecolor = 'lightgrey', alpha = 1, 
-                edgecolor = 'black', hatch='////', 
-                color = 'gray', linewidth=1)
+                edgecolor = 'black', hatch = '////', 
+                color = 'gray', linewidth = 1)
     
-    if FigureName == "velocity":
-        xlabel = 'Velocity'
-        unit = "m/s"
-    else:
-        xlabel = "Time"
-        unit = "UT"
     
-    for col, ax in zip(peak.columns, ax.flat):
     
-        peak[col].hist(bins = bins, 
+    for col, ax in zip(df.columns, ax.flat):
+    
+        df[col].hist(bins = bins, 
                        ax = ax, **args)
         
-        mean = round(peak[col].mean(), 2)
-        std = round(peak[col].std(), 2)
+        mean = round(df[col].mean(), 2)
+        std = round(df[col].std(), 2)
         
         infos = f"$<V_z> = {mean}$ {unit} \n $\sigma = {std}$ {unit}"
         
-        ax.text(0.6, 0.7, infos, fontsize = fontsize - 4, 
+        ax.text(0.6, 0.7, infos, 
+                fontsize = fontsize - 4, 
                 transform = ax.transAxes)
         
         ax.set(title = f"Frequency - {col} MHz", 
                xlim = [min_value - binwidth, 
-                       max_value + binwidth] )
+                       max_value + binwidth])
 
     fig.text(0.5, 0.055, f"{xlabel} ({unit})", 
              va = 'bottom', 
@@ -72,28 +82,27 @@ def plotHistogram(peak,
              rotation='vertical', 
              fontsize = fontsize + 2)   
     
-    fig.suptitle(f'Vertical drift in Fortaleza - {year}', 
+    fig.suptitle(f'Vertical drift in {site} - {year}', 
                  size = fontsize + 4)
     
-    plt.rcParams.update({'font.size': fontsize - 2})   
-    plt.rcParams["font.family"] = "Times New Roman"
+    plt.rcParams.update({'font.size': fontsize - 2, 
+                         "font.family": "Times New Roman"})   
     
-    path_out = f"Figures/Fortaleza/{year}/Histograms/"
+    path_out = f"Figures/{site.strip()}/{year}/Histograms/"
+    FigureName = xlabel.capitalize()
     
     if save:
         plt.savefig(f"{path_out}{FigureName}.png", 
-                    dpi = 100, bbox_inches="tight")
+                    dpi = 300, bbox_inches="tight")
     
     plt.show()
     
     
 def main():
-    filename = "Fortaleza2014.1.txt"
+    filename = "Saoluis2015.txt"
     
-    df = select_parameter(filename).time()
     
-    plotHistogram(df, binwidth = 0.3, 
-                  save=(True), 
-                  FigureName = "time")
-#main()
-#print(df.dtypes)
+    for par in ["time", "vel"]:
+        plotHistogram(filename, site = "SaoLuis", 
+                  parameter = par, save = True)
+main()
