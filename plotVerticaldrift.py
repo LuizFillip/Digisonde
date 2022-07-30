@@ -10,8 +10,8 @@ from ionosonde import *
 from prereversalEnhancement import *
 import astral 
 import datetime
-from astral.sun import sun
 import matplotlib.dates as dates
+import matplotlib.ticker as ticker
 
 def secundary_axes(ax, delta = - 3):
     ax1 = ax.twiny()
@@ -36,17 +36,13 @@ def secundary_axes(ax, delta = - 3):
     ax1.xaxis.set_label_position('bottom') 
     ax1.spines['bottom'].set_position(('outward', 45))
 
-def terminator_lines(ax):
+def terminator_lines(ax, filename, year, month, day):
     
-    observer = astral.Observer(latitude = latitude, 
-                               longitude = longitude)
-    
-    
-    infos = sun(observer, date, 
-                dawn_dusk_depression = twilightAngle)
+    dusk = terminators(filename, 
+                       date = datetime.date(year, month, day)).dusk
     
 
-    angles = ["sunset", "dusk"]
+    altitudes = ["0", "300"]
     linestyle = ["-", "--"]
     for num in range(2):
         
@@ -91,13 +87,11 @@ def doy_str_format(date):
   
     
   
-def plotVerticaldrift(iono, day, 
-                     twilightAngle = 18, 
-                     latitude = -3.9,
-                     longitude = -38.58,
-                     fontsize = 14,
-                     site = "Fortaleza",
-                     save = True):
+def plotVerticaldrift(infile, 
+                      filename,
+                      day = 1, 
+                      fontsize = 14,
+                      save = True):
     
     if save: 
         plt.ioff()
@@ -110,31 +104,33 @@ def plotVerticaldrift(iono, day,
     # =============================================================================
     # F LAYER HEIGHT     
     # =============================================================================
-        
-    height = iono.select_day(day)
-    date = height.index[0]
+    site_name = site(filename).name
+    df = select_day(infile, filename, day)
+    freqs = list(df.columns[1:])
+    date = df.index[0]
     
-    ax[0].plot(height, lw = 1)
+    ax[0].plot(df.time, df[freqs], lw = 1)
     
     ax[0].set(ylabel = "Altitude (Km)", ylim = [100, 700], 
               title = 'F layer true heights and vertical ' \
-                  f'drift (dhF/dt)s in Fortaleza, {date.date()}')
+                  f'drift (dhF/dt)s in {site_name}, {date.date()}')
     
     # =============================================================================
     # VERTICAL DRIFT SUBPLOT
     # =============================================================================
     
-    drift = vertical_drift(iono.select_day(day))
+    vz = drift(df)
         
-    ax[1].plot(drift, lw = 1)
+    ax[1].plot(vz.time, vz[freqs], lw = 1)
     
     ax[1].set(xlabel = "Time (UT)", 
               ylabel = "Velocity (m/s)", 
               ylim = [-90, 90])
     
-    ax[1].legend(drift.columns, loc = 'lower left', 
+    ax[1].legend(freqs, loc = 'lower left', 
                  prop={'size': fontsize - 2},
-                 title = "Frequencies (MHz)", ncol = 3)
+                 title = "Frequencies (MHz)", 
+                 ncol = len(freqs) // 3)
     
     
     
@@ -155,7 +151,7 @@ def plotVerticaldrift(iono, day,
 
   
     FigureName = doy_str_format(date)
-    path_out = f"Figures/{site}/{date.year}/IndividualsPlots/"
+    path_out = f"Figures/{site_name}/{date.year}/IndividualsPlots/"
     
     if save:
         plt.savefig(f"{path_out}{FigureName}.png", 
@@ -171,12 +167,7 @@ def main():
     
     filename = files[0]
     
-    #print(filename)
-    
-    
-    iono = ionosonde(infile, filename)
-
         
-    plotVerticaldrift(iono, 1, save = False, site = "SaoLuis")
+    plotVerticaldrift(infile, filename, day = 1, save = False)
     
 main()
