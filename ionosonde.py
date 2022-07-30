@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 """
 Created on Sat Jul  9 19:47:03 2022
 
@@ -8,111 +8,134 @@ Created on Sat Jul  9 19:47:03 2022
 import pandas as pd
 import numpy as np
 import os
+import datetime
+pd.options.mode.chained_assignment = None
 
 
-class ionosonde:
+def find_header(infile:str, 
+                filename: str, 
+                header: str = 'yyyy.MM.dd') -> tuple:
     
-    def __init__(self, infile, filename):
-        self.infile = infile
-        self.filename = filename
-        
-        with open(self.infile + self.filename) as f:
-            data = [line.strip() for line in f.readlines()]
-        
-        count = 0
-        for num in range(len(data)):
-            if ('yyyy.MM.dd') in data[num]:
-                break
-            else:
-                count += 1
-        
-        data = data[count:]
-        
-        
-        reader = data[0].split()
-        
-        listA = [str(float(num)) for num in range(3, 9)] 
-        res = [ele for ele in listA if(ele in reader)]
-        
-        raw_data = []
-        
-        
-        if (res == listA):
-            for num in range(2, len(data)):
-                raw = []
-                raw_data.append(raw)
-                for element in data[num].split():
-                    if element != '---':
-                        raw.append(element)
-                    else:
-                        raw.append(np.nan)
-            
-            columns_to_drop = ['yyyy.MM.dd', '(DDD)', 'HH:mm:ss']
+    
+    with open(infile + filename) as f:
+        data = [line.strip() for line in f.readlines()]
+    
+    count = 0
+    for num in range(len(data)):
+        if (header) in data[num]:
+            break
         else:
-            for num in range(2, len(data)):
+            count += 1
+    
+    
+    data_ = data[count + 2:]
+    
+    header_ = data[1].split()
+    
+    return (header_, data_)
+
+
+
+
+def time_to_float(time: str) -> float:
+    
+    elem = str(time)
+    
+    time = [int(num) for num in elem.split(":")[:2]]
+    current = round(time[0] + (time[1] / 60), 2)
+    
+    return current
+
+def structure_the_data(data: list) -> np.array:
+    
+    
+    outside_second = []
+    for num in range(len(data)):
         
-                raw = []
-                raw_data.append(raw)
-                
-                for element in data[num].split():
-                    if (element != "/") and (element != '//'):
-                        raw.append(element)
-                        
-            raw_data = raw_data[:-8]
+        outside_first = []
+        outside_second.append(outside_first)
+        
+        for element in data[num].split():
             
-            columns_to_drop = ['yyyy.MM.dd', '(DDD)', 'HH:mm:ss', 'C-score']
+            rules = [element != "/", 
+                     element != '//',
+                     element != '---']
             
-        self.df = pd.DataFrame(raw_data, columns = reader)
-     
-        self.df.index = pd.to_datetime(self.df["yyyy.MM.dd"] + " " + self.df["HH:mm:ss"])
-     
-        self.df.drop(columns = columns_to_drop, inplace = True)
-     
-        self.df[self.df.columns] = self.df[self.df.columns].apply(pd.to_numeric, errors='coerce')
+            if all(rules):
+                outside_first.append(element)
+            else:
+                outside_first.append(np.nan)
     
-    @property    
-    def data(self):
-        return self.df.between_time('18:00:00', '22:50:00')
+    return np.array(outside_second)
     
-    def vertical_drift(self, columns = ['3.0', '4.0', '5.0', 
-                                        '6.0', '7.0', '8.0']):
+
+def select_day(infile: str, 
+               filename: str, 
+               day: int = 1,
+               columns: list = ["time", 6, 7, 8], 
+               begin_time: str = '18:00:00', 
+               end_time: str = '23:50:00') -> pd.DataFrame:
+    
+    header, data = find_header(infile, filename)
+    
+    df = pd.DataFrame(structure_the_data(data), 
+                      columns = header)
+    
+    df.rename(columns = {"yyyy.MM.dd": "date", 
+                         "HH:mm:ss": "time", 
+                         "(DDD)": "doy"}, inplace = True)
+    
+    df.index = pd.to_datetime(df["date"] + " " +
+                              df["time"])
+    
+    df["time"] = df["time"].apply(lambda x: time_to_float(x))
+    
+    for col in df.columns[3:]:
         
-        values = self.df.index.hour.values
-        minute = self.df.index.minute.values / 60
-        second = self.df.index.second.values / 3600
+        name = int(float(col))
         
-        hour = np.where(values >= 9, values, values + 24)
-        time = np.array(hour + second + minute)
+        df.rename(columns = {col: name}, 
+                  inplace = True)
         
-        self.df["time"] = time
-        for col in self.df.columns[:-1]:
-            
-            self.df[col] = (self.df[col].diff() / self.df["time"].diff()) / 3.6
-        
-        return self.df[columns].between_time('18:00:00', '23:00:00')
+        df[name] = df[name].apply(pd.to_numeric, 
+                                          errors='coerce')
     
     
-       
-#### Example
-
-infile = "path_with_the_data"
-
-filename = "name_of_the_file"
-df = ionosonde(infile, filename).vertical_drift()
-
-#df1 = ionosonde(infile, f2).vertical_drift()
-fig, ax = plt.subplots()
-df[['3.0', '4.0', '5.0', 
-    '6.0', '7.0', '8.0']].plot(ax = ax)
-                                
-ax.legend()
+    df = df.loc[df.index.day == day, columns]
+    
+    if begin_time:
+        df = df.between_time(begin_time, end_time)
+    
+    
+    return df
+    
 
 
-ax.set(xlabel = "Time (UT)", 
-       ylabel = "Real height (km)")
+def drift(df: pd.DataFrame) -> pd.DataFrame:
+    
+    data = df.copy()
+        
+    for col in data.columns:
+        
+        if col != "time":
+        
+            data[col] = (data[col].diff() / data["time"].diff()) / 3.6
+    
+    return data
 
 
-df = df.between_time('19:00:00', '22:00:00')
 
-# maximum values
-print(df.idxmax(), df.max() )
+
+def main():
+
+    infile = "Database/SL_2014-2015_Processado/"
+    
+    _, _, files = next(os.walk(infile))
+    
+    filename = files[0]
+    
+    df = select_day(infile, filename, 1).interpolate()
+    
+    dd = drift(df)
+    
+    
