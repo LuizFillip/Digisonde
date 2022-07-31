@@ -16,6 +16,7 @@ def find_header(infile:str,
                 filename: str, 
                 header: str = 'yyyy.MM.dd') -> tuple:
     
+    """Function for find the header and the data body"""
     
     with open(infile + filename) as f:
         data = [line.strip() for line in f.readlines()]
@@ -35,18 +36,20 @@ def find_header(infile:str,
     return (header_, data_)
 
 
-
-
 def time_to_float(time: str) -> float:
-    
+    """ Function for to convert time (clock format) into float number"""
     elem = str(time)
     
     time = [int(num) for num in elem.split(":")[:2]]
-    current = round(time[0] + (time[1] / 60), 2)
     
-    return current
+    return round(time[0] + (time[1] / 60), 2)
 
 def structure_the_data(data: list) -> np.array:
+    
+    """
+    Function for organize the data (get from find_header function)
+    in array format
+    """
     
     
     outside_second = []
@@ -75,6 +78,11 @@ def select_day(infile: str,
                columns: list = ["time", 6, 7, 8], 
                begin_time: str = '18:00:00', 
                end_time: str = '23:50:00') -> pd.DataFrame:
+    
+    """
+    Get pandas dataframe from the data (already organized), 
+    with datetime index, frequencies values in float format
+    """
     
     header, data = find_header(infile, filename)
     
@@ -113,6 +121,8 @@ def select_day(infile: str,
 
 def drift(df: pd.DataFrame) -> pd.DataFrame:
     
+    """Compute the vertical drift with (dh`F/dt) in meters per second"""
+    
     data = df.copy()
         
     for col in data.columns:
@@ -136,6 +146,10 @@ def main():
     
     df = select_day(infile, filename, 1).interpolate()
     
-    dd = drift(df)
+    #dd = drift(df)
+    
+    #print(3 // 3)
+    
+#main()
     
     
