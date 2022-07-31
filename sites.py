@@ -7,7 +7,7 @@ Created on Thu Jul 28 16:49:11 2022
 
 
 import os
-
+from ionosonde import *
 from astral.sun import sun
 import astral 
 import datetime
@@ -43,9 +43,10 @@ def get_coords(city: str,
     return (round(lat, 3), round(lon, 3))
 
 
-class site(object):
+class sites(object):
     
-    def __init__(self, filename: str, 
+    def __init__(self, 
+                 filename: str, 
                  country: str = "Brazil"):
         
         self.filename = filename
@@ -73,13 +74,7 @@ class site(object):
             except:
                 raise ValueError(f"Could not find the coordinates of {self.filename}")
 
-def time_to_float(intime):
-    
-    elem = [intime.hour, intime.minute]
-    
-    time = [int(num) for num in elem]
 
-    return round(time[0] + (time[1] / 60), 2)
             
 class terminators(object):
     
@@ -94,30 +89,34 @@ class terminators(object):
         self.twilightAngle = twilightAngle
         self.date = date
     
-    
-    
-        info = site(self.filename)
+        # Get informatios about longitude and latitude
+        info = sites(self.filename)
         
-        
+        # Astral library
         observer = astral.Observer(latitude = info.latitude, 
                                    longitude = info.longitude)
         
-        
-        self.infos = sun(observer, 
-                         self.date, 
+        # 
+        self.sun_phase = sun(observer, self.date, 
                          dawn_dusk_depression = self.twilightAngle)
         
         
     
     @property
     def dusk(self):
-        
-        return time_to_float(self.infos["dusk"])
+        """
+        The time in the evening when the sun is a specific 
+        number of degrees below the horizon.
+        """
+        return time_to_float(self.sun_phase["dusk"])
     
     @property
     def sunset(self):
-        
-        return time_to_float(self.infos["sunset"])
+        """
+        The time in the evening when the sun is about to disappear 
+        below the horizon (asuming a location with no obscuring features.)
+        """
+        return time_to_float(self.sun_phase["sunset"])
 
 def main():
     infile = "Database/SL_2014-2015_Processado/"
@@ -128,4 +127,9 @@ def main():
         
     print(terminators(filename).sunset)
     
-main()
+#main()
+
+from unidecode import unidecode
+
+
+print(unidecode('São Luís'))
