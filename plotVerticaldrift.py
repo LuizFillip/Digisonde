@@ -57,28 +57,28 @@ def terminator_lines(ax, filename, fontsize, year, month, day):
     times = [terms.sunset, terms.dusk]
     altitudes = [0, 300]
     linestyle = ["-", "--"]
-
+    kargs = dict(lw = 1, color = "k")
     for num in range(2):
         
         
         for col in range(2):
         
             ax[col].axvline(
-                    times[num], color = "brown", 
+                    times[num], 
                     linestyle = linestyle[num], 
-                    )
+                    **kargs)
             
             ax[col].axvline(
-                    times[num], color = "navy", 
+                    times[num], 
                     linestyle = linestyle[num], 
-                            )
+                    **kargs)
         
         text = f"Terminator \n at {altitudes[num]} km"
             
         ax[1].text(times[num] + 0.1, 110, 
                    text,
                    transform = ax[1].transData, 
-                   fontsize = fontsize + 2)
+                   fontsize = fontsize)
         
 def doy_str_format(date):
     
@@ -106,8 +106,10 @@ def plotVerticaldrift(infile,
     if save: 
         plt.ioff()
 
-    fig, ax = plt.subplots(figsize = (10, 8), 
+    fig, ax = plt.subplots(figsize = (10, 6), 
                            nrows = 2, sharex = True)
+    
+    plt.style.use('seaborn-talk')
     
     plt.subplots_adjust(hspace = 0)
     
@@ -121,33 +123,45 @@ def plotVerticaldrift(infile,
     freqs = list(df.columns[1:])
     
     colors = ["red", "black", "blue"]
+    markers = ["^", "o", "s"]
     
     date = df.index[0]
     year, month, day = date.year, date.month, date.day
     
+
     
-    
-    ax[0].set(ylabel = "Altitude (Km)", ylim = [100, 600], 
+    ax[0].set(ylabel = "Altitude (km)", ylim = [100, 600], 
               title = 'F layer true heights and vertical ' \
                   f'drift (dhF/dt)s in {site_name}, {date.date()}')
         
     ax[0].xaxis.set_major_formatter(lambda x, pos: 
                                   f"%d" % x + ":00")
+        
+    ax[0].yaxis.set_major_locator(ticker.AutoLocator())
+    ax[0].yaxis.set_minor_locator(ticker.AutoMinorLocator())
+    
     # =============================================================================
     # VERTICAL DRIFT SUBPLOT
     # =============================================================================
     
     vz = drift(df)
+    args = dict(fillstyle = "none", 
+                markersize = 3, lw = 1)
+    
     for num, col in enumerate(freqs):
-        ax[1].plot(vz.time, vz[col], color = colors[num], lw = 1.5)
-        ax[0].plot(df.time, df[col], color = colors[num], lw = 1.5)
+        ax[1].plot(vz.time, vz[col], 
+                   color = colors[num], 
+                   marker = markers[num], **args)
+        ax[0].plot(df.time, df[col], 
+                   color = colors[num], 
+                   marker = markers[num], **args)
     
     ax[1].set(xlabel = "Time (UT)", 
               ylabel = "Velocity (m/s)", 
               ylim = [-90, 90], 
               xlim = [18, 24])
     
-    ax[1].legend(freqs, loc = 'lower left', 
+    ax[0].legend(freqs, loc = 'upper left', 
                  prop={'size': fontsize - 2},
                  title = "Frequencies (MHz)", 
                  ncol = 3)
@@ -169,9 +183,10 @@ def plotVerticaldrift(infile,
         ax[1].axvline(time[num], linestyle = "-", 
                       lw = 0.5, color = colors[num])
         
-        infos = f"{freqs[num]} MHz: {peak[num]} m/s"
-        ax[1].text(18.1, 38 + (num*13), infos, color = colors[num],
-               transform = ax[1].transData)
+        info_text = f"{freqs[num]} MHz: {peak[num]} m/s"
+        ax[1].text(18.1, 38 + (num*13), info_text, 
+                   color = colors[num],
+                   transform = ax[1].transData)
     
     plt.rcParams.update({'font.size': fontsize, 
                          'mathtext.fontset': 'stix', 
@@ -179,12 +194,13 @@ def plotVerticaldrift(infile,
                          })   
 
   
-    FigureName = doy_str_format(date)
-    path_out = f"Figures/{site_name}/{date.year}/IndividualsPlots/"
-    
     if save:
+        site_to_save = unidecode(site_name).replace(" ", "")
+        FigureName = doy_str_format(date)
+        path_out = f"Figures/{site_to_save}/{date.year}/IndividualsPlots/"
+        
         plt.savefig(f"{path_out}{FigureName}.png", 
-                    dpi = 300, bbox_inches = "tight")
+                    dpi = 100, bbox_inches = "tight")
     
         plt.close(fig)
   
@@ -197,7 +213,7 @@ def main():
     filename = files[0]
     
         
-    plotVerticaldrift(infile, filename, day = 1, save = False)
+    plotVerticaldrift(infile, filename, day = 1, save = True)
     
 
 main()
