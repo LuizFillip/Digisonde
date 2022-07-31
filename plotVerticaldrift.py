@@ -10,8 +10,21 @@ from ionosonde import *
 from prereversalEnhancement import *
 import astral 
 import datetime
-import matplotlib.dates as dates
 import matplotlib.ticker as ticker
+
+
+def get_values(infile, filename, day):
+    df = PRE(infile, filename, 
+              day = day, delta = 1)
+    
+    peak = df.iloc[(df.index.get_level_values('Values') == 
+                            "peak"), :].values[0]
+    
+    time = df.iloc[(df.index.get_level_values('Values') == 
+                            "time"), :].values[0]
+
+    return (peak, time)
+
 
 def secundary_axes(ax, delta = - 3):
     ax1 = ax.twiny()
@@ -51,12 +64,12 @@ def terminator_lines(ax, filename, fontsize, year, month, day):
         for col in range(2):
         
             ax[col].axvline(
-                    times[num], color = "k", 
+                    times[num], color = "brown", 
                     linestyle = linestyle[num], 
-                            )
+                    )
             
             ax[col].axvline(
-                    times[num], color = "k", 
+                    times[num], color = "navy", 
                     linestyle = linestyle[num], 
                             )
         
@@ -106,10 +119,13 @@ def plotVerticaldrift(infile,
     df = select_day(infile, filename, day)
     
     freqs = list(df.columns[1:])
+    
+    colors = ["red", "black", "blue"]
+    
     date = df.index[0]
     year, month, day = date.year, date.month, date.day
     
-    ax[0].plot(df.time, df[freqs], lw = 1)
+    
     
     ax[0].set(ylabel = "Altitude (Km)", ylim = [100, 600], 
               title = 'F layer true heights and vertical ' \
@@ -122,12 +138,14 @@ def plotVerticaldrift(infile,
     # =============================================================================
     
     vz = drift(df)
-        
-    ax[1].plot(vz.time, vz[freqs], lw = 1)
+    for num, col in enumerate(freqs):
+        ax[1].plot(vz.time, vz[col], color = colors[num], lw = 1.5)
+        ax[0].plot(df.time, df[col], color = colors[num], lw = 1.5)
     
     ax[1].set(xlabel = "Time (UT)", 
               ylabel = "Velocity (m/s)", 
-              ylim = [-90, 90])
+              ylim = [-90, 90], 
+              xlim = [18, 24])
     
     ax[1].legend(freqs, loc = 'lower left', 
                  prop={'size': fontsize - 2},
@@ -143,8 +161,21 @@ def plotVerticaldrift(infile,
     # =============================================================================
     terminator_lines(ax, filename, fontsize, year, month, day)
     
+    
+    peak, time = get_values(infile, filename, day)
+    
+
+    for num in range(len(peak)):
+        ax[1].axvline(time[num], linestyle = "-", 
+                      lw = 0.5, color = colors[num])
+        
+        infos = f"{freqs[num]} MHz: {peak[num]} m/s"
+        ax[1].text(18.1, 38 + (num*13), infos, color = colors[num],
+               transform = ax[1].transData)
+    
     plt.rcParams.update({'font.size': fontsize, 
-                         "font.family": "Times New Roman", 
+                         'mathtext.fontset': 'stix', 
+                         'font.family': 'STIXGeneral'
                          })   
 
   
@@ -168,4 +199,5 @@ def main():
         
     plotVerticaldrift(infile, filename, day = 1, save = False)
     
+
 main()
