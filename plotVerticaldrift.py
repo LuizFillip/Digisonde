@@ -193,27 +193,33 @@ def plotVerticaldrift(infile,
                          'font.family': 'STIXGeneral'
                          })   
 
-  
+    site_to_save = unidecode(site_name).replace(" ", "")
+    FigureName = doy_str_format(date)
+    
+    
     if save:
-        site_to_save = unidecode(site_name).replace(" ", "")
-        FigureName = doy_str_format(date)
-        path_out = f"Figures/{site_to_save}/{date.year}/IndividualsPlots/"
         
-        plt.savefig(f"{path_out}{FigureName}.png", 
+        path_out = f"Figures//{site_to_save}//{date.year}//IndividualsPlots//"
+        #Figures/Fortaleza/2014/IndividualPlots
+        try:
+            plt.savefig(f"{path_out}{FigureName}.png", 
+                    dpi = 100, bbox_inches = "tight")
+        except:
+            plt.savefig(f"{FigureName}.png", 
                     dpi = 100, bbox_inches = "tight")
     
         plt.close(fig)
   
         
 def main():
-    infile = "Database/SL_2014-2015_Processado/"
+    infile = "Database/FZ_2014-2015_Processado/"
     
     _, _, files = next(os.walk(infile))
     
-    filename = files[0]
+    filename = files[3]
     
-        
-    plotVerticaldrift(infile, filename, day = 1, save = True)
+    for day in range(1, 32):
+        plotVerticaldrift(infile, filename, day = day, save = True)
     
 
-main()
+#main()
