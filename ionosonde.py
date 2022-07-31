@@ -36,13 +36,29 @@ def find_header(infile:str,
     return (header_, data_)
 
 
-def time_to_float(time: str) -> float:
-    """ Function for to convert time (clock format) into float number"""
-    elem = str(time)
-    
-    time = [int(num) for num in elem.split(":")[:2]]
-    
-    return round(time[0] + (time[1] / 60), 2)
+def time_to_float(intime) -> float:
+    """
+    Function for to convert time into float number
+    Parameters
+    ---------
+        intime: str (like "22:10:00") or datetime.time or datetime.datetime
+    >>> intime = datetime.datetime(2013, 1, 1, 22, 10, 0)
+    >>> time_to_float(intime)
+    ... 22.167
+    """
+    try:
+        if isinstance(intime, datetime.datetime):
+            time_list = [intime.hour, intime.minute, intime.second]
+        elif ":" in intime:
+            time_list = [int(num) for num in str(intime).split(":")]
+    except:
+        raise TypeError(f"The input parameter must be datetime.datime or clock format")
+        
+    return round(time_list[0] + 
+                 (time_list[1] / 60) + 
+                 (time_list[2] / 3600), 3)
+
+
 
 def structure_the_data(data: list) -> np.array:
     
@@ -53,19 +69,19 @@ def structure_the_data(data: list) -> np.array:
     
     
     outside_second = []
-    for num in range(len(data)):
+    for first in range(len(data)):
         
         outside_first = []
         outside_second.append(outside_first)
         
-        for element in data[num].split():
+        for second in data[first].split():
             
-            rules = [element != "/", 
-                     element != '//',
-                     element != '---']
+            rules = [second != "/", 
+                     second != '//',
+                     second != '---']
             
             if all(rules):
-                outside_first.append(element)
+                outside_first.append(second)
             else:
                 outside_first.append(np.nan)
     
@@ -146,9 +162,7 @@ def main():
     
     df = select_day(infile, filename, 1).interpolate()
     
-    #dd = drift(df)
-    
-    #print(3 // 3)
+
     
 #main()
     
