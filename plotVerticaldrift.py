@@ -36,40 +36,37 @@ def secundary_axes(ax, delta = - 3):
     ax1.xaxis.set_label_position('bottom') 
     ax1.spines['bottom'].set_position(('outward', 45))
 
-def terminator_lines(ax, filename, year, month, day):
+def terminator_lines(ax, filename, fontsize, year, month, day):
     
-    dusk = terminators(filename, 
-                       date = datetime.date(year, month, day)).dusk
+    terms = terminators(filename, 
+                       date = datetime.date(year, month, day))
     
-
-    altitudes = ["0", "300"]
+    times = [terms.sunset, terms.dusk]
+    altitudes = [0, 300]
     linestyle = ["-", "--"]
+
     for num in range(2):
-        
-        terminator = infos[angles[num]]
         
         
         for col in range(2):
         
             ax[col].axvline(
-                terminator, color = "k", linestyle = linestyle[num], 
+                    times[num], color = "k", 
+                    linestyle = linestyle[num], 
                             )
             
             ax[col].axvline(
-                terminator, color = "k", linestyle = linestyle[num], 
+                    times[num], color = "k", 
+                    linestyle = linestyle[num], 
                             )
         
-        delta = datetime.timedelta(minutes = 5)
-        
-        if angles[num] == "dusk":
-            text = "dusk at \n300 km".capitalize()
-        else:
-            text = angles[num].capitalize()
+        text = f"Terminator \n at {altitudes[num]} km"
             
-        ax[1].text(terminator + delta, 110, 
+        ax[1].text(times[num] + 0.1, 110, 
                    text,
                    transform = ax[1].transData, 
                    fontsize = fontsize + 2)
+        
 def doy_str_format(date):
     
     doy = date.timetuple().tm_yday
@@ -104,17 +101,22 @@ def plotVerticaldrift(infile,
     # =============================================================================
     # F LAYER HEIGHT     
     # =============================================================================
-    site_name = site(filename).name
+    
+    site_name = sites(filename).name
     df = select_day(infile, filename, day)
+    
     freqs = list(df.columns[1:])
     date = df.index[0]
+    year, month, day = date.year, date.month, date.day
     
     ax[0].plot(df.time, df[freqs], lw = 1)
     
-    ax[0].set(ylabel = "Altitude (Km)", ylim = [100, 700], 
+    ax[0].set(ylabel = "Altitude (Km)", ylim = [100, 600], 
               title = 'F layer true heights and vertical ' \
                   f'drift (dhF/dt)s in {site_name}, {date.date()}')
-    
+        
+    ax[0].xaxis.set_major_formatter(lambda x, pos: 
+                                  f"%d" % x + ":00")
     # =============================================================================
     # VERTICAL DRIFT SUBPLOT
     # =============================================================================
@@ -130,12 +132,8 @@ def plotVerticaldrift(infile,
     ax[1].legend(freqs, loc = 'lower left', 
                  prop={'size': fontsize - 2},
                  title = "Frequencies (MHz)", 
-                 ncol = len(freqs) // 3)
+                 ncol = 3)
     
-    
-    
-    #ax[1].xaxis.set_major_formatter(dates.DateFormatter('%H:%M'))
-    #ax[1].xaxis.set_major_locator(dates.HourLocator(interval = 1))
     
     secundary_axes(ax[1], delta = - 3)
     
@@ -143,7 +141,7 @@ def plotVerticaldrift(infile,
     # =============================================================================
     # TERMINATOR SOLAR AT 300 KM (DUSK)
     # =============================================================================
-    
+    terminator_lines(ax, filename, fontsize, year, month, day)
     
     plt.rcParams.update({'font.size': fontsize, 
                          "font.family": "Times New Roman", 
