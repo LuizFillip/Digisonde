@@ -5,12 +5,12 @@ Created on Sat Jul 23 11:44:53 2022
 @author: Luiz
 """
 
-from ionosonde import *
+#from ionosonde import *
+import pandas as pd
+import numpy as np
 
 
-# =============================================================================
-# 
-# =============================================================================
+
 def EPBsEvents():
     
     infile = "C:\\Users\\Luiz\\OneDrive\\Documentos\\Scripts\\EPB_Probability_2014.xlsx"
@@ -26,66 +26,27 @@ def EPBsEvents():
     
     return df
 
-#print(EPBsSheet())
-# =============================================================================
-# 
-# =============================================================================
 
-#
-class select_parameter(object):
+city = "Fortaleza"
+infile = f"Results/{city}/PRE/"
+filename = "2014.txt"
+
+def sel_parameter(infile, filename, factor = "peak"):
     
-    def __init__(self, filename):
-        self.filename = filename
+    df = pd.read_csv(infile + filename, 
+                     delim_whitespace=(True), 
+                     index_col = [0, 1])
     
-
-        self.df = pd.read_csv(filename, 
-                         delim_whitespace=(True), 
-                         index_col = [0, 1])
-        
+    df = df.loc[(df.index.get_level_values('Values') ==  factor), :]
     
-    def peak(self, sunset = False):
-        self.df = self.df.iloc[(self.df.index.get_level_values('Values') == 
-                                "Peak (m/s)"), :]
-        
-        self.df[self.df.columns] = self.df[self.df.columns].apply(pd.to_numeric, 
-                                                                  errors='coerce')
-        self.df.index = pd.to_datetime(self.df.index.get_level_values(0))
-        
-        try:
-            if sunset is False:
-                self.df.drop(columns = ["sunset"], inplace = True)
-        except:
-            pass
-        return self.df
-        
-    def time(self, current = True):
-        self.df = self.df.iloc[(self.df.index.get_level_values('Values') == 'Time (UT)'), :]
-        
-        if current:
-            
-            def clock_to_current(elem):
-                
-                time = [int(num) for num in elem.split(":")]
-                current = round(time[0] + (time[1] /60), 2)
-                
-                return current
-            
-            for col in self.df.columns:
-                self.df[col] = self.df[col].apply(lambda elem: clock_to_current(elem))
-                
-        self.df.index = pd.to_datetime(self.df.index.get_level_values(0))
-            
-        return self.df
-        
-        
-df = pd.concat([select_parameter("Fortaleza2014.2.txt").peak(), 
-                EPBsEvents()], axis = 1)
-df.to_csv("EPBsEventsAndPRE_Fortaleza2014.2.txt", 
-          index = True, sep = " ")
-        
+    df.index = pd.to_datetime(df.index.get_level_values(0))
+    return df
 
-
-
-
-
+def save(infile, filename, factor = "peak"):
+    
+    df = pd.concat([sel_parameter(infile, filename, factor = factor), 
+                    EPBsEvents()], axis = 1)
+    
+    return df.to_csv(f"EPBsEventsAndPRE_{city}2014.txt", 
+              index = True, sep = " ")
 
