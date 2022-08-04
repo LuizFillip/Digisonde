@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Aug  2 17:44:22 2022
+Created on Thu Aug  4 11:45:16 2022
 
 @author: Luiz
 """
@@ -9,28 +9,6 @@ import pandas as pd
 import config
 import numpy as np
 import datetime
-infile = "Database/PlanetaryIndicators/"
-filename = "Kp.txt"
-
-
-def plot_indicators(infile, ax):
-    df = pd.read_csv(infile, 
-                     header = 39, delim_whitespace=(True))
-    df.index  = pd.to_datetime(dict(year = df['#YYY'], 
-                                    month = df['MM'], day = df['DD']))
-    parameter = "Kp8"
-    df = df.loc[(df["#YYY"]  == 2014) & (df[parameter] > 4), [parameter]]
-    
-    ax1 = ax.twinx()
-    df.plot(ax = ax1, marker = "o", linestyle ="none")
-    
-    
-#df = pd.read_csv(infile, delim_whitespace=(True))
-with open(infile + filename) as f:
-    data = [line.strip() for line in f.readlines()]
-    
-header = data[0]
-
 
 
 def row(contents):
@@ -64,12 +42,62 @@ def row(contents):
 
     return (result)
 
-outside = []
-for num in range(1, len(data)):
-    contents = data[num]
-
-    outside.append(row(contents))
+def plotKyotoData():
     
-df = pd.DataFrame(outside)
+    infile = "Database/PlanetaryIndicators/"
+    filename = "Kp.txt"
+    
+    
+    with open(infile + filename) as f:
+        data = [line.strip() for line in f.readlines()]
+        
+    
+    
+    outside = []
+    
+    for num in range(1, len(data)):
+        contents = data[num]
+    
+        outside.append(row(contents))
+        
+    
+    col_names = ["date", 'kp0', 'kp3', 
+                 'kp6', 'kp9', 'kp12', 
+                 'kp15', 'kp18', 'kp21',
+                 'kpsum', 'ap3', 'ap6', 
+                 'ap9', 'ap12', 'ap15', 
+                 'ap18', 'ap21', 'ap24', "Ap"]
+    
+    df = pd.DataFrame(outside, columns = col_names)
+    
+    df.index = pd.to_datetime(df["date"])
+    
+    df = df.loc[df.index.year == 2014, :]
+    return df
 
-print(df)
+def plotKp(infile, filename, 
+            parameter = "Ap", 
+            year = 2014, 
+            ax = None):
+    
+    
+    df = pd.read_csv(infile + filename, 
+                     header = 39, delim_whitespace=(True))
+    
+    
+    df.index  = pd.to_datetime(dict(year = df['#YYY'], 
+                                    month = df['MM'], 
+                                    day = df['DD']))
+    
+    df = df.loc[(df["#YYY"]  == year), [parameter]]
+    
+    ax.plot(df, lw = 1, color = "gray")
+    
+    ax.set(ylabel = "Ap index", xlabel = "Months")
+    
+    ax.axhline(22, color = "k", 
+               linestyle = "--", label = "Ap = 22 (kp = 4)")
+    
+    ax.legend(loc = "upper right")
+    
+ 
