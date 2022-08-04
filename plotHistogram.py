@@ -20,15 +20,14 @@ def plotHistogram(infile,
                   xlabel = 'Velocity', 
                   unit = "m/s", 
                   binwidth = 5, 
-                  ncols = 3):
+                  ncols = 3, 
+                  year = 2014):
     
    
         
     df = sel_parameter(infile, filename, 
                        factor = parameter)
-        
     
-    year = df.index[0].year
     
     max_value = round(df.max().max())
     min_value = round(df.min().min())
@@ -36,6 +35,7 @@ def plotHistogram(infile,
     bins = np.arange(min_value, 
                      max_value + binwidth, 
                      binwidth)
+    
     columns = df.columns
     
     fig, ax = plt.subplots(figsize = (16, 4), 
@@ -73,7 +73,7 @@ def plotHistogram(infile,
                xlim = [min_value - binwidth, 
                        max_value + binwidth])
 
-    fig.text(0.5, 0.03, f"{xlabel} ({unit})", 
+    fig.text(0.5, 0., f"{xlabel} ({unit})", 
              va = 'bottom', 
              ha='center', 
              fontsize = fontsize)
@@ -84,13 +84,11 @@ def plotHistogram(infile,
              fontsize = fontsize + 2)   
     
     fig.suptitle(f'Vertical drift in {site} - {year}', 
-                 size = fontsize + 4)
+                 size = fontsize + 2, y= 1.)
     
    
     path_out = f"Figures/{site.strip()}/{year}/Histograms/"
-    
- 
-    
+      
     FigureName = xlabel.capitalize()
     
     if save:
@@ -104,8 +102,10 @@ def main():
     infile = "Results/Fortaleza/PRE/"
     filename = "2014.txt"
     site = "Fortaleza"
-
-    plotHistogram(infile, filename, 
+    year = int(filename.replace(".txt", ""))
+    plotHistogram(infile, 
+                  filename, 
+                  year = year,
                   site = site, 
                   parameter = "peak", 
                   binwidth = 8,
