@@ -6,7 +6,7 @@ Created on Sun Jul 24 15:32:32 2022
 """
 
 import config
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import os
 from pipeline import *
 import matplotlib.dates as dates
@@ -26,9 +26,10 @@ def plotAnnualvariation(infile,
                         site = "Fortaleza", 
                         fontsize = 14,
                         average = False, 
-                        save = False):
-    
-    fig, ax = plt.subplots(figsize = (12, 6))
+                        save = False, 
+                        ax = None):
+    if ax == None:
+        fig, ax = plt.subplots(figsize = (10, 5))
     
     
     df = sel_parameter(infile, filename, 
@@ -38,15 +39,23 @@ def plotAnnualvariation(infile,
       
     date = df.index[0]
     
-    args = dict(linestyle = "none", 
-                marker = "o", 
-                fillstyle = 'none')
+    markers = ["o", "^", "s"]
+    colors = ['#FF2C00', '#845B97', '#00B945']
     
-    ax.plot(df, **args)
+    for num, col in enumerate(df.columns):
+        
+        
+        args = dict(linestyle = "none", 
+                    marker = markers[num],
+                    color = colors[num],
+                   # fillstyle = 'none', 
+                    markersize = 5)
+        
+        ax.plot(df.index, df[col], **args)
 
     ax.legend(list(df.columns),
               title = "Frequencies (MHz)", 
-              loc = 'lower left', 
+              loc = 'upper center', 
               prop={'size': fontsize - 2}, 
               ncol = 3)
     
@@ -62,19 +71,17 @@ def plotAnnualvariation(infile,
     
     if save:
         plt.savefig(f"{path_out}{FigureName}.png", 
-                    dpi = 300, bbox_inches="tight")
+                    dpi = 100, bbox_inches="tight")
  
-
-site = "Fortaleza"
-infile = f"Results/{site}/PRE/"
-filename = "2014.txt"
-
-plotAnnualvariation(infile, 
-                        filename, 
-                        site = site, 
-                        average = True, 
-                        save = False)
-
-
+def main():
+    site = "Fortaleza"
+    infile = f"Results/{site}/PRE/"
+    filename = "2014.txt"
+    
+    plotAnnualvariation(infile, 
+                            filename, 
+                            site = site, 
+                            ax = None,
+                            save = False)
 
 
