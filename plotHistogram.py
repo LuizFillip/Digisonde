@@ -5,32 +5,28 @@ Created on Fri Jul 22 18:39:48 2022
 @author: Luiz
 """
 
-from ionosonde import *
+#from ionosonde import *
 import matplotlib.pyplot as plt
 import os
 from pipeline import *
+import config
 
-
-def plotHistogram(
+def plotHistogram(infile,
                   filename, 
                   fontsize = 18,
-                  parameter = "vel",
+                  parameter = "peak",
                   save = False, 
                   site = "Fortaleza",
-                  ):
+                  xlabel = 'Velocity', 
+                  unit = "m/s", 
+                  binwidth = 5, 
+                  ncols = 3):
     
-    if parameter == "vel":
+   
         
-        df = select_parameter(filename).peak()
+    df = sel_parameter(infile, filename, 
+                       factor = parameter)
         
-        binwidth = 5
-        xlabel = 'Velocity'
-        unit = "m/s"
-    else:
-        df = select_parameter(filename).time()
-        binwidth = 0.3
-        xlabel = "Time"
-        unit = "UT"
     
     year = df.index[0].year
     
@@ -40,21 +36,26 @@ def plotHistogram(
     bins = np.arange(min_value, 
                      max_value + binwidth, 
                      binwidth)
-
-    fig, ax = plt.subplots(figsize = (18, 8), 
-                           ncols = 3, nrows = 2, 
+    columns = df.columns
+    
+    fig, ax = plt.subplots(figsize = (16, 4), 
+                           ncols = ncols, 
+                           nrows = len(columns) // ncols, 
                            sharex = True, 
                            sharey = True)
 
     plt.subplots_adjust(hspace = 0.2, wspace = 0.)
     
-    args = dict(facecolor = 'lightgrey', alpha = 1, 
-                edgecolor = 'black', hatch = '////', 
-                color = 'gray', linewidth = 1)
+    args = dict(facecolor = 'lightgrey', 
+                alpha = 1, 
+                edgecolor = 'black', 
+                hatch = '////', 
+                color = 'gray', 
+                linewidth = 1)
     
     
     
-    for col, ax in zip(df.columns, ax.flat):
+    for col, ax in zip(columns, ax.flat):
     
         df[col].hist(bins = bins, 
                        ax = ax, **args)
@@ -72,12 +73,12 @@ def plotHistogram(
                xlim = [min_value - binwidth, 
                        max_value + binwidth])
 
-    fig.text(0.5, 0.055, f"{xlabel} ({unit})", 
+    fig.text(0.5, 0.03, f"{xlabel} ({unit})", 
              va = 'bottom', 
              ha='center', 
              fontsize = fontsize)
     
-    fig.text(0.09, 0.5, 'Number of events', 
+    fig.text(0.08, 0.5, 'Number of events', 
              va='center', 
              rotation='vertical', 
              fontsize = fontsize + 2)   
@@ -85,24 +86,31 @@ def plotHistogram(
     fig.suptitle(f'Vertical drift in {site} - {year}', 
                  size = fontsize + 4)
     
-    plt.rcParams.update({'font.size': fontsize - 2, 
-                         "font.family": "Times New Roman"})   
-    
+   
     path_out = f"Figures/{site.strip()}/{year}/Histograms/"
+    
+ 
+    
     FigureName = xlabel.capitalize()
     
     if save:
         plt.savefig(f"{path_out}{FigureName}.png", 
-                    dpi = 300, bbox_inches="tight")
+                    dpi = 200, bbox_inches="tight")
     
     plt.show()
     
     
 def main():
-    filename = "Saoluis2015.txt"
+    infile = "Results/Fortaleza/PRE/"
+    filename = "2014.txt"
+    site = "Fortaleza"
+
+    plotHistogram(infile, filename, 
+                  site = site, 
+                  parameter = "peak", 
+                  binwidth = 8,
+                  save = False)
     
     
-    for par in ["time", "vel"]:
-        plotHistogram(filename, site = "SaoLuis", 
-                  parameter = par, save = True)
+    
 main()
