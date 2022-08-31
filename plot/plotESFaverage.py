@@ -7,29 +7,52 @@ Created on Tue Aug  2 18:06:16 2022
 import os
 import pandas as pd
 import config
-from ionosonde import *
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
+import numpy as np
+from pipeline import find_header, time_to_float
+
+infile = "database/QF/"
+_, _, files = next(os.walk(infile))
+
+filename = files[0]
+
+def build_dataframe(infile, filename):
+    """Read QF observations"""
+    with open(infile + filename) as f:
+       data = [line.strip() for line in f.readlines()]
+    
+    good_indices = [0, 2, 3]
+    
+    extract_from_loop  = []
+    
+    for elem in data:
+        
+        list_a = elem.split()
+        
+        if len(list_a) >= 5:
+            extract_from_loop.append([list_a[index] for 
+                                 index in good_indices])
+                        
+    df = pd.DataFrame(extract_from_loop, 
+                      columns = ["date", "time", "qf"])
+    
+    df.index = pd.to_datetime(df["date"] +" " + df["time"])
+    
+    df["qf"] = pd.to_numeric(df["qf"])
+    
+    return df.loc[:, ["qf"]]
 
 
-
-infile = "Database/QF/"
-
-def read_all_files(infile):
+def read_all_files(infile):    
+    """Use os library for read all files"""
     _, _, files = next(os.walk(infile))
     
     outside = []
     
     for filename in files:
-        df = pd.read_csv(infile + filename, 
-                         header = 5, 
-                         delim_whitespace=(True), 
-                         index_col=(False),
-                         names = ["date","doy", "time", "qf"])
-        
-        df.index = pd.to_datetime(df["date"] +" " + df["time"])
-    
-        outside.append(df.loc[:, ["qf"]])
+  
+        outside.append(build_dataframe(infile, filename))
         
     return pd.concat(outside)
 
@@ -80,5 +103,8 @@ def plotESFaverage(infile, ax = None):
     
     
 
-read_all_files(infile)
+#read_all_files(infile)
 #plotESFaverage(infile, ax = None)
+
+
+
