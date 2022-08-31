@@ -1,4 +1,4 @@
-# IONOSONDE DATA ANALYSIS
+# DIGISONDE
 
 This repository contains the ionosonde data analysis from 
 [EMBRACE](http://www2.inpe.br/climaespacial/portal/en/) database. 
@@ -20,10 +20,10 @@ height of the ionospheric F layer for each frequency that can vary from 2 to
 
 The data file name is STN_YYYYMMDD.RSF (or STN_YYYYMMDD.GRM) and STN_YYYYMMDD.SAO, where:
 
-STN: station label (5 digits (letters and numbers))
-YYYY: year (4 digits)
-MM:   month (2 digits)
-DD:   day  (2 digits)
+ - STN: station label (5 digits (letters and numbers))
+ - YYYY: year (4 digits)
+ - MM:   month (2 digits)
+ - DD:   day  (2 digits)
 
 
 
