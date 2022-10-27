@@ -1,10 +1,3 @@
- # -*- coding: utf-8 -*-
-"""
-Created on Sat Jul  9 19:47:03 2022
-
-@author: Luiz
-"""
-
 import pandas as pd
 import numpy as np
 import os
@@ -12,23 +5,7 @@ import datetime
 from unidecode import unidecode
 pd.options.mode.chained_assignment = None
 
-def doy_str_format(date: int) ->str:
-    
-    if isinstance(date, datetime.datetime):
-        doy = date.timetuple().tm_yday
-    else:
-        doy = date
-    
-    if doy < 10:
-        FigureName = f"00{doy}"
-        
-    elif doy >= 10 and doy < 100:
-        FigureName = f"0{doy}"
 
-    else:
-        FigureName = f"{doy}"
-        
-    return FigureName
 
 def find_header(infile:str, 
                 filename: str, 
