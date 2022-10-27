@@ -1,17 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jul  9 17:34:01 2022
-
-@author: Luiz
-"""
-
-from ionosonde import *
-from prereversalEnhancement import *
-from plotVerticaldrift import *
+from prereversalEnhancement import PRE
+from plotVerticaldrift import plotVerticaldrift
 from tqdm import tqdm
+from pipeline import select_day
+import pandas as pd
+import os
 
-
-def result_per_day(infile, filename):
+def run_for_all_days(infile, filename):
 
     outside_day = []
     
@@ -37,28 +31,25 @@ def result_per_day(infile, filename):
             
     return pd.concat(outside_day)
 
-def result_per_month(infile, year = 2014):
+def run_for_all_months(infile, year = 2014):
     
     _, _, files = next(os.walk(infile))
     
-    global status
-    
     outside_month = []
     
-    total = len(files)
-    with alive_bar(total) as bar:
-        for filename in files:
-            if str(year) in filename:
-                try:
-                    # Get results by day
-                    outside_month.append(result_per_day(infile, filename))
-                    status = filename.replace("FZA0M_", "").replace(".txt", "")
-                    print(f"Month {status} passed!")
-                except:
-                    print(f"Month{status} not passed!")
-                    pass
-                
-        print(f"{year} finished")
+
+    for filename in files:
+        if str(year) in filename:
+            try:
+                # Get results by day
+                outside_month.append(run_for_all_days(infile, filename))
+                status = filename.replace("FZA0M_", "").replace(".txt", "")
+                print(f"Month {status} passed!")
+            except:
+                print(f"Month{status} not passed!")
+                pass
+            
+    print(f"{year} finished")
         
         
     if len(outside_month) > 0:
@@ -69,9 +60,10 @@ def result_per_month(infile, year = 2014):
     return result
 
 
+
 def save(infile, year):
     
-    df = result_per_month(infile, year = year)
+    df = run_for_all_months(infile, year = year)
     
     if "SL" in infile:
         site = "Saoluis"
@@ -83,11 +75,9 @@ def save(infile, year):
 
 
 
-from alive_progress import alive_bar
-from alive_progress.styles import showtime
-import time
 
-def main()
+
+def main():
 
     for city in ["FZ"]:
         for year in [2014, 2015]:
@@ -95,3 +85,9 @@ def main()
             #print(city, year, infile)
             
             save(infile, year)
+
+
+    for year in [2014, 2015]:
+        infile = f"Database/FZ_2014-2015_Processado/"
+        df = run_for_all_months(infile, year = year)
+    #main()
