@@ -1,11 +1,6 @@
 import os
 import datetime
 
-
-
-
-
-
 infos_iono = {"Brazil": 
               {
                 "FZA0M": {"name": "Fortaleza", 
@@ -18,7 +13,9 @@ infos_iono = {"Brazil":
                 }}
 
 
-def coords_from_filename(filename):
+def infos_from_filename(filename):
+    
+    """Getting site informations by filename"""
     
     dat = infos_iono["Brazil"]
     keys = dat.keys()
@@ -35,14 +32,14 @@ def coords_from_filename(filename):
     
     return name, lat, lon
 
-
-infile = "Database/FZ_2014-2015_Processado/"
-
-_, _, files = next(os.walk(infile))
-
-filename = files[0]
-
-name, lat, lon = coords_from_filename(filename)
-
-print(lat)
+def main():
+    infile = "Database/FZ_2014-2015_Processado/"
+    
+    _, _, files = next(os.walk(infile))
+    
+    filename = files[0]
+    
+    name, lat, lon = infos_from_filename(filename)
+    
+    print(lat)
 
