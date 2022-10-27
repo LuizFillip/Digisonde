@@ -1,29 +1,15 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jul 22 16:12:49 2022
-
-@author: Luiz
-"""
-
 import matplotlib.pyplot as plt
-from ionosonde import *
-from prereversalEnhancement import *
-import astral 
+from prereversalEnhancement import PRE, drift
 import datetime
 import matplotlib.ticker as ticker
-import config
+import plotConfig
+from digisonde_utils import terminators
+from sites import coords_from_filename
+from pipeline import select_day
+import unicodedata
+import numpy as np
 
-def get_values(infile, filename, day):
-    df = PRE(infile, filename, 
-              day = day, delta = 1)
-    
-    peak = df.iloc[(df.index.get_level_values('Values') == 
-                            "peak"), :].values[0]
-    
-    time = df.iloc[(df.index.get_level_values('Values') == 
-                            "time"), :].values[0]
 
-    return (peak, time)
 
 
 
@@ -94,17 +80,12 @@ def plotVerticaldrift(infile,
     
     plt.subplots_adjust(hspace = 0)
     
-    # =============================================================================
-    # F LAYER HEIGHT     
-    # =============================================================================
-    
-    site_name = sites(filename).name
+    name, lat, lon = coords_from_filename(filename)
     df = select_day(infile, filename, day)
     
     df["Avg"] = df[[6, 7, 8]].mean(axis = 1)
     
-    
-    
+
     freqs = list(df.columns[1:])
     
     colors = ["red", "black", "blue", "m"]
@@ -115,15 +96,11 @@ def plotVerticaldrift(infile,
 
     
     ax[0].set(ylabel = "Altitude (km)", ylim = [100, 600], 
-              title = f'{site_name}, {date.date()}')
+              title = f'{name}, {date.date()}')
         
     ax[0].xaxis.set_major_formatter(lambda x, pos: 
                                   f"%d" % x + ":00")
         
-    
-    # =============================================================================
-    # VERTICAL DRIFT SUBPLOT
-    # =============================================================================
     
     vz = drift(df)
     
@@ -171,8 +148,8 @@ def plotVerticaldrift(infile,
                    color = colors[num],
                    transform = ax[1].transData)
     
-    site_to_save = unidecode(site_name).replace(" ", "")
-    FigureName = doy_str_format(date)
+    site_to_save = unidecode(name).replace(" ", "")
+    FigureName = date.strftime("%j")
     
     if save:
         
