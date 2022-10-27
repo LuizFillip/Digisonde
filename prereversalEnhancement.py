@@ -1,13 +1,42 @@
-
-from ionosonde import *
 import datetime
-from sites import *
-    
+import pandas as pd
+import numpy as np
+from digisonde_utils import time_to_float, terminators
+from pipeline import select_day
+from sites import infos_from_filename
+import os
 
 
-def PRE(infile, filename, 
-        day = 2, delta = 1):    
+def drift(df: pd.DataFrame) -> pd.DataFrame:
     
+    """Compute the vertical drift with (dh`F/dt) in meters per second"""
+    
+    data = df.copy()
+        
+    for col in data.columns:
+        
+        if col != "time":
+        
+            data[col] = (data[col].diff() / data["time"].diff()) / 3.6
+    
+    return data
+
+def get_values(infile, filename, day):
+    df = PRE(infile, 
+             filename, 
+             day = day)
+    
+    peak = df.iloc[(df.index.get_level_values('Values') == 
+                            "peak"), :].values[0]
+    
+    time = df.iloc[(df.index.get_level_values('Values') == 
+                            "time"), :].values[0]
+
+    return (peak, time)
+
+def PRE(infile: str, filename: str, 
+        day: int = 2, delta: int = 1) -> pd.DataFrame:    
+
    
     df = drift(select_day(infile, 
                           filename, 
@@ -45,7 +74,8 @@ def PRE(infile, filename,
                                              "Values"])
     
     df = pd.DataFrame(result, index = index)  
-    df.columns.name = site(filename).name
+    name, _, _ = infos_from_filename(filename)
+    df.columns.name = name
     
     return df
 
@@ -56,11 +86,7 @@ def main():
     
     filename = files[9]
     
-    pre = PRE(infile, filename, 
-              day = 2, delta = 1)
     
-    
-    print(pre)
 
     
-main()
+#main()
