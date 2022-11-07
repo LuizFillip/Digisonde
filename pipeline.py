@@ -146,23 +146,6 @@ class iono_frame(object):
     
     
    
-    
-
-
-def drift(df: pd.DataFrame) -> pd.DataFrame:
-    
-    """Compute the vertical drift with (dh`F/dt) in meters per second"""
-    
-    data = df.copy()
-        
-    for col in data.columns:
-        
-        if col != "time":
-        
-            data[col] = (data[col].diff() / data["time"].diff()) / 3.6
-    
-    return data
-
 
 
 def sel_parameter(infile, filename, factor = "peak"):
