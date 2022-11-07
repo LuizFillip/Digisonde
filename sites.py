@@ -13,6 +13,7 @@ infos_iono = {"Brazil":
                 }}
 
 
+        
 def infos_from_filename(filename):
     
     """Getting site informations by filename"""
@@ -25,15 +26,14 @@ def infos_from_filename(filename):
             name = dat[key]["name"]
             lat = dat[key]["lat"]
             lon = dat[key]["lon"]
-            
+            return name, lat, lon
         else:
             raise ValueError(f"Could not find the coordinates of {filename}")
             
     
-    return name, lat, lon
 
 def main():
-    infile = "Database/FZ_2014-2015_Processado/"
+    infile = "database/FZ_2014-2015_Processado/"
     
     _, _, files = next(os.walk(infile))
     
