@@ -2,10 +2,10 @@ import datetime
 import pandas as pd
 import numpy as np
 from digisonde_utils import time_to_float, terminators
-from pipeline import select_day
+from pipeline import iono_frame
 from sites import infos_from_filename
 import os
-
+from tqdm import tqdm 
 
 def drift(df: pd.DataFrame) -> pd.DataFrame:
     
@@ -22,7 +22,7 @@ def drift(df: pd.DataFrame) -> pd.DataFrame:
     return data
 
 def get_values(infile, filename, day):
-    df = PRE(infile, 
+    df = pre(infile, 
              filename, 
              day = day)
     
@@ -34,24 +34,34 @@ def get_values(infile, filename, day):
 
     return (peak, time)
 
-def PRE(infile: str, filename: str, 
-        day: int = 2, delta: int = 1) -> pd.DataFrame:    
+def pre(infile: str, 
+        filename: str, 
+        day: int = 2) -> pd.DataFrame:    
 
+    
+    df = iono_frame(infile, filename).sel_day_in(day = day)
+    date = df.index[0].date()
+    t = terminators(filename, date = date)
+
+
+    vz = drift(df)
+
+    set_vz = vz.loc[((vz.time > t.sunset) & 
+                     (vz.time < t.dusk)), :]
    
-    df = drift(select_day(infile, 
-                          filename, 
-                          day))
-    time = df.index[0]
-    year, month, day = time.year, time.month, time.day
-       
-    dusk = terminators(filename, 
-                       date = datetime.date(year, month, day)).dusk
-        
-    df = df.loc[((df.time > (dusk - delta)) & 
-                 (df.time < (dusk + delta))), :]
+    dat = find_maximus(set_vz)
+
+
+    vzp = np.array([dat[num][1] for num in dat.keys()]).mean()
+    vzt = np.array([dat[num][0] for num in dat.keys()]).mean()
     
+    return pd.DataFrame({"vz": vzp, "time": vzt}, index = [date])
+
+
+def find_maximus(df):
+    """Get maximus for """
     result = {}
-    
+
     pre = df.max().values
     times = df.idxmax().values
     
@@ -63,30 +73,44 @@ def PRE(infile: str, filename: str,
            
         result[col] = list((time_to_float(intime), 
                             round(pre[num], 3)))
-       
-    day = pd.to_datetime(times[0]).strftime('%Y-%m-%d')
+        
+    return result
+
+def all_frequencies(df):
+    
+    day = pd.to_datetime(df.index[0]).strftime('%Y-%m-%d')
+    
+    dat = find_maximus(df)
     
     tuples = list(zip([day, day], ["time", 
                                    "peak"]))
     
     index = pd.MultiIndex.from_tuples(tuples, 
-                                      names=["Date", 
-                                             "Values"])
-    
-    df = pd.DataFrame(result, index = index)  
-    name, _, _ = infos_from_filename(filename)
-    df.columns.name = name
-    
-    return df
+                                      names=["date", 
+                                             "values"])
+    return pd.DataFrame(dat, index = index) 
 
-def main():   
-    infile = "Database/FZ_2014-2015_Processado/"
-    
+
+def run_for_all_files(infile):
     _, _, files = next(os.walk(infile))
     
-    filename = files[9]
-    
-    
+    out = []
+    for filename in files:
+        days =  iono_frame(infile, filename).days
+        for day in tqdm(days, desc = filename):
+            try:
+                out.append(pre(infile, filename, day = day))
+            except:
+                continue
 
-    
-#main()
+    return pd.concat(out)           
+
+
+infile = "database/process/"
+
+
+df = run_for_all_files(infile)
+
+df.to_csv("database/FZ_PRE_2014_2015.txt", 
+          sep = ",", index = True)
+print(df)
