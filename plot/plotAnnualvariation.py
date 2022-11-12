@@ -1,78 +1,38 @@
 from plotConfig import *
+import locale
+
+locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+
 import matplotlib.pyplot as plt
 import os
 from pipeline import *
+
 import matplotlib.dates as dates
 import pandas as pd
-
-
-def plotAnnualvariation(infile, 
-                        filename, 
-                        site = "Fortaleza", 
-                        fontsize = 14,
-                        average = False, 
-                        save = False, 
-                        ax = None):
-    if ax == None:
-        fig, ax = plt.subplots(figsize = (10, 5))
-    
-    
-    df = sel_parameter(infile, filename, 
-                       factor = "peak")
-   
-    date = df.index[0]
-    
-    markers = ["o", "^", "s"]
-    colors = ['#FF2C00', '#845B97', '#00B945']
-    
-    ax.plot(df.index, df.mean(axis = 1), marker = "o", 
-            linestyle = "none", color = "k", markersize = 5)
-    
-
-
-    ax.legend(list(df.columns),
-              title = "Frequencies (MHz)", 
-              loc = 'upper center', 
-              prop={'size': fontsize - 2}, 
-              ncol = 3)
-    
-    ax.set(ylabel = ("Velocity (m/s)"), 
-           xlabel = ("Months"), 
-           ylim = [0, 90])
-        
-    ax.xaxis.set_major_formatter(dates.DateFormatter('%b'))
-    ax.xaxis.set_major_locator(dates.MonthLocator(interval = 1))
-    
-  
  
+def tex_path(folder):
+    
+    latex = "G:\\My Drive\\Doutorado\\Modelos_Latex_INPE\\docs\\Proposal\\Figures\\"
+    return os.path.join(latex, folder)
+
 
 def plotAnnualAvg():
-    year = 2014
-    site = "Fortaleza"
-    infile = f"process/{site}/PRE/"
+    infile = "database/FZ_PRE_2014_2015.txt"
     
-    filename = f"{year}.txt"
+    df = pd.read_csv(infile, index_col = 0)
     
-    out = []
-    for pe in ["time", "peak"]:
-        
+    df.index = pd.to_datetime(df.index)
     
-        out.append(sel_parameter(infile, filename, 
-                       factor = pe).mean(axis = 1))
-        
-    df = pd.concat(out, axis = 1)
+    df = df.loc[df.index.year == 2014]
     
-    df.columns = ["time", "peak"]
+    fig, ax = plt.subplots(figsize = (22, 10))
     
-    fig, ax = plt.subplots(figsize = (14, 7))
+    df["vz"].plot(marker = "o", 
+                    markersize = 15,
+                    linestyle = "none",
+                    color = "red")
     
-    df["peak"].plot(marker = "o", 
-                    linestyle = "none", 
-                    markersize = 10,
-                    fillstyle = "none",
-                    color = "k")
-    
-    ax.set(ylabel = "Velocidade (m/s)", 
+    ax.set(ylabel = "$V_{zp}$ (m/s)", 
            xlabel = "Meses", 
            ylim = [0, 90])
     
@@ -80,11 +40,8 @@ def plotAnnualAvg():
     ax.xaxis.set_major_locator(dates.MonthLocator(interval = 1))
     ax.tick_params(axis = 'x', labelrotation = 0)
     
-    
-    fig.savefig(paths["latex"] + "PRE_annual_2014.png", 
-                dpi = 1000, 
-                bbox_inches = "tight")
+    name = tex_path("results\\PRE_annual_2014.png")
+    fig.savefig(name, dpi = 400)
      
     #df.to_csv(f"{year}.txt", index = True, sep = ",")
-
-main()
+plotAnnualAvg()
