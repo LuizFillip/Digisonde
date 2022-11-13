@@ -1,9 +1,7 @@
-import datetime
 import pandas as pd
 import numpy as np
 from digisonde_utils import time_to_float, terminators
 from pipeline import iono_frame
-from sites import infos_from_filename
 import os
 from tqdm import tqdm 
 
@@ -105,12 +103,12 @@ def run_for_all_files(infile):
 
     return pd.concat(out)           
 
-
-infile = "database/process/"
-
-
-df = run_for_all_files(infile)
-
-df.to_csv("database/FZ_PRE_2014_2015.txt", 
-          sep = ",", index = True)
-print(df)
+def main():
+    infile = "database/process/"
+    
+    
+    df = run_for_all_files(infile)
+    
+    df.to_csv("database/FZ_PRE_2014_2015.txt", 
+              sep = ",", index = True)
+    print(df)
