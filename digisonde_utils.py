@@ -3,6 +3,13 @@ import astral
 import datetime
 from sites import infos_from_filename
 
+import os
+
+def tex_path(folder):
+    
+    latex = "G:\\My Drive\\Doutorado\\Modelos_Latex_INPE\\docs\\Proposal\\Figures\\"
+    return os.path.join(latex, folder)
+
 
 def time_to_float(intime) -> float:
     """

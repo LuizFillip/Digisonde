@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Aug  1 12:55:18 2022
-
-@author: Luiz
-"""
-
 import requests 
 from tqdm import tqdm
 from bs4 import BeautifulSoup 
@@ -77,11 +70,3 @@ def create_a_directory(output_path, number):
     return new_path
 
 
-year = 2015
-output_path = "C:\\QF\\"
-
-def main():
-    for i in range(1, 366):
-        day = doy_str_format(i)
-        downloadData(output_path, year, day)
-main()
