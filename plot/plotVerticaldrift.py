@@ -13,7 +13,7 @@ def secondary_axis(ax, delta = - 3):
     ax1 = ax.twiny()
     
     ax1.set(xticks = ax.get_xticks(), 
-            xlabel = "Tempo (LT)", 
+            xlabel = "Hora (LT)", 
             xlim = ax.get_xlim())
     
     ax1.xaxis.set_major_formatter(lambda x, pos: 
@@ -21,7 +21,7 @@ def secondary_axis(ax, delta = - 3):
     
     ax1.xaxis.set_ticks_position('bottom') 
     ax1.xaxis.set_label_position('bottom') 
-    ax1.spines['bottom'].set_position(('outward', 130))
+    ax1.spines['bottom'].set_position(('outward', 110))
 
 def terminator_lines(ax, filename, year, month, day):
     
@@ -62,7 +62,10 @@ def terminator_lines(ax, filename, year, month, day):
                      transform = ax[num].transAxes)
         
 
-    
+def shading(ax, start = 22.10, end = 24.0):
+
+    ax.axvspan(start, end, alpha = 0.5, color = "gray")
+    ax.text(start + 0.7, 30, "ESF", transform = ax.transData)
   
 def plotVerticaldrift(infile, 
                       filename,
@@ -92,18 +95,12 @@ def plotVerticaldrift(infile,
               ylim = [200, 400], 
               )
         
-    ax[0].xaxis.set_major_formatter(lambda x, pos: 
-                                   "%d" % x + ":00")
+    ax[0].xaxis.set_major_formatter(lambda x, pos: "%d" % x + ":00")
         
-    
     vz = drift(df)
     
-    start = 22.10
-    end = 24.0
     
-    ax[1].axvspan(start, end, alpha = 0.5, color = "gray")
-    ax[1].text(start + 0.7, 30, "ESF", transform = ax[1].transData)
-    
+    shading(ax[1], start = 22.10, end = 24.0)
     args = dict(fillstyle = "none", 
                 lw = 3)
     
@@ -112,7 +109,7 @@ def plotVerticaldrift(infile,
                     **args)
         ax[0].plot(df.time, df[col], 
                     **args)
-    ax[1].set(xlabel = "Tempo (UT)", 
+    ax[1].set(xlabel = "Hora (UT)", 
               ylabel = r"$V_z$ (m/s)", 
               ylim = [-50, 50], 
               yticks = np.arange(-40, 45, 10),
@@ -125,8 +122,8 @@ def plotVerticaldrift(infile,
     
     secondary_axis(ax[1], delta = - 3)
     terminator_lines(ax, filename, year, month, day)
-    
-    fig.suptitle(f'{name}, {date.date()}', y = 0.91)
+    date_str = date.strftime("%d de %B de 2014")
+    fig.suptitle(f'{name}, {date_str}', y = 0.91)
    
     return fig
 
