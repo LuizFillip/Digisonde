@@ -16,8 +16,9 @@ def tex_path(folder):
     return os.path.join(latex, folder)
 
 
-def plotAnnualAvg(year = 2014):
-    infile = "database/FZ_PRE_2014_2015.txt"
+def plotAnnualAvg(infile = "database/FZ_PRE_2014_2015.txt", 
+                  year = 2014):
+    
     
     df = pd.read_csv(infile, index_col = 0)
     
@@ -42,8 +43,10 @@ def plotAnnualAvg(year = 2014):
     ax.xaxis.set_major_locator(dates.MonthLocator(interval = 1))
     ax.tick_params(axis = 'x', labelrotation = 0)
     
-    name = tex_path("results\\PRE_annual_2014.png")
-    fig.savefig(name, dpi = 300)
+    return fig
      
     #df.to_csv(f"{year}.txt", index = True, sep = ",")
-plotAnnualAvg()
+fig = plotAnnualAvg()
+
+name = tex_path("results\\PRE_annual_2014.png")
+fig.savefig(name, dpi = 300)
