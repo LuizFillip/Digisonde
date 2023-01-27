@@ -72,7 +72,7 @@ def plotVerticaldrift(infile,
                       day = 1, 
                       name = "Fortaleza"):
 
-    fig, ax = plt.subplots(figsize = (25, 20), 
+    fig, ax = plt.subplots(figsize = (20, 15), 
                            nrows = 2, 
                            sharex = True)
     
@@ -109,6 +109,7 @@ def plotVerticaldrift(infile,
                     **args)
         ax[0].plot(df.time, df[col], 
                     **args)
+        
     ax[1].set(xlabel = "Hora (UT)", 
               ylabel = r"$V_z$ (m/s)", 
               ylim = [-50, 50], 
@@ -122,7 +123,7 @@ def plotVerticaldrift(infile,
     
     secondary_axis(ax[1], delta = - 3)
     terminator_lines(ax, filename, year, month, day)
-    date_str = date.strftime("%d de %B de 2014")
+    date_str = date.strftime("%d de %B de %Y")
     fig.suptitle(f'{name}, {date_str}', y = 0.91)
    
     return fig
@@ -139,8 +140,9 @@ def main():
     fig = plotVerticaldrift(infile, 
                             filename, 
                             day = 1)
+    
+    path_tex = "G:\\My Drive\\Doutorado\\Modelos_Latex_INPE\\docs\\Proposal\\Figures\\methods\\"
 
-    fig.savefig(path_tex["latex"] + "vz_and_heights.png", 
-               dpi = 500)
+    fig.savefig(path_tex +"\\vz_and_heights.png")
 
 main()

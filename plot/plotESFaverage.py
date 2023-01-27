@@ -1,16 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug  2 18:06:16 2022
-
-@author: Luiz
-"""
 import os
 import pandas as pd
-import config
+import setup as p 
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 import numpy as np
-from pipeline import find_header, time_to_float
+from core import find_header, time_to_float
 
 infile = "database/QF/"
 _, _, files = next(os.walk(infile))

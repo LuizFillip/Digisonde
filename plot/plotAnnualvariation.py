@@ -1,12 +1,7 @@
-from plotConfig import *
-import locale
-
-locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+import setup as p
 
 import matplotlib.pyplot as plt
 import os
-from pipeline import *
-
 import matplotlib.dates as dates
 import pandas as pd
  
@@ -26,16 +21,23 @@ def plotAnnualAvg(infile = "database/FZ_PRE_2014_2015.txt",
     
     df = df.loc[df.index.year == year]
     
-    fig, ax = plt.subplots(figsize = (25, 10))
+    avg = df.resample("15D").mean()
+    
+    fig, ax = plt.subplots(figsize = (10, 5))
+    p.config_labels()
     
     df["vz"].plot(marker = "o", 
-                    markersize = 15,
+                    markersize = 5,
                     linestyle = "none",
                     color = "red")
     
     ax.set(ylabel = "$V_{zp}$ (m/s)", 
            xlabel = "Meses", 
            ylim = [0, 90])
+    
+    
+    ax.plot(avg["vz"], color = "k", lw = 3, 
+            label = "Média (15 dias)")
     
     ax.text(0.01, 0.9, year, transform = ax.transAxes)
     
@@ -45,8 +47,11 @@ def plotAnnualAvg(infile = "database/FZ_PRE_2014_2015.txt",
     
     return fig
      
-    #df.to_csv(f"{year}.txt", index = True, sep = ",")
-fig = plotAnnualAvg()
+def main():
 
-name = tex_path("results\\PRE_annual_2014.png")
-fig.savefig(name, dpi = 300)
+    plotAnnualAvg()
+    
+    #name = tex_path("results\\PRE_annual_2014.png")
+    #fig.savefig(name)
+    
+main()
