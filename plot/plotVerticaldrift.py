@@ -1,27 +1,11 @@
 import matplotlib.pyplot as plt
 from PRE import drift
 import datetime
-from plotConfig import path_tex
-from digisonde_utils import terminators
-from pipeline import iono_frame
+from time_terminators import terminators
+from core import iono_frame
 import numpy as np
 import os
-
-
-
-def secondary_axis(ax, delta = - 3):
-    ax1 = ax.twiny()
-    
-    ax1.set(xticks = ax.get_xticks(), 
-            xlabel = "Hora (LT)", 
-            xlim = ax.get_xlim())
-    
-    ax1.xaxis.set_major_formatter(lambda x, pos: 
-                                  "%d" % (x + delta) + ":00")
-    
-    ax1.xaxis.set_ticks_position('bottom') 
-    ax1.xaxis.set_label_position('bottom') 
-    ax1.spines['bottom'].set_position(('outward', 110))
+import setup as p
 
 def terminator_lines(ax, filename, year, month, day):
     
@@ -65,21 +49,23 @@ def terminator_lines(ax, filename, year, month, day):
 def shading(ax, start = 22.10, end = 24.0):
 
     ax.axvspan(start, end, alpha = 0.5, color = "gray")
-    ax.text(start + 0.7, 30, "ESF", transform = ax.transData)
+    ax.text(start + 0.7, 30, "ESF", 
+            transform = ax.transData)
   
+    
 def plotVerticaldrift(infile, 
                       filename,
                       day = 1, 
                       name = "Fortaleza"):
 
-    fig, ax = plt.subplots(figsize = (20, 15), 
+    fig, ax = plt.subplots(figsize = (10, 6), 
                            nrows = 2, 
                            sharex = True)
     
-    
+    p.config_labels()
     plt.subplots_adjust(hspace = 0.1)
     
-    df = iono_frame(infile, filename)
+    df = iono_frame(infile + filename)
     
     df = df.sel_day_in(day = day)
     
@@ -89,10 +75,8 @@ def plotVerticaldrift(infile,
     date = df.index[0]
     year, month, day = date.year, date.month, date.day
     
-
-    
     ax[0].set(ylabel = "Altitude (km)", 
-              ylim = [200, 400], 
+              ylim = [200, 500], 
               )
         
     ax[0].xaxis.set_major_formatter(lambda x, pos: "%d" % x + ":00")
@@ -100,9 +84,9 @@ def plotVerticaldrift(infile,
     vz = drift(df)
     
     
-    shading(ax[1], start = 22.10, end = 24.0)
+    #shading(ax[1], start = 22.10, end = 24.0)
     args = dict(fillstyle = "none", 
-                lw = 3)
+                lw = 2)
     
     for num, col in enumerate(freqs):
         ax[1].plot(vz.time, vz[col],
@@ -117,32 +101,32 @@ def plotVerticaldrift(infile,
               xlim = [18, 24])
     
     ax[0].legend(freqs, 
-                 loc = 'lower left',
+                 loc = 'upper left',
                  title = "Frequências (MHz)", 
                  ncol = 3)
     
-    secondary_axis(ax[1], delta = - 3)
+    p.secondary_axis(ax[1], delta = - 3, outward = 60)
     terminator_lines(ax, filename, year, month, day)
     date_str = date.strftime("%d de %B de %Y")
-    fig.suptitle(f'{name}, {date_str}', y = 0.91)
+    fig.suptitle(f'{name}, {date_str}', y = 0.92)
    
     return fig
 
 def main():
     
-    infile = "database/process/"
+    infile = "database/process/SL_2014-2015/"
 
     _, _, files = next(os.walk(infile))
 
     filename = files[0]
     
 
-    fig = plotVerticaldrift(infile, 
+    plotVerticaldrift(infile, 
                             filename, 
                             day = 1)
     
-    path_tex = "G:\\My Drive\\Doutorado\\Modelos_Latex_INPE\\docs\\Proposal\\Figures\\methods\\"
+    #path_tex = "G:\\My Drive\\Doutorado\\Modelos_Latex_INPE\\docs\\Proposal\\Figures\\methods\\"
 
-    fig.savefig(path_tex +"\\vz_and_heights.png")
+    #fig.savefig(path_tex +"\\vz_and_heights.png")
 
 main()
