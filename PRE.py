@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
-from digisonde_utils import time_to_float, terminators
-from pipeline import iono_frame
+from time_terminators import time_to_float, terminators
+from core import iono_frame
 import os
 from tqdm import tqdm 
 
 def drift(df: pd.DataFrame) -> pd.DataFrame:
     
-    """Compute the vertical drift with (dh`F/dt) in meters per second"""
+    """Compute the vertical drift with 
+    (dh`F/dt) in meters per second"""
     
     data = df.copy()
         
@@ -32,30 +33,6 @@ def get_values(infile, filename, day):
 
     return (peak, time)
 
-def pre(infile: str, 
-        filename: str, 
-        day: int = 2) -> pd.DataFrame:    
-
-    
-    df = iono_frame(infile, filename).sel_day_in(day = day)
-    date = df.index[0].date()
-    t = terminators(filename, date = date)
-
-
-    vz = drift(df)
-
-    set_vz = vz.loc[((vz.time > t.sunset) & 
-                     (vz.time < t.dusk)), :]
-   
-    dat = find_maximus(set_vz)
-
-
-    vzp = np.array([dat[num][1] for num in dat.keys()]).mean()
-    vzt = np.array([dat[num][0] for num in dat.keys()]).mean()
-    
-    return pd.DataFrame({"vz": vzp, "time": vzt}, index = [date])
-
-
 def find_maximus(df):
     """Get maximus for """
     result = {}
@@ -73,6 +50,31 @@ def find_maximus(df):
                             round(pre[num], 3)))
         
     return result
+
+
+def pre(infile: str, 
+        filename: str, 
+        day: int = 2) -> pd.DataFrame:    
+
+    
+    df = iono_frame(infile + filename).sel_day_in(day = day)
+    date = df.index[0].date()
+    t = terminators(filename, date = date)
+
+
+    vz = drift(df)
+
+    set_vz = vz.loc[((vz.time > t.sunset) & 
+                     (vz.time < t.dusk)), :]
+   
+    dat = find_maximus(set_vz)
+
+
+    vzp = np.array([dat[num][1] for num in dat.keys()]).mean()
+    vzt = np.array([dat[num][0] for num in dat.keys()]).mean()
+    
+    return pd.DataFrame({"vz": vzp, "time": vzt}, index = [date])
+
 
 def all_frequencies(df):
     
@@ -94,7 +96,7 @@ def run_for_all_files(infile):
     
     out = []
     for filename in files:
-        days =  iono_frame(infile, filename).days
+        days = iono_frame(infile + filename).days
         for day in tqdm(days, desc = filename):
             try:
                 out.append(pre(infile, filename, day = day))
@@ -104,11 +106,15 @@ def run_for_all_files(infile):
     return pd.concat(out)           
 
 def main():
-    infile = "database/process/"
     
+    station = "SL"
+    infile = f"database/process/{station}_2014-2015/"
     
     df = run_for_all_files(infile)
     
-    df.to_csv("database/FZ_PRE_2014_2015.txt", 
-              sep = ",", index = True)
+    df.to_csv(f"database/vzp/{station}_PRE_2014_2015.txt", 
+              sep = ",", 
+              index = True)
     print(df)
+
+#main()
