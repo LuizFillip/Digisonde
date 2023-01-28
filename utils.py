@@ -1,33 +1,48 @@
 import datetime as dt
 import os
 
-infos_iono = {"Brazil": 
-              {
+embrace_infos = {
                 "FZA0M": {"name": "Fortaleza", 
                           "lat":  -3.73, 
                           "lon": -38.522},
+                
                 "SAA0K": {"name": "Sao luis", 
                           "lat":  -2.53,
-                          "lon": -44.296} , 
-                "BLJ03": {"name": "Belem"}  
-                }}
+                          "lon": -44.296}, 
+                
+                "BLJ03": {"name": "Belem", 
+                          "lat": -1.4563, 
+                          "lon": -48.5013}, 
+                
+                "BVJ03": {"name": "Boa Vista", 
+                          "lat":  2.8701, 
+                          "lon": -60.7109},
+                
+                "CGK21": {"name": "Campo Grande", 
+                          "lat":  -20.4649, 
+                          "lon": -54.6218},
+                
+                "CAJ2M": {"name": "Cachoeira Paulista", 
+                          "lat": -22.7038, 
+                          "lon": -45.0093},
+                
+                "SMK29": {"name": "Santa Maria", 
+                          "lat": -29.6897, 
+                          "lon": -53.8043},
+                }
         
-def EMBRACE_infos(filename):
+def get_infos(filename):
     
     """Getting EMBRACE sites informations by filename"""
     
-    dat = infos_iono["Brazil"]
-    keys = dat.keys()
-
+    keys = embrace_infos.keys()
+    f = filename.split("_")
     for key in keys:
-        if key in filename:
-            name = dat[key]["name"]
-            lat = dat[key]["lat"]
-            lon = dat[key]["lon"]
+        if (key == f[0]):
+            name = embrace_infos[key]["name"]
+            lat = embrace_infos[key]["lat"]
+            lon = embrace_infos[key]["lon"]
             return name, lat, lon
-        else:
-            raise ValueError("Could not find the" +
-                             f"coordinates of {filename}")
             
 
 class ionosonde_fname(object):
@@ -50,12 +65,14 @@ class ionosonde_fname(object):
         
         
 def main():
-    infile = "database/FZ_2014-2015_Processado/"
+    infile = "database/process/SL_2014-2015/"
     
     _, _, files = next(os.walk(infile))
     
     filename = files[0]
     
-    name, lat, lon = EMBRACE_infos(filename)
+    name, lat, lon = get_infos(filename)
     
-    print(lat)
+
+    print(name, lat, lon)
+main()
