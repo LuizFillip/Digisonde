@@ -57,7 +57,6 @@ def time_to_float(intime) -> float:
                  (time_list[2] / 3600), 3)
 
 
-
 def structure_the_data(data: list) -> np.array:
     
     """

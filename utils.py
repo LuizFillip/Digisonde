@@ -1,5 +1,7 @@
 import datetime as dt
 import os
+import numpy as np
+
 
 embrace_infos = {
                 "FZA0M": {"name": "Fortaleza", 
@@ -44,6 +46,9 @@ def get_infos(filename):
             lon = embrace_infos[key]["lon"]
             return name, lat, lon
             
+def smooth(y, box_pts):
+    box = np.ones(box_pts) / box_pts
+    return np.convolve(y, box, mode = 'same')
 
 class ionosonde_fname(object):
 

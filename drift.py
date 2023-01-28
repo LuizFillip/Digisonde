@@ -1,12 +1,13 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-
+from utils import smooth
+import numpy as np
 
 def load(infile):
 
     df = pd.read_csv(infile, 
-                     delim_whitespace= True, 
+                     delim_whitespace = True, 
                      header = None)
     
     df.index = pd.to_datetime(df[6] + " " + df[8])
@@ -47,18 +48,28 @@ def plotAll(df):
         
         
 
-def get_pre(df):
-    pre = df.loc[(df.index.hour >= 20) & 
-                 (df.index.hour <= 22), 17]
-
-    return pre.idxmax(), pre.max()
+def get_pre(infile):
+    df = load_all_day(infile)
+    pre = df.loc[(df.index.hour >= 18), 17]
+    x = pre.index
+    y = pre.values
+    vzp = np.max(smooth(y, 3))
+    tzp = x[np.argmax(y)]
+    return tzp, vzp
 
 def main():
     infile = "C:\\2013001\\"
     
-    df = load_all_day(infile)
     
-    time, vzp = get_pre(df)
-
+    
+    time, vzp = get_pre(infile)
+    
+    out = {"time": [], 
+           "vzp": []}
+    
+    print(time, vzp)
+    
+    
+    
 
 
