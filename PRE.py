@@ -91,30 +91,4 @@ def all_frequencies(df):
     return pd.DataFrame(dat, index = index) 
 
 
-def run_for_all_files(infile):
-    _, _, files = next(os.walk(infile))
-    
-    out = []
-    for filename in files:
-        days = iono_frame(infile + filename).days
-        for day in tqdm(days, desc = filename):
-            try:
-                out.append(pre(infile, filename, day = day))
-            except:
-                continue
 
-    return pd.concat(out)           
-
-def main():
-    
-    station = "SL"
-    infile = f"database/process/{station}_2014-2015/"
-    
-    df = run_for_all_files(infile)
-    
-    df.to_csv(f"database/vzp/{station}_PRE_2014_2015.txt", 
-              sep = ",", 
-              index = True)
-    print(df)
-
-#main()

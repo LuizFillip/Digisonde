@@ -1,41 +1,10 @@
 from astral.sun import sun
 import astral 
 import datetime
-from sites import infos_from_filename
-
-import os
-
-def tex_path(folder):
-    
-    latex = "G:\\My Drive\\Doutorado\\Modelos_Latex_INPE\\docs\\Proposal\\Figures\\"
-    return os.path.join(latex, folder)
+from utils import get_infos
+from core import time_to_float
 
 
-def time_to_float(intime) -> float:
-    """
-    Function for to convert time into float number
-    Parameters
-    ---------
-        intime: str (like "22:10:00") or datetime.time or datetime.datetime
-    >>> intime = datetime.datetime(2013, 1, 1, 22, 10, 0)
-    >>> time_to_float(intime)
-    ... 22.167
-    """
-    try:
-        if (isinstance(intime, datetime.datetime) or 
-            isinstance(intime, datetime.time)):
-            
-            time_list = [intime.hour, intime.minute, intime.second]
-            
-            
-        elif ":" in intime:
-            time_list = [int(num) for num in str(intime).split(":")]
-    except:
-        raise TypeError("The input parameter must be datetime.datime or clock format")
-        
-    return round(time_list[0] + 
-                 (time_list[1] / 60) + 
-                 (time_list[2] / 3600), 4)
 
 class terminators(object):
     
@@ -51,18 +20,16 @@ class terminators(object):
         self.date = date
     
         # Get informatios about longitude and latitude
-        name, lat, lon = infos_from_filename(self.filename)
+        name, lat, lon = get_infos(self.filename)
         
         # Astral library
         observer = astral.Observer(latitude = lat, 
                                    longitude = lon)
         
-        # 
+         
         self.sun_phase = sun(observer, self.date, 
                          dawn_dusk_depression = self.twilightAngle)
         
-        
-    
     @property
     def dusk(self):
         """
