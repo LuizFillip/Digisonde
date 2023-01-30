@@ -5,11 +5,6 @@ import os
 import matplotlib.dates as dates
 import pandas as pd
  
-def tex_path(folder):
-    
-    latex = "G:\\My Drive\\Doutorado\\Modelos_Latex_INPE\\docs\\Proposal\\Figures\\"
-    return os.path.join(latex, folder)
-
 
 def plotAnnualAvg(infile = "database/FZ_PRE_2014_2015.txt", 
                   year = 2014):
@@ -36,7 +31,9 @@ def plotAnnualAvg(infile = "database/FZ_PRE_2014_2015.txt",
            ylim = [0, 90])
     
     
-    ax.plot(avg["vz"], color = "k", lw = 3, 
+    ax.plot(avg["vz"], 
+            color = "k", 
+            lw = 3, 
             label = "Média (15 dias)")
     
     ax.text(0.01, 0.9, year, transform = ax.transAxes)
@@ -51,7 +48,5 @@ def main():
 
     plotAnnualAvg()
     
-    #name = tex_path("results\\PRE_annual_2014.png")
-    #fig.savefig(name)
     
 main()

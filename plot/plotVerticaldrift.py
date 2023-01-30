@@ -122,11 +122,8 @@ def main():
     
 
     plotVerticaldrift(infile, 
-                            filename, 
-                            day = 1)
+                    filename, 
+                    day = 16)
     
-    #path_tex = "G:\\My Drive\\Doutorado\\Modelos_Latex_INPE\\docs\\Proposal\\Figures\\methods\\"
-
-    #fig.savefig(path_tex +"\\vz_and_heights.png")
 
 main()
