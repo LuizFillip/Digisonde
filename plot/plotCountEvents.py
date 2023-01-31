@@ -4,42 +4,55 @@ import pandas as pd
 import setup as s
 import os
 
-infile = "database/counts/"
 
 
-_, _, files = next(os.walk(infile))
-
-filename = files[1]
-
-
-def plot(infile, filename):
+def plot(ax, infile, filename):
     args = filename.split("_")
-    ystart = int(args[1])
-    yend = int(args[-1].replace(".txt", ""))
-    
-    fig, ax = plt.subplots(figsize = (10, 4))
-    
-    s.config_labels()
-    
-    df = pd.read_csv(infile + filename, index_col = 0)
-    
-    img = ax.pcolormesh(df.columns, 
-                        df.index, 
+        
+    df = pd.read_csv(infile + filename, 
+                     index_col = 0)
+    ymin = min(df.index)
+    ymax = max(df.index)
+    img = ax.pcolormesh( df.columns, 
+                        df.index,
                         df.values, 
                         cmap = "Blues", 
                         vmax = 144)
-    
+                    
     ax.set_xticks(np.arange(0, 365, 30))
     
+    years = np.arange(ymin, ymax)
+    
+    ax.set_yticks(years + 0.5, (years), va = "center")
     
     ax.set(ylabel = "Anos", 
            xlabel = "Dias", 
-           yticks = list(df.index),
-           ylim = [ystart, yend],
-           title = f"Velocidade de deriva - {args[0]}")
+           ylim = [ymin - 0.5, ymax - 0.5])
+    
+    ax.text(0., 1.08,  f"{args[0]}", 
+            transform = ax.transAxes, 
+            fontsize = 16)
     
     s.colorbar_setting(img, ax, 
                        ticks = np.arange(0, 150, 20),
                        label = "# dados por dia")
+    return ax
+   
+
+fig, axes = plt.subplots(nrows = 2, 
+                       figsize = (10, 7), 
+                       sharex = True)
+
+s.config_labels()
+ 
+ 
+infile = "database/counts/"
+
+_, _, files = next(os.walk(infile))
+
+for num, a in enumerate(axes.flat):
+    ax = plot(a, infile, files[num])
+    if num == 0:
+        ax.set(xlabel = "")
     
-    plt.show()
+plt.show()
