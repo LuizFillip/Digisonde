@@ -4,16 +4,17 @@ import pandas as pd
 import setup as s
 import os
 
-
-
 def plot(ax, infile, filename):
     args = filename.split("_")
         
     df = pd.read_csv(infile + filename, 
                      index_col = 0)
+    
+    
     ymin = min(df.index)
     ymax = max(df.index)
-    img = ax.pcolormesh( df.columns, 
+
+    img = ax.pcolormesh(df.columns, 
                         df.index,
                         df.values, 
                         cmap = "Blues", 
@@ -21,15 +22,16 @@ def plot(ax, infile, filename):
                     
     ax.set_xticks(np.arange(0, 365, 30))
     
-    years = np.arange(ymin, ymax)
-    
-    ax.set_yticks(years + 0.5, (years), va = "center")
+    years = np.arange(ymin, ymax + 1)
     
     ax.set(ylabel = "Anos", 
            xlabel = "Dias", 
-           ylim = [ymin - 0.5, ymax - 0.5])
+           ylim = [ymin - 0.5, ymax])
     
-    ax.text(0., 1.08,  f"{args[0]}", 
+    ax.set_yticks(years + 0.5, (years), 
+                  va = "center")
+    
+    ax.text(0., 1.03,  f"{args[0]}", 
             transform = ax.transAxes, 
             fontsize = 16)
     
@@ -39,20 +41,26 @@ def plot(ax, infile, filename):
     return ax
    
 
-fig, axes = plt.subplots(nrows = 2, 
-                       figsize = (10, 7), 
-                       sharex = True)
 
-s.config_labels()
+
  
- 
-infile = "database/counts/"
-
-_, _, files = next(os.walk(infile))
-
-for num, a in enumerate(axes.flat):
-    ax = plot(a, infile, files[num])
-    if num == 0:
-        ax.set(xlabel = "")
+def main(): 
+    infile = "database/counts/"
+    _, _, files = next(os.walk(infile))
     
-plt.show()
+    fig, axes = plt.subplots(nrows = 2, 
+                             figsize = (12, 8), 
+                             sharex = True)
+    
+    plt.subplots_adjust(hspace = 0.1)
+    
+    s.config_labels(fontsize = 15)
+    
+    for num, a in enumerate(axes.flat):
+    
+        plot(a, infile, files[num])
+    
+        if num == 0:
+            a.set(xlabel = "")
+        
+    plt.show()
