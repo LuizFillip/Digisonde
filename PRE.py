@@ -1,24 +1,10 @@
 import pandas as pd
 import numpy as np
 from time_terminators import time_to_float, terminators
-from core import iono_frame
+from core import iono_frame, drift
 import os
-from tqdm import tqdm 
 
-def drift(df: pd.DataFrame) -> pd.DataFrame:
-    
-    """Compute the vertical drift with 
-    (dh`F/dt) in meters per second"""
-    
-    data = df.copy()
-        
-    for col in data.columns:
-        
-        if col != "time":
-        
-            data[col] = (data[col].diff() / data["time"].diff()) / 3.6
-    
-    return data
+
 
 def get_values(infile, filename, day):
     df = pre(infile, 
