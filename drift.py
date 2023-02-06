@@ -1,20 +1,9 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import os
 from utils import smooth
 import numpy as np
+import datetime as dt
 
-def load(infile):
-
-    df = pd.read_csv(infile, 
-                     delim_whitespace = True, 
-                     header = None)
-    
-    df.index = pd.to_datetime(df[6] + " " + df[8])
-    df.drop(columns = list(range(9)) + list(range(19, 24)), 
-            inplace = True)
-    
-    return df
 
 def process_day(infile):
     
@@ -22,32 +11,11 @@ def process_day(infile):
 
     files = [f for f in files if f.endswith("DVL")]
 
-    out = [load(os.path.join(infile, f))
+    out = [load_export(os.path.join(infile, f))
            for f in files]
     
     return pd.concat(out)
 
-def plotAll(df):
-
-    fig, ax = plt.subplots(nrows = 5, 
-                           figsize = (8, 10), 
-                           sharex = True)
-    
-    plt.subplots_adjust(hspace = 0)
-    
-    labels = ["Vx", "Vy", "Az", "Vh", "Vz"]
-    
-    
-    for num, col in enumerate(df.columns[::2]):
-        df[col].plot(ax = ax[num], 
-                     marker = "o", 
-                     markersize = 3,
-                     yerr = df[col + 1])
-        ax[num].axhline(0, color = "k")
-        l = labels[num]
-        ax[num].set(ylabel = f"{l} (m/s)")
-        
-        
 
 def get_pre(infile):
     df = process_day(infile)
@@ -59,8 +27,10 @@ def get_pre(infile):
     tzp = x[np.argmax(y)]
     return tzp, vzp
 
-def process_year(root):
-
+def process_year(root) -> pd.DataFrame:
+    """
+    Getting PRE values for all year
+    """
     _, folders, _ = next(os.walk(root))
     
     idx = []
@@ -82,17 +52,74 @@ def process_year(root):
 def save_df(df, year = 2015):
     
     path_to_save = f"database/drift/{year}.txt"
-    
     df.to_csv(path_to_save, 
               sep = ",", 
               index = True)
 
-#def main():
-for year in range(2015, 2023):
-    root  = f"D:\\drift\\FZA\\{year}\\"
-    df = process_year(root)
-    save_df(df, year = year)
+def main():
+    for year in range(2015, 2023):
+        root  = f"D:\\drift\\FZA\\{year}\\"
+        df = process_year(root)
+        save_df(df, year = year)
 
 
 
+def load_export(infile, smooth = False):
     
+    df = pd.read_csv(infile, 
+                     delim_whitespace = True, 
+                     header = None)
+    
+    try:
+        
+        df.index = pd.to_datetime(df[5] + " " + df[7])
+        
+        df.drop(columns = list(range(8)) + list(range(18, 23)), 
+                inplace = True)
+    except:
+        
+        df.index = pd.to_datetime(df[6] + " " + df[8])
+        
+        df.drop(columns = (list(range(9)) + 
+                           list(range(19, 24))), 
+                inplace = True)
+        
+        
+    names = ["vx", "evx", "vy", "evy",  
+             "az", "eaz", "vh", "evh",
+             "vz", "evz"]
+    
+    for num, name in enumerate(df.columns):
+        df.rename(columns = {name: names[num]}, 
+                  inplace = True)
+        
+    if smooth:
+        df["vx"] = smooth(df["vx"], 3)
+        df["vy"] = smooth(df["vy"], 3)
+        df["vz"] = smooth(df["vz"], 3)
+        
+    return df
+
+
+def load_raw(infile, 
+             date = dt.date(2013, 1, 1), 
+             smooth = False):
+    
+    """
+    Load process data raw (see process_year func)
+    """
+    
+    df = pd.read_csv(infile, 
+                     index_col = 0)
+    
+    df.index = pd.to_datetime(df.index)
+    
+    if smooth:
+        df["vx"] = smooth(df["vx"], 3)
+        df["vy"] = smooth(df["vy"], 3)
+        df["vz"] = smooth(df["vz"], 3)
+    
+    if date is not None:
+        return df.loc[df.index.date == date]
+    else:
+        return df
