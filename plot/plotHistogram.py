@@ -11,7 +11,7 @@ def load( year = 2015, col= "vzp"):
     return df
 
 
-def plotHistogram(arr):
+def plotHistogram(arr, title):
 
     fig, ax = plt.subplots(figsize = (6, 4))
 
@@ -23,10 +23,8 @@ def plotHistogram(arr):
     bins = np.arange(lmin, 
                      lmax + binwidth, 
                      binwidth)
-    
-    
 
-    ax.set(title = "Velocidade do PRE", 
+    ax.set(title = title, 
            xlabel = "Velocidade (m/s)",
            ylabel = "Número de eventos",
            xlim = [lmin - binwidth, 
@@ -47,14 +45,23 @@ def plotHistogram(arr):
     return fig
     
     
-def plot_stats(ax, data, unit = "m/s"):
-    mean = round(data.mean(), 2)
-    std = round(data.std(), 2)
+def plot_stats(ax, arr, unit = "m/s"):
+    mean = round(arr.mean(), 2)
+    std = round(arr.std(), 2)
+    vmax = round(arr.max(), 2)
+    vmin = round(arr.min(), 2)
     
-    info_mean = f"$<V_z> = {mean}$ {unit}\n"
-    info_std = f"  $\sigma = {std}$ {unit}"
     
-    ax.text(0.05, 0.7, info_mean + info_std, 
+    info_mean = f"$\mu = {mean}$ {unit}\n"
+    info_std = f"$\sigma = {std}$ {unit}\n"
+    info_max = f"max = {vmax} {unit}\n"
+    info_min = f"min = {vmin} {unit}"
+    
+    
+    ax.text(0.05, 0.7, (info_mean + 
+                        info_std + 
+                        info_max + 
+                        info_min), 
             fontsize = 15, 
             transform = ax.transAxes)
     
@@ -65,21 +72,28 @@ from Digisonde.statistical import load_drift, get_month_avg
 
 df = load_drift()
 
-
 col = "vz"
 
+if col == "vz":
+    name = "Deriva vertical"
+    ylim = [-50, 50]
+    
+elif col == "vx":
+    name = "Deriva meridional"
+    ylim = [-150, 150]
+else:
+    name = "Deriva zonal"
+    ylim = [-150, 150]
 vz_limits = (-100, 100)
 
 
 cond_limits = ((df[col] > vz_limits[0]) &  
-             (df[col] < vz_limits[-1]))
+               (df[col] < vz_limits[-1]))
 
 
-df = df.loc[(df.index.month == 1) & cond_limits]
+df = df.loc[(df.index.month == 2) & cond_limits]
 
+arr = df[col].values
 
-
-arr = df["vx"].values
-
-plotHistogram(arr)
+plotHistogram(arr, title = name)
     
