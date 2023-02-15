@@ -1,10 +1,9 @@
 import matplotlib.pyplot as plt
-import pandas as pd
 from Digisonde.statistical import load_drift, get_month_avg
 import numpy as np
 
 
-def single_plot(ax, n, site, ext, col, smoothed):
+def single_plot(ax, n, site, ext, col, smoothed, color, label):
     
     df = load_drift(n, 
                     site = site, 
@@ -20,21 +19,22 @@ def single_plot(ax, n, site, ext, col, smoothed):
     
     df1 = get_month_avg(df, col = col)
 
-    df1 = df1.reindex(np.arange(0, 24, 0.5), 
+    df1 = df1.reindex(np.arange(0, 24, 1), 
                       method = "nearest")
     
-    args = dict(color = "k", capsize = 2)
+    args = dict(color = color, capsize = 2)
 
     ax.errorbar(df1.index, 
                 df1.mean(axis = 1), 
                 yerr = df1.std(axis = 1), 
-                **args)
+                **args, label = label)
     return ax
 
 def plotSeasonalDRIFT(site = "SSA", 
                       ext = "PRO", 
                       col = "vz", 
-                      year = "2013"):
+                      year = "2013", 
+                      smoothed = True):
     
     
     fig, ax = plt.subplots(nrows = 3, 
@@ -63,37 +63,53 @@ def plotSeasonalDRIFT(site = "SSA",
             ax[num, 0].set_ylabel("Velocidade (m/s)", 
                                   fontsize = 14)
         
+    
+    es = ["RAW", "PRO"]
+    cs = ["blue", "black"]
+    ls = ["Brutos", "Processsados"]
+    
+    
     for n, ax in enumerate(ax.flatten(order = "F")):
         
-        
-        single_plot(ax, n, site, ext, col)
-        
-        ax.set_ylim(ylim)
-        
-        
-        
+        for a, ext in enumerate(es):
+            ax1 = single_plot(ax, n, site, ext, col, smoothed, cs[a], ls[a])
+            ax.set_ylim(ylim)
+            
     fig.suptitle(f"{name} - São Luis - {year}")
+
+    
+    ax1.legend(ncol = 1,
+               fontsize = 20,
+               loc = "upper right", 
+               bbox_to_anchor=(0.5, 3.6, 0.5, 0.5)
+                     )
     
     
     return fig
 
 
+args = dict(
+    site = "SSA", 
+    ext = "PRO", 
+    col = "vz", 
+    smoothed = True
+            )
+
+
+plotSeasonalDRIFT(**args)
 
 
 
 
-
-#plotSeasonalDRIFT(**args)
 def main():
-    n = 9
+    n = 2
     fig, ax = plt.subplots()
     
     colors = ["blue", "k"]
     
     for m in [False, True]:
-        args = dict(
-            site = "SSA", 
-            ext = "RAW", 
-            col = "vx", smoothed = m
-                    )
+        
         single_plot(ax, n, **args)
+        
+        
+#main()
