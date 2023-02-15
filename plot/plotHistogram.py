@@ -15,8 +15,6 @@ def plotHistogram(ax, arr, binwidth = 10):
                      binwidth)
 
     ax.set(
-           #xlabel = "Velocidade (m/s)",
-           #ylabel = "Número de eventos",
            xlim = [lmin - binwidth, 
                    lmax + binwidth]
            )
@@ -56,14 +54,17 @@ def plot_stats(ax, arr, unit = "m/s", fontsize = 15):
             fontsize = fontsize, 
             transform = ax.transAxes)
     
-   
+args = dict(
+    site = "SSA", 
+    ext = "RAW", 
+    smoothed = True, 
+    col = "vz"
+               )
 
-def HistSubplots():
-    args = dict(
-        site = "SSA", 
-        ext = "RAW", 
-        smoothed = True
-                )
+def HistSubplots(col = "vz", **args):
+    
+    if col == "vz":
+        figtitle = "Deriva vertical - 2013"
     
     fig, ax = plt.subplots(nrows = 3, 
                            ncols = 4, 
@@ -71,7 +72,7 @@ def HistSubplots():
                            sharey = True, 
                            figsize = (22, 12))
     
-    col = "vz"
+    ax[1, 0].set_ylabel("Numero de eventos", fontsize = 30)
     
     plt.subplots_adjust(wspace = 0.1)
     for n, ax in enumerate(ax.flat):
@@ -83,3 +84,9 @@ def HistSubplots():
         ax = plotHistogram(ax, arr, binwidth = 10)
         
         ax.set(title = title)
+        
+    fig.suptitle(figtitle, fontsize = 30)
+    fig.text(0.43, 0.05, "Velocidade (m/s)", fontsize = 30)
+
+        
+HistSubplots(**args)
