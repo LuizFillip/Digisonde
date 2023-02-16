@@ -58,13 +58,21 @@ args = dict(
     site = "SSA", 
     ext = "RAW", 
     smoothed = True, 
-    col = "vz"
-               )
+    col = "vy"           
+    )
+
+print(set("t", "33"))
+
+
 
 def HistSubplots(col = "vz", **args):
     
     if col == "vz":
         figtitle = "Deriva vertical - 2013"
+    elif col == "vx":
+        figtitle = "Deriva meridional - 2013"
+    else:
+        figtitle = "Deriva zonal - 2013"
     
     fig, ax = plt.subplots(nrows = 3, 
                            ncols = 4, 
