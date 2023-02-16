@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
-from drift import load_export
+from build import paths as p
+from Digisonde.drift import load_raw
+import datetime as dt
 import setup as s
 
 
@@ -16,8 +18,10 @@ def plotDRIFTComponents(ts):
                            sharex = True, 
                            figsize = (12, 10))
     
-    plt.subplots_adjust(hspace = 0.1)
+    plt.subplots_adjust(hspace = 0.2)
     s.config_labels()
+    
+    date = ts.index[0].strftime("%d de %B de %Y")
     
     args = dict(marker = "o", 
                 linestyle = "none", 
@@ -31,7 +35,7 @@ def plotDRIFTComponents(ts):
     ts["vy"].plot(ax = ax[2], yerr = ts["evy"], **args)
     
     li = [ 50, 150, 150]
-    na = ["Vz", "Vnorth", "Veast"]
+    na = ["vertical", "meridional", "zonal"]
     
     for n, ax in enumerate(ax.flat):
         
@@ -40,9 +44,12 @@ def plotDRIFTComponents(ts):
         ax.set(ylim = [-li[n], li[n]], 
                xlim = [ts.index[0], 
                        ts.index[-1]], 
-               ylabel = f"{na[n]} (m/s)")
+               ylabel = f"Velocidade (m/s)")
         
         ax.grid()
+        
+        ax.text(0, 1.04, "Componente " + na[n], 
+                transform = ax.transAxes)
         
         s.format_axes_date(ax, time_scale = "hour")
         
@@ -50,9 +57,14 @@ def plotDRIFTComponents(ts):
             ax.set(xlabel = "Hora universal (UT)")
     
     fig.autofmt_xdate(rotation=0, ha = 'center')
+    fig.suptitle(date, y = 0.91)
+
+
+infile = p("Drift").get_files_in_dir("SSA")
+
     
-infile = "2013001.txt"
-
-ts = load_export(infile)
-
+ts = load_raw(infile[0], 
+             date = dt.date(2013, 7, 19), 
+             smooth_values = True)
+    
 plotDRIFTComponents(ts)
