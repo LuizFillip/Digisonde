@@ -56,7 +56,7 @@ def plotDRIFTComponents(ts):
         if n == 2:
             ax.set(xlabel = "Hora universal (UT)")
     
-    fig.autofmt_xdate(rotation=0, ha = 'center')
+    fig.autofmt_xdate(rotation = 0, ha = 'center')
     fig.suptitle(date, y = 0.91)
 
 
