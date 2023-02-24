@@ -5,7 +5,6 @@ import datetime as dt
 import setup as s
 
 
-
 def plotDRIFTComponents(ts):
     
     """
@@ -30,21 +29,21 @@ def plotDRIFTComponents(ts):
                 fillstyle = "none",
                 capsize = 3)
     
-    ts["vz"].plot(ax = ax[0], yerr = ts["evz"], **args)
-    ts["vx"].plot(ax = ax[1], yerr = ts["evx"], **args)
-    ts["vy"].plot(ax = ax[2], yerr = ts["evy"], **args)
-    
     li = [ 50, 150, 150]
     na = ["vertical", "meridional", "zonal"]
+    co = ["vz", "vx", "vy"]
+    
     
     for n, ax in enumerate(ax.flat):
+        
+        ts[co[n]].plot(ax = ax, yerr = ts["e" + co[n]], **args)
         
         ax.axhline(0, color = "red")
         
         ax.set(ylim = [-li[n], li[n]], 
                xlim = [ts.index[0], 
                        ts.index[-1]], 
-               ylabel = f"Velocidade (m/s)")
+               ylabel = "Velocidade (m/s)")
         
         ax.grid()
         
@@ -59,12 +58,14 @@ def plotDRIFTComponents(ts):
     fig.autofmt_xdate(rotation = 0, ha = 'center')
     fig.suptitle(date, y = 0.91)
 
-
-infile = p("Drift").get_files_in_dir("SSA")
-
+def main():
+    infile = p("Drift").get_files_in_dir("SSA")
     
-ts = load_raw(infile[0], 
-             date = dt.date(2013, 7, 19), 
-             smooth_values = True)
+        
+    ts = load_raw(infile[1], 
+                 date = dt.date(2013, 2, 1), 
+                 smooth_values =  False)
+        
+    plotDRIFTComponents(ts)
     
-plotDRIFTComponents(ts)
+main()
