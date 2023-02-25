@@ -3,6 +3,35 @@ from core import iono_frame
 from tqdm import tqdm 
 from PRE import pre
 import pandas as pd
+from Digisonde.drift import load_export
+from build import paths as p
+
+def concat_files(site = "SSA_PRO", 
+                 save = True):
+    
+    """
+    load and concat all files prosseced 
+    by DRIFT - X
+    """
+
+    f = p("Drift")
+    
+    files = f.get_files_in_dir(site)
+    out = []
+    for filename in files:
+        out.append(load_export(filename))
+    
+    df = pd.concat(out).sort_index()
+    
+    if save:
+        #filename variable missing
+        to_save = os.path.join(f.root,
+                               site[:3], 
+                               "PRO_2013.txt") 
+
+        df.to_csv(to_save, index = True)
+        
+    return df
 
 def run_for_all_files(infile):
     _, _, files = next(os.walk(infile))
@@ -55,15 +84,8 @@ def join_drift_files(root,
     
     if save:
     
-        df.to_csv(f"database/drift/{site}/{year}_raw.txt", 
+        df.to_csv(f"{year}_raw.txt", 
                   index = True)
     return df
 
-
-def main():
-    year = 2013 
-    site = "SAA"
-    root = "D:\\drift\\"
     
-    join_drift_files(root, year = year, 
-                     site = site)
