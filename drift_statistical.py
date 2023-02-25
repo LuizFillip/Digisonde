@@ -3,6 +3,7 @@ from Digisonde.drift_utils import load_drift
 import matplotlib.pyplot as plt
 from Digisonde.utils import time2float
 import numpy as np
+from build import monthToNum
 
 def plotDays(ax, df):
 
@@ -13,15 +14,12 @@ def plotAgerage(ax, avg, std):
 
 
     ax.plot(avg, label = "$\mu$", color = "k", lw = 2)
-    ax.fill_between(avg.index, 
-                    avg + std, 
-                    avg - std, 
-                    alpha = 0.3, label = "$\sigma$")
     
-    ax.fill_between(avg.index, 
-                    avg + 2 * std, 
-                    avg - 2 * std, 
-                    alpha = 0.3, label = "$2 \sigma$")
+    for i in range(1, 3):
+        ax.fill_between(avg.index, 
+                    avg + i * std, 
+                    avg - i * std, 
+                    alpha = 0.3, label = f"{i} $\sigma$")
     
     ax.axhline(0, color = "red", linestyle = "--")
     
@@ -29,16 +27,16 @@ def plotAgerage(ax, avg, std):
     
 
     
-def filter_values(avg, std, df1, std_factor = 1):
+def filter_values(avg, std, df, std_factor = 1):
     
     out = []
     
     avg = avg.values
     std = std.values
     
-    for col in df1.columns:
+    for col in df.columns:
         
-        arr = df1[col].values
+        arr = df[col].values
         right = avg + (std_factor * std)
         left = avg - (std_factor * std)
     
@@ -47,7 +45,7 @@ def filter_values(avg, std, df1, std_factor = 1):
                        arr, np.nan)
         
         out.append(pd.DataFrame({col: res}, 
-                                index = df1.index))
+                                index = df.index))
         
     return pd.concat(out, axis = 1)
 
@@ -56,22 +54,20 @@ def pivot_data(n, col = "vx"):
 
     df = load_drift(1, smoothed = False)
     
-    month = df.index[0].strftime("%B")
-    
     df["time"] = time2float(df.index.time)
-    
-    df1 = pd.pivot_table(df, 
-                        values = col, 
-                        columns = df.index.date, 
-                        index = "time")
-    
-    return df1, month
+        
+    return pd.pivot_table(
+        df, 
+        values = col, 
+        columns = df.index.date, 
+        index = "time"
+        )
 
 
-def plotAverageAndDesviation(col = "vy", n = 1):
+def plot_average_and_desviation(col = "vy", n = 1):
     
-    df, month = pivot_data(n, col = col)
-    
+    df = pivot_data(n, col = col)
+        
     avg = df.mean(axis = 1)
     
     std = df.std(axis = 1)
@@ -86,18 +82,23 @@ def plotAverageAndDesviation(col = "vy", n = 1):
     new_df = filter_values(avg, std, df, std_factor = 1)
     
     fig, ax = plt.subplots(figsize = (10, 8), 
-                           nrows = 2, sharex = True, 
+                           nrows = 2, 
+                           sharex = True, 
                            sharey = True)
+    
+    plt.subplots_adjust(hspace = 0.1)
     
     for n, d in enumerate([df, new_df]):
         
-        plotAgerage(ax[n], avg, std)
+        
         plotDays(ax[n], d)
-    
+        plotAgerage(ax[n], avg, std)
+        
         ax[n].set(ylabel = f"Velocidade {name} (m/s)")
         
-    ax[0].set(title = f"{month} - São Luis")
+    ax[0].set(title = f"{monthToNum(1)} - São Luis")
     ax[1].set(xticks = np.arange(0, 25, 2),
               ylim = [-lim, lim],
               xlabel = "Hora universal")
 
+plot_average_and_desviation(col = "vx", n = 1)
