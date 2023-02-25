@@ -56,13 +56,6 @@ def save_df(df, year = 2015):
               sep = ",", 
               index = True)
 
-def main():
-    for year in range(2015, 2023):
-        root  = f"D:\\drift\\FZA\\{year}\\"
-        df = process_year(root)
-        save_df(df, year = year)
-
-
 
 def load_export(infile, smooth = False):
     
