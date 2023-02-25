@@ -3,11 +3,10 @@ import pandas as pd
 import numpy as np
 from Digisonde.utils import smooth, time2float
 
-#pd.options.mode.chained_assignment = None
 
 def load_drift(n = None, 
                site = "SSA", 
-               ext = "RAW", 
+               ext = "PRO", 
                smoothed = True, 
                resample = True):
     
@@ -30,14 +29,26 @@ def load_drift(n = None,
         return df
     else:
         return df.loc[df.index.month == n]
+    
+    
+def get_avg_std(df, only_values = True):
+    
+    avg = df.mean(axis = 1)
+    std = df.std(axis = 1)
+    
+    if only_values:
+        return (avg.values, std.values)
+    else:
+        return avg, std
 
-def filter_values(avg, std, df, std_factor = 1):
+def filter_values(df, 
+                  std_factor = 1, 
+                  replace_nan = True):
+    
+    avg, std = get_avg_std(df)
     
     out = []
-    
-    avg = avg.values
-    std = std.values
-    
+       
     for col in df.columns:
         
         arr = df[col].values
@@ -46,17 +57,33 @@ def filter_values(avg, std, df, std_factor = 1):
     
         res = np.where((arr < right) & 
                        (arr > left), 
-                       arr, np.nan)
+                       arr, 
+                       np.nan)
+        
         
         out.append(pd.DataFrame({col: res}, 
                                 index = df.index))
         
-    return pd.concat(out, axis = 1)
+    df = pd.concat(out, axis = 1)    
+    if replace_nan:
+        
+        df["avg"] = avg
+        for col in df.columns:
+            df.loc[df[col].isnull(), col] = df['avg']
+            
+        del df["avg"]
+        return df
+    else:
+        return df
 
 
-def pivot_data(n, col = "vx"):
+def pivot_data(n, col, 
+               smoothed = True, 
+               resample = False):
 
-    df = load_drift(n, smoothed = False)
+    df = load_drift(n, 
+                    smoothed = smoothed, 
+                    resample = resample)
     
     df["time"] = time2float(df.index.time)
         
@@ -68,10 +95,14 @@ def pivot_data(n, col = "vx"):
         )
 
 
-def get_avg_std(df):
-    return df.mean(axis = 1), df.std(axis = 1)
-
-df = load_drift(1, ext = "PRO")
 
 
-print(df)
+df = pivot_data(1, smoothed = True, col = "vy")
+
+avg, std = get_avg_std(df, only_values = False)
+df_filtered = filter_values(df, std_factor = 1)
+
+col = df.columns[1]
+
+df[col].plot()
+df_filtered[col].plot()
