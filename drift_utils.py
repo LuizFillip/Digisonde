@@ -9,19 +9,29 @@ pd.options.mode.chained_assignment = None
 def load_drift(n, 
                site = "SSA", 
                ext = "RAW", 
-               smoothed = True):
+               smoothed = True, 
+               resample = True):
     
     infile = p("Drift").get_files_in_dir(site)
     infile = [f for f in infile if ext in f][0]
+    
     df = pd.read_csv(infile, index_col = 0)
+    
     df.index = pd.to_datetime(df.index)
     
     if smoothed:
         df["vx"] = smooth(df["vx"], 3)
         df["vy"] = smooth(df["vy"], 3)
         df["vz"] = smooth(df["vz"], 3)
-    
-    return df.loc[df.index.month == n]
+        
+    if resample:
+        df = df.resample("5min").last().interpolate()
+        
+    if n is None:
+        return df
+    else:
+        return df.loc[df.index.month == n]
+
 
 def get_month_avg(df, col = "vz", 
                   sample = "5min"):
@@ -29,7 +39,7 @@ def get_month_avg(df, col = "vz",
     df = df.resample(sample).last().dropna()
     
     df["time"] = (df.index.hour + 
-                  df.index.minute /60)
+                  df.index.minute / 60)
 
     days = np.unique(df.index.day)
     
@@ -69,7 +79,24 @@ def concat_files(site = "SSA_PRO",
         
     return df
 
-#df = concat_files(save = True)
-#print(df)
-#print(df.loc[df.index.month == 1])
-
+def filter_values(avg, std, df, std_factor = 1):
+    
+    out = []
+    
+    avg = avg.values
+    std = std.values
+    
+    for col in df.columns:
+        
+        arr = df[col].values
+        right = avg + (std_factor * std)
+        left = avg - (std_factor * std)
+    
+        res = np.where((arr < right) & 
+                       (arr > left), 
+                       arr, np.nan)
+        
+        out.append(pd.DataFrame({col: res}, 
+                                index = df.index))
+        
+    return pd.concat(out, axis = 1)
