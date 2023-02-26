@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-from time_terminators import time_to_float, terminators
-from core import iono_frame, drift
+from Digisonde.time_terminators import time_to_float, terminators
+from Digisonde.core import iono_frame, drift
 import os
 
 

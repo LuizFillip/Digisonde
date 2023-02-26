@@ -49,12 +49,8 @@ def process_year(root) -> pd.DataFrame:
         
     return pd.DataFrame({"vzp": out}, index = idx)
 
-def save_df(df, year = 2015):
-    
-    path_to_save = f"database/drift/{year}.txt"
-    df.to_csv(path_to_save, 
-              sep = ",", 
-              index = True)
+
+
 
 
 def load_export(infile, smooth = False):

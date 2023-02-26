@@ -1,8 +1,8 @@
 from astral.sun import sun
 import astral 
 import datetime
-from utils import get_infos
-from core import time_to_float
+from Digisonde.utils import get_infos
+from Digisonde.core import time_to_float
 
 
 
