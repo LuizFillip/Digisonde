@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
  
 
-def plotAnnualVariation(infile, 
+def plot_seasonality(infile, 
                   year = 2015):
     
     
@@ -43,7 +43,6 @@ def plotAnnualVariation(infile,
 def main():
     year = 2019
     infile = f"database/drift/{year}.txt"
-    plotAnnualVariation(infile, year = year)
+    plot_seasonality(infile, year = year)
     
     
-main()

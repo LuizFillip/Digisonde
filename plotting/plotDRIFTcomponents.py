@@ -63,7 +63,7 @@ def main():
     
         
     ts = load_raw(infile[1], 
-                 date = dt.date(2013, 2, 1), 
+                 date = dt.date(2013, 1, 1), 
                  smooth_values =  False)
         
     plotDRIFTComponents(ts)

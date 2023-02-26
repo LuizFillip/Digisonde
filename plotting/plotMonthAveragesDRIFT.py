@@ -112,4 +112,4 @@ def main():
         single_plot(ax, n, **args)
         
         
-#main()
+main()

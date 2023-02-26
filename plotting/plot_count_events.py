@@ -44,7 +44,7 @@ def plot(ax, infile, filename):
 
 
  
-def main(): 
+def plot_count_events(): 
     infile = "database/counts/"
     _, _, files = next(os.walk(infile))
     
