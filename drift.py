@@ -2,19 +2,30 @@ import pandas as pd
 import os
 from Digisonde.utils import smooth
 import numpy as np
-import datetime as dt
+from build import paths as p
 
-
-def process_day(infile, ext = "DVL"):
+def process_day(infile, 
+                ext = "DVL", 
+                save_in = "2015.txt"):
     
-    _, _, files = next(os.walk(infile))
-
-    files = [f for f in files if f.endswith(ext)]
-
-    out = [load_export(os.path.join(infile, f))
-           for f in files]
     
-    return pd.concat(out)
+   files = os.listdir(infile)
+   files = [f for f in files if f.endswith(ext)]
+   out = []
+   for filename in files:
+       
+       try:
+           out.append(load_export(infile + filename))
+       except:
+           print(filename)
+           continue
+
+
+   df = pd.concat(out)
+   
+   df.to_csv(save_in, index = True)
+   
+   return df
 
 
 def get_pre(infile):
@@ -53,7 +64,7 @@ def process_year(root) -> pd.DataFrame:
 
 
 
-def load_export(infile, smooth = False):
+def load_export(infile):
     
     """
     Vz: Vertical component (positive to up)
@@ -88,42 +99,19 @@ def load_export(infile, smooth = False):
         df.rename(columns = {name: names[num]}, 
                   inplace = True)
         
-    if smooth:
-        df["vx"] = smooth(df["vx"], 3)
-        df["vy"] = smooth(df["vy"], 3)
-        df["vz"] = smooth(df["vz"], 3)
-        
     return df
 
 
-def load_raw(infile, 
-             date = dt.date(2013, 1, 1), 
-             smooth_values = False):
-    
-    """
-    Load process data raw (see process_year func)
-    """
+def load_DRIFT(smooth = False):
+    infile = p("Drift").get_files_in_dir("REDUCED")
     
     df = pd.read_csv(infile, index_col = 0)
     
     df.index = pd.to_datetime(df.index)
     
-    if smooth_values:
-        
-        for col in ["vx", "vy", "vz"]:    
-            df[col] = smooth(df[col], 3)
-    
-    if date is not None:
-        return df.loc[df.index.date == date]
-    else:
-        return df
-    
-def main():
-    from build import paths as p
-    infile = p("Drift").get_files_in_dir("SSA")
-        
-    df = load_raw(infile[0], 
-                 date = dt.date(2013, 7, 19), 
-                 smooth_values = True)
-        
-    df["vx"].plot()
+    if smooth:
+        df["vx"] = smooth(df["vx"], 3)
+        df["vy"] = smooth(df["vy"], 3)
+        df["vz"] = smooth(df["vz"], 3)
+    return df
+
