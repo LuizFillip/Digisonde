@@ -30,7 +30,7 @@ def single_plot(ax, n, site, ext, col, smoothed, color, label):
                 **args, label = label)
     return ax
 
-def plotSeasonalDRIFT(site = "SSA", 
+def plot_monthly_averages(site = "SSA", 
                       ext = "PRO", 
                       col = "vz", 
                       year = "2013", 
@@ -96,20 +96,7 @@ args = dict(
             )
 
 
-plotSeasonalDRIFT(**args)
+plot_monthly_averages(**args)
 
 
 
-
-def main():
-    n = 2
-    fig, ax = plt.subplots()
-    
-    colors = ["blue", "k"]
-    
-    for m in [False, True]:
-        
-        single_plot(ax, n, **args)
-        
-        
-main()

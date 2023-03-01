@@ -1,9 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Digisonde.statistical import load_drift, get_month_avg
-
-
-
+from Digisonde.drift_utils import load_drift
 
 def plotHistogram(ax, arr, binwidth = 10):
 
@@ -61,11 +58,9 @@ args = dict(
     col = "vy"           
     )
 
-print(set("t", "33"))
 
 
-
-def HistSubplots(col = "vz", **args):
+def histogram_subplots(col = "vz", **args):
     
     if col == "vz":
         figtitle = "Deriva vertical - 2013"
@@ -97,4 +92,4 @@ def HistSubplots(col = "vz", **args):
     fig.text(0.43, 0.05, "Velocidade (m/s)", fontsize = 30)
 
         
-HistSubplots(**args)
+histogram_subplots(**args)
