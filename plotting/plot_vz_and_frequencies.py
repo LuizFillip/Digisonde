@@ -53,10 +53,12 @@ def shading(ax, start = 22.10, end = 24.0):
             transform = ax.transData)
   
     
-def plotVerticaldrift(infile, 
-                      filename,
-                      day = 1, 
-                      name = "Fortaleza"):
+def plot_vz_and_frequencies(
+        infile, 
+        filename,
+        day = 1, 
+        name = "Fortaleza"
+        ):
 
     fig, ax = plt.subplots(figsize = (10, 6), 
                            nrows = 2, 
@@ -111,19 +113,3 @@ def plotVerticaldrift(infile,
     fig.suptitle(f'{name}, {date_str}', y = 0.92)
    
     return fig
-
-def main():
-    
-    infile = "database/process/SL_2014-2015/"
-
-    _, _, files = next(os.walk(infile))
-
-    filename = files[0]
-    
-
-    plotVerticaldrift(infile, 
-                    filename, 
-                    day = 16)
-    
-
-main()
