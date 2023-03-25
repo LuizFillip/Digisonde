@@ -68,5 +68,12 @@ def process_dirs():
     return ts
 
 
+def main():
+    
+    infile ="database/Drift/FZA/RAW_2016.txt"
 
-#concat_files(site = "RAW",  save = True)
+    df = load_export(infile)
+
+    print(df.to_csv(infile, index = True))
+    
+#main()

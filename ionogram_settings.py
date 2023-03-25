@@ -1,21 +1,8 @@
-
 import cv2
 import os
-import datetime
 import matplotlib.pyplot as plt
-import numpy as np
-    
-def ionosonde_fname(filename):
-    
-    args = filename.split("_")
+from utils import ionosonde_fname    
 
-    code = args[0]
-
-    date = args[1][:8]
-
-    time = args[1][13:-4]
-
-    return datetime.datetime.strptime(date + time, "%Y%m%d%H%M%S")
 
 def crop_image(file, y = 50, x = 130, h = 900, w = 750):
     img = cv2.imread(file)
@@ -52,8 +39,8 @@ def setting_image_labels(img,
         print("saving...", filename)
         fig.savefig(path_to_save + filename, 
                     dpi = 100, 
-                    bbox_inches="tight", 
-                    transparent=True)
+                    bbox_inches = "tight", 
+                    transparent = True)
     else:
         plt.show()
         

@@ -1,7 +1,8 @@
 import datetime as dt
 import os
 import numpy as np
-
+import pandas as pd
+import math
 
 embrace_infos = {
                 "FZA0M": {"name": "Fortaleza", 
@@ -50,6 +51,21 @@ def smooth(y, box_pts):
     box = np.ones(box_pts) / box_pts
     return np.convolve(y, box, mode = 'same')
 
+
+def time2float(time_array, sum24 = False):
+    out = []
+
+    for arr in time_array:
+        
+        hour = (arr.hour + 
+                arr.minute / 60)
+        if sum24:
+            if hour < 20:
+                hour += 24
+        
+        out.append(hour)
+    return out
+
 class ionosonde_fname(object):
 
     def __init__(self, filename):
@@ -68,7 +84,27 @@ class ionosonde_fname(object):
                                              "%Y%m%d%H%M%S")
         
         
-        
+def split_time(time):
+    frac, whole = math.modf(float(time))
+    return int(whole), round(frac * 60)
+
+def get_datetime_pre(dn):
+    infile ="database/Digisonde/vzp/FZ_PRE_2014_2015.txt"
+    
+    df = pd.read_csv(infile, index_col = 0)
+    
+    df.index = pd.to_datetime(df.index)
+   
+    time_sel = df.loc[df.index == dn, "time"]
+    
+    hour, minute = split_time(time_sel.item())
+    
+    return dt.datetime(
+        dn.year, dn.month, dn.day, 
+                hour, minute)
+
+
+       
 def main():
     infile = "database/process/SL_2014-2015/"
     
@@ -80,4 +116,3 @@ def main():
     
 
     print(name, lat, lon)
-main()

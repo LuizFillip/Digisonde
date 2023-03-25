@@ -4,7 +4,8 @@ import numpy as np
 import setup as s
 from Results.utils import get_dusk
 import datetime as dt
-      
+from AllSky.labeling import save_img
+
   
 
 def plot_drift_part(ax, df, dn):
@@ -18,7 +19,8 @@ def plot_drift_part(ax, df, dn):
         linestyle = "--",
         label = f"Vzp = {vpre} m/s ({tpre.time()} UT)"
                )
-    sunset, dusk = get_dusk(dn)
+    
+    sunset, dusk = get_dusk(dn, lat = -2.53, lon = -44.296)
 
     ax.axvline(sunset, label = "0 km")
     ax.axvline(dusk,  label = "300 km", color = 'r')
@@ -35,17 +37,26 @@ def plot_drift_part(ax, df, dn):
         )
     
     
-ts = load()
-df = ts.drift()
 
-dates = np.unique(df.index.date)
-dn = dates[0]
-df = df.loc[df.index.date == dn]
-x, y = get_pre(dn, df)
+def save_all_figs():
 
-fig, ax = plt.subplots(figsize = (8, 4))
+    ts = load()
+    df = ts.drift()
+    
+    dates = np.unique(df.index.date)
+    for dn in dates:
+        
+        df1 = df.loc[df.index.date == dn]
+        
+        fig, ax = plt.subplots(figsize = (8, 4))
+        
+        save_in = "D:\\drift\\SAA-plots\\"
+        
+        plot_drift_part(ax, df1, dn)
+        
+        filename  = dn.strftime("%Y%m%d") + ".png"
+        print("saving...", filename)
+        save_img(fig, save_in + filename)
+    
 
-plot_drift_part(ax, df, dn)
-
-
-
+save_all_figs()

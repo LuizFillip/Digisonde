@@ -61,9 +61,6 @@ def process_year(root) -> pd.DataFrame:
     return pd.DataFrame({"vzp": out}, index = idx)
 
 
-
-
-
 def load_export(infile):
     
     """
@@ -102,16 +99,6 @@ def load_export(infile):
     return df
 
 
-def load_DRIFT(smooth = False):
-    infile = p("Drift").get_files_in_dir("REDUCED")
-    
-    df = pd.read_csv(infile, index_col = 0)
-    
-    df.index = pd.to_datetime(df.index)
-    
-    if smooth:
-        df["vx"] = smooth(df["vx"], 3)
-        df["vy"] = smooth(df["vy"], 3)
-        df["vz"] = smooth(df["vz"], 3)
-    return df
+
+
 
