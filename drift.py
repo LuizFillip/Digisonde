@@ -1,8 +1,9 @@
 import pandas as pd
 import os
-from Digisonde.utils import smooth
+from utils import smooth
+from common import load
 import numpy as np
-from build import paths as p
+import datetime as dt
 
 def process_day(infile, 
                 ext = "DVL", 
@@ -28,37 +29,53 @@ def process_day(infile,
    return df
 
 
-def get_pre(infile):
-    df = process_day(infile)
-    pre = df.loc[(df.index.hour >= 18) &
-                 (df.index.hour < 23), 17]
-    x = pre.index
-    y = pre.values
-    vzp = np.max(smooth(y, 3))
-    tzp = x[np.argmax(y)]
-    return tzp, vzp
 
-def process_year(root) -> pd.DataFrame:
-    """
-    Getting PRE values for all year
-    """
-    _, folders, _ = next(os.walk(root))
+def get_pre(dn, df):
     
-    idx = []
-    out = [] 
+    b = dt.time(21, 0, 0)
+    e = dt.time(22, 30, 0)
     
-    for folder in folders:
-       
+    df = df.loc[(df.index.time >= b) & 
+                (df.index.time <= e) & 
+                (df.index.date == dn), ["vz"]]
+        
+    return df.idxmax().item(), round(df.max().item(), 2)
+
+def get_pre_in_year():
+        
+    ts = load()
+    dates = pd.date_range("2013-1-1", 
+                          "2013-12-31", freq = "1D")
+    out = {"vp": [], 
+           "time": []}
+    df = ts.drift()
+    
+    
+    for dn in dates:
+        
         try:
-            print("process...", folder)
-            time, vzp = get_pre(os.path.join(root, folder))
+            df1 = df.loc[df.index.date == dn.date()]
+            tpre, vpre = get_pre(dn.date(), df1)
             
-            idx.append(time)
-            out.append(vzp)
+            out["vp"].append(vpre)
+            out["time"].append(tpre)
         except:
+            out["vp"].append(np.nan)
+            out["time"].append(np.nan)
             continue
         
-    return pd.DataFrame({"vzp": out}, index = idx)
+        
+    ds = pd.DataFrame(out, index = dates)
+    
+    
+    ds.loc[(ds.index.month <= 4) 
+           & (ds["vp"] < 10), "vp"] = np.nan
+    
+    ds.loc[ (ds.index.month > 9)
+           & (ds["vp"] < 10), "vp"] = np.nan
+    
+    return ts
+
 
 
 def load_export(infile):
