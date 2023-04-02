@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import math
+from utils import split_time
 
 embrace_infos = {
                 "FZA0M": {"name": "Fortaleza", 
@@ -47,24 +48,7 @@ def get_infos(filename):
             lon = embrace_infos[key]["lon"]
             return name, lat, lon
             
-def smooth(y, box_pts):
-    box = np.ones(box_pts) / box_pts
-    return np.convolve(y, box, mode = 'same')
 
-
-def time2float(time_array, sum24 = False):
-    out = []
-
-    for arr in time_array:
-        
-        hour = (arr.hour + 
-                arr.minute / 60)
-        if sum24:
-            if hour < 20:
-                hour += 24
-        
-        out.append(hour)
-    return out
 
 class ionosonde_fname(object):
 
@@ -84,9 +68,6 @@ class ionosonde_fname(object):
                                              "%Y%m%d%H%M%S")
         
         
-def split_time(time):
-    frac, whole = math.modf(float(time))
-    return int(whole), round(frac * 60)
 
 def get_datetime_pre(dn):
     infile ="database/Digisonde/vzp/FZ_PRE_2014_2015.txt"
