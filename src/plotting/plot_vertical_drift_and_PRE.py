@@ -4,7 +4,6 @@ import numpy as np
 import setup as s
 from Results.utils import get_dusk
 import datetime as dt
-from AllSky.labeling import save_img
 
   
 
@@ -35,28 +34,8 @@ def plot_drift_part(ax, df, dn):
         title = dn,
         ylabel = r"$V_z ~ (ms^{-1})$"
         )
+    return ax
     
     
 
-def save_all_figs():
 
-    ts = load()
-    df = ts.drift()
-    
-    dates = np.unique(df.index.date)
-    for dn in dates:
-        
-        df1 = df.loc[df.index.date == dn]
-        
-        fig, ax = plt.subplots(figsize = (8, 4))
-        
-        save_in = "D:\\drift\\SAA-plots\\"
-        
-        plot_drift_part(ax, df1, dn)
-        
-        filename  = dn.strftime("%Y%m%d") + ".png"
-        print("saving...", filename)
-        save_img(fig, save_in + filename)
-    
-
-save_all_figs()

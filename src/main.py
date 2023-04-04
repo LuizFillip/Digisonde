@@ -4,8 +4,9 @@ import pandas as pd
 from Digisonde.drift import load_export
 from build import paths as p
 from Digisonde.drift_utils import process_year
-
-
+from common import load
+import numpy as np
+import matplotlib.pyplot as plt
 
 def concat_files_and_save(infile,
                           ext = "DVL", 
@@ -77,3 +78,27 @@ def main():
     print(df.to_csv(infile, index = True))
     
 #main()
+
+def save_all_figs():
+
+    ts = load()
+    df = ts.drift()
+    
+    dates = np.unique(df.index.date)
+    for dn in dates:
+        
+        df1 = df.loc[df.index.date == dn]
+        
+        fig, ax = plt.subplots(figsize = (8, 4))
+        
+        save_in = "D:\\drift\\SAA-plots\\"
+        
+        plot_drift_part(ax, df1, dn)
+        
+        filename  = dn.strftime("%Y%m%d") + ".png"
+        print("saving...", filename)
+        save_img(fig, save_in + filename)
+    
+
+save_all_figs()
+

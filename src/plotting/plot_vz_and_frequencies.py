@@ -1,16 +1,15 @@
 import matplotlib.pyplot as plt
 from PRE import drift
-import datetime
+import datetime as dt
 from time_terminators import terminators
 from core import iono_frame
 import numpy as np
-import os
-import setup as p
+import settings as p
 
 def terminator_lines(ax, filename, year, month, day):
     
     terms = terminators(filename, 
-                       date = datetime.date(year, 
+                       date = dt.date(year, 
                                             month, 
                                             day))
     

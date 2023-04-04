@@ -20,8 +20,6 @@ def process_day(infile,
        except:
            print(filename)
            continue
-
-
    df = pd.concat(out)
    
    df.to_csv(save_in, index = True)

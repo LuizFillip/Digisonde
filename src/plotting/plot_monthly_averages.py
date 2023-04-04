@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from Digisonde.statistical import load_drift, get_month_avg
+from Digisonde.drift import load_drift, get_month_avg
 import numpy as np
 
 
@@ -24,17 +24,23 @@ def single_plot(ax, n, site, ext, col, smoothed, color, label):
     
     args = dict(color = color, capsize = 2)
 
-    ax.errorbar(df1.index, 
-                df1.mean(axis = 1), 
-                yerr = df1.std(axis = 1), 
-                **args, label = label)
+    ax.errorbar(
+        df1.index, 
+        df1.mean(axis = 1), 
+        yerr = df1.std(axis = 1), 
+        **args, 
+        label = label
+        )
+    
     return ax
 
-def plot_monthly_averages(site = "SSA", 
-                      ext = "PRO", 
-                      col = "vz", 
-                      year = "2013", 
-                      smoothed = True):
+def plot_monthly_averages(
+        site = "SSA", 
+        ext = "PRO", 
+        col = "vz", 
+        year = "2013", 
+        smoothed = True
+        ):
     
     
     fig, ax = plt.subplots(nrows = 3, 

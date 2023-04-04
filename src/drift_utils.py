@@ -1,7 +1,7 @@
 from build import paths as p
 import pandas as pd
 import numpy as np
-from Digisonde.utils import smooth, time2float
+from utils import smooth, time2float
 
 def load_drift(n = None, 
                site = "SSA", 
