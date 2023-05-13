@@ -39,7 +39,7 @@ def get_pre(dn, df):
         
     return df.idxmax().item(), round(df.max().item(), 2)
 
-def get_pre_in_year():
+def get_pre_in_year(df):
         
     ts = load()
     dates = pd.date_range("2013-1-1", 

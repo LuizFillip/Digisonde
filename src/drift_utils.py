@@ -1,39 +1,8 @@
-from build import paths as p
 import pandas as pd
 import numpy as np
-from utils import smooth, time2float
+from utils import smooth2, time2float
 
-def load_drift(n = None, 
-               site = "SSA", 
-               ext = "PRO", 
-               smoothed = True, 
-               resample = True):
-    
-    files = p("Drift").get_files_in_dir(site)
-    
-    if isinstance(files, list):
-        infile = [f for f in files if ext in f][0]
-    else:
-        infile = files
-    
-    df = pd.read_csv(infile, index_col = 0)
-    
-    df.index = pd.to_datetime(df.index)
-    
-    if smoothed:
-        df["vx"] = smooth(df["vx"], 3)
-        df["vy"] = smooth(df["vy"], 3)
-        df["vz"] = smooth(df["vz"], 3)
-        
-    if resample:
-        df = df.resample("5min").last().interpolate()
-        
-    if n is None:
-        return df
-    else:
-        return df.loc[df.index.month == n]
-    
-    
+
 def get_avg_std(df, only_values = True):
     
     avg = df.mean(axis = 1)
@@ -133,7 +102,31 @@ def process_year(name):
     return pd.concat(out)
 
 
-df = load_drift(site = "CAJ", ext = "RAW_2015")
 
-print(df) 
     
+def load_drift(infile,
+               smoothed = True, 
+               resample = True):
+    
+   
+    df = pd.read_csv(infile, index_col = 0)
+    
+    df.index = pd.to_datetime(df.index)
+    
+    if smoothed:
+        df["vx"] = smooth2(df["vx"], 3)
+        df["vy"] = smooth2(df["vy"], 3)
+        df["vz"] = smooth2(df["vz"], 3)
+        
+    if resample:
+        df = df.resample("5min").last().interpolate()
+        
+    return df
+    
+
+infile = "database/Drift/SSA/PRO_2013.txt"
+    
+
+df = load_drift(infile)
+
+df

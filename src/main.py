@@ -56,17 +56,7 @@ def concat_files(site = "SSA_PRO",
     return df
 
     
-def process_dirs():
-    out = []
-    for name in ["vy", "vx", "vz"]:
-        out.append(process_year(name))
-        
-    ts = pd.concat(out, axis = 1)
-    
-    f = p("Drift").get_dir("REDUCED")
-    
-    ts.to_csv(os.path.join(f, "2013.txt"))
-    return ts
+
 
 
 def main():
