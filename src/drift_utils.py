@@ -106,7 +106,7 @@ def process_year(name):
     
 def load_drift(infile,
                smoothed = True, 
-               resample = True):
+               resample = "5min"):
     
    
     df = pd.read_csv(infile, index_col = 0)
@@ -118,15 +118,15 @@ def load_drift(infile,
         df["vy"] = smooth2(df["vy"], 3)
         df["vz"] = smooth2(df["vz"], 3)
         
-    if resample:
-        df = df.resample("5min").last().interpolate()
+    if resample is not None:
+        df = df.resample(resample).last().interpolate()
         
     return df
     
 
-infile = "database/Drift/SSA/PRO_2013.txt"
+# infile = "database/Drift/SSA/PRO_2013.txt"
     
 
-df = load_drift(infile)
+# df = load_drift(infile)
 
-df
+# df

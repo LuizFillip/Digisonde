@@ -1,30 +1,9 @@
 import pandas as pd
 import os
 from utils import smooth
-from common import load
 import numpy as np
 import datetime as dt
 
-def process_day(infile, 
-                ext = "DVL", 
-                save_in = "2015.txt"):
-    
-    
-   files = os.listdir(infile)
-   files = [f for f in files if f.endswith(ext)]
-   out = []
-   for filename in files:
-       
-       try:
-           out.append(load_export(infile + filename))
-       except:
-           print(filename)
-           continue
-   df = pd.concat(out)
-   
-   df.to_csv(save_in, index = True)
-   
-   return df
 
 
 
@@ -41,13 +20,10 @@ def get_pre(dn, df):
 
 def get_pre_in_year(df):
         
-    ts = load()
     dates = pd.date_range("2013-1-1", 
-                          "2013-12-31", freq = "1D")
-    out = {"vp": [], 
-           "time": []}
-    df = ts.drift()
-    
+                          "2013-12-31", 
+                          freq = "1D")
+    out = {"vp": [], "time": []}
     
     for dn in dates:
         
@@ -72,7 +48,7 @@ def get_pre_in_year(df):
     ds.loc[ (ds.index.month > 9)
            & (ds["vp"] < 10), "vp"] = np.nan
     
-    return ts
+    return ds
 
 
 
@@ -113,6 +89,26 @@ def load_export(infile):
         
     return df
 
+def process_day(infile, 
+                ext = "DVL", 
+                save_in = "20131.txt"):
+    
+    
+   files = os.listdir(infile)
+   files = [f for f in files if f.endswith(ext)]
+   out = []
+   for filename in files:
+       
+       try:
+           out.append(load_export(infile + filename))
+       except:
+           print(filename)
+           continue
+   df = pd.concat(out)
+   
+   df.to_csv(save_in, index = True)
+   
+   return df
 
 
 

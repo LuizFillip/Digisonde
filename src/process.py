@@ -83,64 +83,52 @@ def structure_the_data(data: list) -> np.array:
     
     return np.array(outside_second)
     
+      
+def sel_day(df, day = 1):
+    """Select one single day"""
+    return df[df.index.day == day]
 
-class load_sao(object):
+def sel_day_in( 
+               day = 1, 
+               begin_time: str = '18:00:00', 
+               end_time: str = '23:50:00'):
+    """Select time range in day"""
+    return sel_day(day).between_time(begin_time, end_time)
+def load_sao(infile):
     
     """
     Get pandas dataframe from the data (already organized), 
     with datetime index, frequencies values in float format
     """
+
+    header, data = find_header(infile)
     
-    def __init__(
-            self, 
-            infile: str,  
-            day: int = 1,
-            columns: list = ["time", 6, 7, 8], 
-            ) -> pd.DataFrame:
+    df = pd.DataFrame(structure_the_data(data), 
+                      columns = header)
     
-        self.columns = columns
+    df.rename(columns = {"yyyy.MM.dd": "date", 
+                         "HH:mm:ss": "time", 
+                         "(DDD)": "doy"}, 
+              inplace = True)
     
-        header, data = find_header(infile)
+    df.index = pd.to_datetime(df["date"] + 
+                              " " +
+                              df["time"])
+    
+    df["time"] = df["time"].apply(lambda x: time_to_float(x))
+    
+    for col in df.columns[3:]:
         
-        df = pd.DataFrame(structure_the_data(data), 
-                          columns = header)
+        name = int(float(col))
         
-        df.rename(columns = {"yyyy.MM.dd": "date", 
-                             "HH:mm:ss": "time", 
-                             "(DDD)": "doy"}, 
+        df.rename(columns = {col: name}, 
                   inplace = True)
         
-        df.index = pd.to_datetime(df["date"] + 
-                                  " " +
-                                  df["time"])
+        df[name] = df[name].apply(pd.to_numeric, 
+                                  errors='coerce')
         
-        df["time"] = df["time"].apply(lambda x: time_to_float(x))
-        
-        for col in df.columns[3:]:
-            
-            name = int(float(col))
-            
-            df.rename(columns = {col: name}, 
-                      inplace = True)
-            
-            df[name] = df[name].apply(pd.to_numeric, 
-                                      errors='coerce')
-            
-        df.drop(columns = {"date", "doy"}, 
-                inplace = True) 
-        
-        self.df = df
-        
-        self.days = np.unique(df.index.day)
-        
-        
-    def sel_day(self, day = 1):
-        """Select one single day"""
-        return self.df.loc[self.df.index.day == day, self.columns]
+    df.drop(columns = {"date", "doy"}, 
+            inplace = True) 
     
-    def sel_day_in(self, 
-                   day = 1, 
-                   begin_time: str = '18:00:00', 
-                   end_time: str = '23:50:00'):
-        """Select time range in day"""
-        return self.sel_day(day).between_time(begin_time, end_time)
+    return df
+        

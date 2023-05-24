@@ -30,3 +30,8 @@ def drift(df: pd.DataFrame) -> pd.DataFrame:
 
 
 
+infile = "database/Digisonde/SAA0K_20131231(365).TXT"
+
+ds = pd.read_csv(infile, delim_whitespace=True)
+
+ds
