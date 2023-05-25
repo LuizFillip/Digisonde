@@ -41,7 +41,7 @@ def process_data(infile):
         
     return pd.concat(out)
 
-
-df = process_data(infile)
-
-df.to_csv("iono_freqs.txt")
+def main():
+    df = process_data(infile)
+    
+    df.to_csv("iono_freqs.txt")
