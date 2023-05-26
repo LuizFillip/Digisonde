@@ -104,29 +104,38 @@ def process_year(name):
 
 
     
-def load_drift(infile,
-               smoothed = True, 
-               resample = "5min"):
+
     
-   
+
+infile = "database/Drift/SSA/PRO_2013.txt"
+
+
+
+
+
+def sampled(ds, freq = "2min"):
+    
+    sts = ds.index[0].date()
+    end = ds.index[-1].date()
+    
+    df1 = pd.DataFrame(
+        index = pd.date_range(
+            f"{sts} 00:02", 
+            f"{end} 23:58", 
+            freq = freq
+    ))
+    
+    ds = pd.concat( [ds, df1], axis = 1
+                   ).interpolate().bfill()
+    return ds.resample(freq).asfreq()
+
+
+def load_drift(infile, freq = "2min"):
+    
     df = pd.read_csv(infile, index_col = 0)
-    
+
     df.index = pd.to_datetime(df.index)
-    
-    if smoothed:
-        df["vx"] = smooth2(df["vx"], 3)
-        df["vy"] = smooth2(df["vy"], 3)
-        df["vz"] = smooth2(df["vz"], 3)
-        
-    if resample is not None:
-        df = df.resample(resample).last().interpolate()
-        
-    return df
-    
 
-# infile = "database/Drift/SSA/PRO_2013.txt"
+    df["vz"] = smooth2(df["vz"], 3)
     
-
-# df = load_drift(infile)
-
-# df
+    return sampled(df, freq = freq)

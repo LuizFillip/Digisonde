@@ -1,10 +1,10 @@
-# Fabry-Perot Interferometer (data pipeline)
+# Digisonde (data pipeline)
 
-This repository aims to describe the data processing of Fabry-Perot Interferometer (FPI).
+This repository aims to describe the data processing of digisonde instrument.
 
 See (CEDAR Madrigal Database)[http://cedar.openmadrigal.org/] for more informations about database and files documentation.
 
-- Read file data and separe in differents positions in sky
+- Compute vertical drift from derivate
 - Plotting and analysis themospheric temperature and winds
 - Filter and reduced the data
 
