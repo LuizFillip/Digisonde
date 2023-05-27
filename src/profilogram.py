@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 
 
-
-
-
 def frame_from_row(row):
     value = row.split("\n")
     date_time = dt.datetime.strptime(
@@ -25,7 +22,7 @@ def frame_from_row(row):
     
     return pd.DataFrame(data, index = index)
     
-infile = "database/Digisonde/SAA0K_20130917(260).TXT"
+infile = "database/Digisonde/SAA0K_20130316(075).TXT"
 
 
 def process_data(infile):
@@ -44,4 +41,4 @@ def process_data(infile):
 def main():
     df = process_data(infile)
     
-    df.to_csv("iono_freqs.txt")
+    df.to_csv(infile)
