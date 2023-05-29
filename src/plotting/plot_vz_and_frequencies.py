@@ -1,114 +1,87 @@
 import matplotlib.pyplot as plt
-from PRE import drift
-import datetime as dt
-from time_terminators import terminators
-from core import iono_frame
-import numpy as np
-import settings as p
+import digisonde as dg
+import settings as s
+from common import plot_terminators
+from utils import smooth2
 
-def terminator_lines(ax, filename, year, month, day):
     
-    terms = terminators(filename, 
-                       date = dt.date(year, 
-                                            month, 
-                                            day))
+def plot_vz_and_frequencies():
     
-    times = [terms.sunset, terms.dusk]
-    altitudes = [0, 300]
-    linestyle = ["-", "--"]
-    kargs = dict(lw = 2, color = "k")
-    
-    letter = ["(a)", "(b)"]
-    for num in range(2):
-            
-        for col in range(2):
-        
-            ax[col].axvline(
-                    times[num], 
-                    linestyle = linestyle[num], 
-                    **kargs)
-            
-            ax[col].axvline(
-                    times[num], 
-                    linestyle = linestyle[num], 
-                    **kargs)
-        
-        text = f"Terminadouro \n em {altitudes[num]} km"
-            
-        ax[0].text(times[num] + 0.1, 210, 
-                   text, 
-                   transform = ax[0].transData)
-        
-        
-        ax[num].text(0.02, 0.9, 
-                     letter[num], 
-                     transform = ax[num].transAxes)
-        
+    infile = "database/Digisonde/SAA0K_20130316(075)_freq"
 
-def shading(ax, start = 22.10, end = 24.0):
+    df = dg.fixed_frequencies(infile)
 
-    ax.axvspan(start, end, alpha = 0.5, color = "gray")
-    ax.text(start + 0.7, 30, "ESF", 
-            transform = ax.transData)
-  
-    
-def plot_vz_and_frequencies(
-        infile, 
-        filename,
-        day = 1, 
-        name = "Fortaleza"
-        ):
+    vz = dg.drift(df)
+    freqs = [5, 6, 7]
 
-    fig, ax = plt.subplots(figsize = (10, 6), 
-                           nrows = 2, 
-                           sharex = True)
-    
-    p.config_labels()
-    plt.subplots_adjust(hspace = 0.1)
-    
-    df = iono_frame(infile + filename)
-    
-    df = df.sel_day_in(day = day)
-    
-    freqs = list(df.columns[1:])
-    
-  
-    date = df.index[0]
-    year, month, day = date.year, date.month, date.day
-    
-    ax[0].set(ylabel = "Altitude (km)", 
-              ylim = [200, 500], 
-              )
+    for col in freqs:
+        df[col] = smooth2(df[col], 5)
+        vz[col] = smooth2(vz[col], 5)
         
-    ax[0].xaxis.set_major_formatter(lambda x, pos: "%d" % x + ":00")
         
-    vz = drift(df)
-    
-    
-    #shading(ax[1], start = 22.10, end = 24.0)
-    args = dict(fillstyle = "none", 
-                lw = 2)
-    
+    fig, ax = plt.subplots(
+        figsize = (12, 7), 
+        nrows = 2, 
+        sharex = True, 
+        dpi = 300
+        )
+
+    plt.subplots_adjust(hspace = 0.3)
+
+
     for num, col in enumerate(freqs):
-        ax[1].plot(vz.time, vz[col],
-                    **args)
-        ax[0].plot(df.time, df[col], 
-                    **args)
-        
-    ax[1].set(xlabel = "Hora (UT)", 
-              ylabel = r"$V_z$ (m/s)", 
+        ax[1].plot(vz[col])
+        ax[0].plot(df[col], label = f'{col}')
+
+
+    ax[0].set(ylabel = "Altitude (km)", 
+              ylim = [100, 500], 
+              )
+
+    ax[1].set(
+              ylabel = r"Deriva vertical (m/s)", 
               ylim = [-50, 50], 
-              yticks = np.arange(-40, 45, 10),
-              xlim = [18, 24])
-    
-    ax[0].legend(freqs, 
-                 loc = 'upper left',
-                 title = "Frequências (MHz)", 
-                 ncol = 3)
-    
-    p.secondary_axis(ax[1], delta = - 3, outward = 60)
-    terminator_lines(ax, filename, year, month, day)
-    date_str = date.strftime("%d de %B de %Y")
-    fig.suptitle(f'{name}, {date_str}', y = 0.92)
+              xlim = [df.index[0], df.index[-1]]
+              )
+     
+    s.format_time_axes(ax[1])
+
+
+    infile = "database/Drift/SSA/PRO_2013.txt"
+
+    dig = dg.load_drift(infile)
+
+    dig = dig[(dig.index > df.index[0]) & 
+        (dig.index < df.index[-1]) ]
+
+    ax[1].plot(dig["vz"], label = "DRIFT-X")
+
+    ax[0].legend(
+        bbox_to_anchor = (.3, 1.), 
+        ncol = 3, 
+        loc = "lower left", 
+        title = "Frequências fixas"
+        )
+
+    ax[1].legend(loc = "upper right")
+    c = s.chars()
+    s.config_labels(fontsize = 20)
+
+    for i, ax in enumerate(ax.flat):
+        
+        plot_terminators(ax, df)
+        ax.text(0.01, 1.1, f'({c[i]})', transform = ax.transAxes)
+        
+       
+        
    
     return fig
+
+
+fig = plot_vz_and_frequencies()
+
+
+
+fig.savefig("digisonde/src/figures/vz_drift_heights.png", dpi = 300)
+
+

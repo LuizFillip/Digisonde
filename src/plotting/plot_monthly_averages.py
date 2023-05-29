@@ -87,22 +87,22 @@ def plot_monthly_averages(
     ax1.legend(ncol = 1,
                fontsize = 20,
                loc = "upper right", 
-               bbox_to_anchor=(0.5, 3.6, 0.5, 0.5)
+               bbox_to_anchor = (0.5, 3.6, 0.5, 0.5)
                      )
     
     
     return fig
 
-
-args = dict(
-    site = "SSA", 
-    ext = "PRO", 
-    col = "vz", 
-    smoothed = True
-            )
-
-
-plot_monthly_averages(**args)
+def main():
+    args = dict(
+        site = "SSA", 
+        ext = "PRO", 
+        col = "vz", 
+        smoothed = True
+                )
+    
+    
+    plot_monthly_averages(**args)
 
 
 
