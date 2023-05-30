@@ -1,25 +1,12 @@
 import pandas as pd
 import numpy as np
-from Digisonde.time_terminators import time_to_float, terminators
-from Digisonde.core import iono_frame, drift
 import os
-
-
-
-def get_values(infile, filename, day):
-    df = pre(infile, 
-             filename, 
-             day = day)
+from utils import time2float
+import digisonde as dg
+import datetime as dt
     
-    peak = df.iloc[(df.index.get_level_values('Values') == 
-                            "peak"), :].values[0]
-    
-    time = df.iloc[(df.index.get_level_values('Values') == 
-                            "time"), :].values[0]
 
-    return (peak, time)
-
-def find_maximus(df):
+def find_maximus(df: pd.DataFrame):
     """Get maximus for """
     result = {}
 
@@ -32,49 +19,32 @@ def find_maximus(df):
         
         intime = pd.to_datetime(times[num])
            
-        result[col] = list((time_to_float(intime), 
-                            round(pre[num], 3)))
+        result[col] = list(
+            (time2float(intime), 
+             round(pre[num], 3))
+            )
         
     return result
 
 
-def pre(infile: str, 
-        filename: str, 
-        day: int = 2) -> pd.DataFrame:    
-
+def drift(df: pd.DataFrame) -> pd.DataFrame:
     
-    df = iono_frame(infile + filename).sel_day_in(day = day)
-    date = df.index[0].date()
-    t = terminators(filename, date = date)
-
-
-    vz = drift(df)
-
-    set_vz = vz.loc[((vz.time > t.sunset) & 
-                     (vz.time < t.dusk)), :]
-   
-    dat = find_maximus(set_vz)
-
-
-    vzp = np.array([dat[num][1] for num in dat.keys()]).mean()
-    vzt = np.array([dat[num][0] for num in dat.keys()]).mean()
+    """Compute the vertical drift with 
+    (dh`F/dt) in meters per second"""
     
-    return pd.DataFrame({"vz": vzp, "time": vzt}, index = [date])
+    data = df.copy()
+        
+    for col in data.columns:
+        
+        if col != "time":
+        
+            data[col] = (data[col].diff() / 
+                         data["time"].diff()) / 3.6
+    cols = df.columns[1:]
+    data["avg"] = np.mean(data[cols], axis = 1)
+    return data
 
 
-def all_frequencies(df):
-    
-    day = pd.to_datetime(df.index[0]).strftime('%Y-%m-%d')
-    
-    dat = find_maximus(df)
-    
-    tuples = list(zip([day, day], ["time", 
-                                   "peak"]))
-    
-    index = pd.MultiIndex.from_tuples(tuples, 
-                                      names=["date", 
-                                             "values"])
-    return pd.DataFrame(dat, index = index) 
 
 def general_vz(vz, uy, wd, i):
     """
@@ -89,3 +59,40 @@ def general_vz(vz, uy, wd, i):
     
     return vz_term + uy_term - wd_term 
 
+
+def get_pre(dn, df, col = "avg"):
+    
+    b = dt.time(21, 0, 0)
+    e = dt.time(23, 0, 0)
+    
+    df = df.loc[(df.index.time >= b) & 
+                (df.index.time <= e) & 
+                (df.index.date == dn), ["avg"]]
+        
+    return df.idxmax().item(), round(df.max().item(), 3)
+
+
+def add_vzp(infile = "database/Digisonde/SAA0K_20130316(075)_freq"):
+
+    vz = dg.drift(dg.fixed_frequencies(infile))
+    
+    out = {"idx": [], "vzp": []}
+    for dn in np.unique(vz.index.date):
+        idx, vzp = get_pre(dn, vz)
+        out["idx"].append(idx.date())
+        out["vzp"].append(vzp)
+        
+    return pd.DataFrame(out).set_index("idx")
+
+def main():
+    infile = "database/Digisonde/SAA0K_20130316(075)_freq"
+    
+    df = dg.fixed_frequencies(infile)
+    
+    vz = dg.drift(df)
+    
+    out = []
+    for dn in np.unique(vz.index.date):
+        print(get_pre(dn, vz))
+        
+# main()

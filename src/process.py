@@ -84,17 +84,7 @@ def structure_the_data(data: list) -> np.array:
     return np.array(outside_second)
     
       
-def sel_day(df, day = 1):
-    """Select one single day"""
-    return df[df.index.day == day]
-
-def sel_day_in( 
-               day = 1, 
-               begin_time: str = '18:00:00', 
-               end_time: str = '23:50:00'):
-    """Select time range in day"""
-    return sel_day(day).between_time(begin_time, end_time)
-def load_sao(infile):
+def fixed_frequencies(infile):
     
     """
     Get pandas dataframe from the data (already organized), 

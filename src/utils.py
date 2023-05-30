@@ -50,22 +50,15 @@ def get_infos(filename):
             
 
 
-class ionosonde_fname(object):
+def ionosonde_fname(filename):
 
-    def __init__(self, filename):
-    
-        args = filename.split("_")
-    
-        self.code = args[0]
-    
-        self.date = args[1][:8]
-    
-        self.time = args[1][13:-4]
-        
-        str_datetime = self.date + self.time
-    
-        self.datetime = dt.datetime.strptime(str_datetime, 
-                                             "%Y%m%d%H%M%S")
+    args = filename.split("_")
+
+    str_datetime = args[1][:8] + args[1][13:-4]
+
+    return dt.datetime.strptime(
+        str_datetime, 
+        "%Y%m%d%H%M%S")
         
         
 

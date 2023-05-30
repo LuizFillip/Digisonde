@@ -1,6 +1,5 @@
 import pandas as pd
 import os
-from utils import smooth
 import numpy as np
 import datetime as dt
 
@@ -20,9 +19,8 @@ def get_pre(dn, df):
 
 def get_pre_in_year(df):
         
-    dates = pd.date_range("2013-1-1", 
-                          "2013-12-31", 
-                          freq = "1D")
+    dates = pd.date_range("2013-1-1", "2013-12-31", freq = "1D")
+    
     out = {"vp": [], "time": []}
     
     for dn in dates:
@@ -42,14 +40,16 @@ def get_pre_in_year(df):
     ds = pd.DataFrame(out, index = dates)
     
     
+    
+    return ds
+
+def filter_error_vls(ds):
     ds.loc[(ds.index.month <= 4) 
            & (ds["vp"] < 10), "vp"] = np.nan
     
     ds.loc[ (ds.index.month > 9)
            & (ds["vp"] < 10), "vp"] = np.nan
-    
     return ds
-
 
 
 def load_export(infile):

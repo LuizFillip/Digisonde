@@ -15,7 +15,7 @@ def plot_frequency(
         ).interpolate()
     
     img = ax.contourf(ds.columns, ds.index, ds.values, 
-                 30, cmap = "Blues")
+                 30, cmap = "rainbow")
     
     ticks = np.linspace(np.nanmin(ds.values), 
                         np.nanmax(ds.values), 6)

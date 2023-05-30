@@ -52,7 +52,7 @@ def plot_vz_and_frequencies():
     dig = dg.load_drift(infile)
 
     dig = dig[(dig.index > df.index[0]) & 
-        (dig.index < df.index[-1]) ]
+         (dig.index < df.index[-1]) ]
 
     ax[1].plot(dig["vz"], label = "DRIFT-X")
 
@@ -72,9 +72,7 @@ def plot_vz_and_frequencies():
         plot_terminators(ax, df)
         ax.text(0.01, 1.1, f'({c[i]})', transform = ax.transAxes)
         
-       
-        
-   
+      
     return fig
 
 
@@ -82,6 +80,6 @@ fig = plot_vz_and_frequencies()
 
 
 
-fig.savefig("digisonde/src/figures/vz_drift_heights.png", dpi = 300)
+# fig.savefig("digisonde/src/figures/vz_drift_heights.png", dpi = 300)
 
 

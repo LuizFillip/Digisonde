@@ -139,3 +139,5 @@ def load_drift(infile, freq = "2min"):
     df["vz"] = smooth2(df["vz"], 3)
     
     return sampled(df, freq = freq)
+
+load_drift(infile, freq = "2min")
