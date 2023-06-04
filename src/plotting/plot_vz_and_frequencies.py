@@ -76,7 +76,7 @@ def plot_vz_and_frequencies():
     return fig
 
 
-fig = plot_vz_and_frequencies()
+#fig = plot_vz_and_frequencies()
 
 
 

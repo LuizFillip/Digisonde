@@ -26,12 +26,13 @@ def pro_characteristics(infile):
     for col in df.columns:
         df[col] = pd.to_numeric(df[col])
     
-    return df.interpolate()
+    return df#.interpolate()
 
 def main():
-    infile = "database/Digisonde/SAA0K_20130316(075)_cha"
+    infile = "database/Digisonde/SAA0K_20130316(075)_cha_raw"
     
     df = pro_characteristics(infile)
-    
+    df.to_csv(infile)
   
 
+# main()
