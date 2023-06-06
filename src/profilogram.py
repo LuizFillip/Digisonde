@@ -2,6 +2,8 @@ import datetime as dt
 import pandas as pd
 import numpy as np
 import ionosphere as io
+np.seterr(divide='ignore', invalid='ignore')
+
 
 def frame_from_row(row):
     value = row.split("\n")
@@ -22,7 +24,6 @@ def frame_from_row(row):
     
     return pd.DataFrame(data, index = index)
     
-infile = "database/Digisonde/SAA0K_20130316(075).TXT"
 
 
 def process_data(infile):
@@ -39,21 +40,20 @@ def process_data(infile):
     return pd.concat(out)
 
 def main():
+    infile = "database/Digisonde/SAA0K_20130316(075).TXT"
+
     df = process_data(infile)
     
-    
+    df.to_csv(infile.replace("raw", "pro"))
     
     
 def load_profilogram(infile):
-    df = process_data(infile)
-    #df = pd.read_csv(infile, index_col = 0)
+    df = pd.read_csv(infile, index_col = 0)
     df.index = pd.to_datetime(df.index)
     
     # compute electron density in m3
     df["ne"] = (1.24e4 * df["freq"]**2) * 1e6
     df["L"] = io.scale_gradient(df["ne"], df["alt"])
     return df
-infile = "database/Digisonde/SAA0K_20130319(078)_raw"
-df = load_profilogram(infile)
 
-df.to_csv(infile.replace("raw", "pro"))
+
