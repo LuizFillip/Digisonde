@@ -96,14 +96,16 @@ def fixed_frequencies(infile):
     df = pd.DataFrame(structure_the_data(data), 
                       columns = header)
     
-    df.rename(columns = {"yyyy.MM.dd": "date", 
-                         "HH:mm:ss": "time", 
-                         "(DDD)": "doy"}, 
-              inplace = True)
+    df.rename(columns = {
+        "yyyy.MM.dd": "date", 
+        "HH:mm:ss": "time", 
+        "(DDD)": "doy"}, 
+        inplace = True
+        )
     
-    df.index = pd.to_datetime(df["date"] + 
-                              " " +
-                              df["time"])
+    df.index = pd.to_datetime(
+        df["date"] + " " + df["time"]
+        )
     
     df["time"] = df["time"].apply(lambda x: time_to_float(x))
     
@@ -114,11 +116,15 @@ def fixed_frequencies(infile):
         df.rename(columns = {col: name}, 
                   inplace = True)
         
-        df[name] = df[name].apply(pd.to_numeric, 
-                                  errors='coerce')
+        df[name] = df[name].apply(
+            pd.to_numeric, errors = 'coerce'
+            )
         
     df.drop(columns = {"date", "doy"}, 
             inplace = True) 
     
     return df
         
+# infile = 'database/Digisonde/raw'
+
+# fixed_frequencies(infile).to_csv('SAA0K_20130216_freq.txt')

@@ -2,15 +2,17 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import settings as s
 import numpy as np
+import digisonde as dg
+
 
 def plot_frequency(
-        ax, df
+        ax, df, parameter = 'freq'
         ):
 
     ds = pd.pivot_table(
         df, 
         index = "alt", 
-        values = "freq", 
+        values = parameter, 
         columns = df.index
         ).interpolate()
     
@@ -18,16 +20,18 @@ def plot_frequency(
         ds.columns, 
         ds.index, 
         ds.values, 
-                 30, cmap = "rainbow")
+        # 30, 
+        cmap = "rainbow")
     
     ticks = np.linspace(np.nanmin(ds.values), 
                         np.nanmax(ds.values), 6)
     s.colorbar_setting(
             img, ax, ticks, 
-            label = 'Frequência (MHz)')
+            label = 'Frequência (MHz)'
+            )
     
     ax.set(ylabel = "Altura (km)", 
-           ylim = [100, 600])
+           ylim = [100, 500])
     return ax
     
 def plot_electron_density(
@@ -97,5 +101,30 @@ def plot_profilogram(df):
     
     return fig
     
-fig = plot_profilogram(load())
-fig.savefig("digisonde/src/figures/profilogram_saa.png", dpi = 300)
+# fig = plot_profilogram(load())
+# fig.savefig("digisonde/src/figures/profilogram_saa.png", dpi = 300)
+
+# import matplotlib.pyplot as plt
+
+infile = "database/Digisonde/SAA0K_20130319(078)_pro"
+df = dg.load_profilogram(infile)
+# dn = dt.datetime(2013, 3, 17, 5)
+
+# ds = 
+
+# plt.plot(ds['ne'], ds['alt'])
+
+# df.index
+
+
+
+fig, ax = plt.subplots(
+        dpi = 300,
+        # figsize = (12, 8)
+)
+
+plot_frequency(
+        ax, df, parameter = 'L'
+        )
+
+df

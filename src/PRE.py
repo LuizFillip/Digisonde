@@ -27,21 +27,27 @@ def find_maximus(df: pd.DataFrame):
     return result
 
 
-def drift(df: pd.DataFrame) -> pd.DataFrame:
+def drift(df: pd.DataFrame, 
+          sel_columns = None) -> pd.DataFrame:
     
     """Compute the vertical drift with 
     (dh`F/dt) in meters per second"""
     
     data = df.copy()
+    
+    if sel_columns is not None:
+        columns = data.columns
+    else:
+        columns = sel_columns
         
-    for col in data.columns:
+    for col in columns:
         
         if col != "time":
         
             data[col] = (data[col].diff() / 
                          data["time"].diff()) / 3.6
-    cols = df.columns[1:]
-    data["avg"] = np.mean(data[cols], axis = 1)
+
+    data["avg"] = np.mean(data[columns[1:]], axis = 1)
     return data
 
 
@@ -94,5 +100,3 @@ def main():
     out = []
     for dn in np.unique(vz.index.date):
         print(get_pre(dn, vz))
-        
-# main()
