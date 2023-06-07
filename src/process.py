@@ -62,13 +62,11 @@ def structure_the_data(data: list) -> np.array:
     Function for organize the data (get from find_header function)
     in array format
     """
-    
-    
-    outside_second = []
+    out_second = []
     for first in range(len(data)):
         
-        outside_first = []
-        outside_second.append(outside_first)
+        out_first = []
+        out_second.append(out_first)
         
         for second in data[first].split():
             
@@ -77,11 +75,11 @@ def structure_the_data(data: list) -> np.array:
                      second != '---']
             
             if all(rules):
-                outside_first.append(second)
+                out_first.append(second)
             else:
-                outside_first.append(np.nan)
+                out_first.append(np.nan)
     
-    return np.array(outside_second)
+    return np.array(out_second)
     
       
 def fixed_frequencies(infile):

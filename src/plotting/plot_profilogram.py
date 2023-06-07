@@ -3,12 +3,15 @@ import pandas as pd
 import settings as s
 import numpy as np
 import digisonde as dg
+from labels import Labels
 
-
-def plot_frequency(
-        ax, df, parameter = 'freq'
+    
+def plot_contourf(
+        ax, 
+        df, 
+        parameter = 'ne'
         ):
-
+    
     ds = pd.pivot_table(
         df, 
         index = "alt", 
@@ -16,60 +19,30 @@ def plot_frequency(
         columns = df.index
         ).interpolate()
     
+    
     img = ax.contourf(
         ds.columns, 
         ds.index, 
         ds.values, 
-        # 30, 
+        30, 
         cmap = "rainbow")
     
     ticks = np.linspace(np.nanmin(ds.values), 
-                        np.nanmax(ds.values), 6)
-    s.colorbar_setting(
-            img, ax, ticks, 
-            label = 'Frequência (MHz)'
-            )
+                        np.nanmax(ds.values), 4)
     
-    ax.set(ylabel = "Altura (km)", 
-           ylim = [100, 500])
-    return ax
-    
-def plot_electron_density(
-        ax, df
-        ):
-    
-    ds = pd.pivot_table(
-        df, 
-        index = "alt", 
-        values = "ne", 
-        columns = df.index
-        ).interpolate()
-    
-    
-    img = ax.contourf(
-        ds.columns, 
-        ds.index, 
-        ds.values, 
-        30, cmap = "rainbow")
-    
-    ticks = np.linspace(np.nanmin(ds.values), 
-                        np.nanmax(ds.values), 6)
-    s.colorbar_setting(
-            img, ax, ticks, 
-            label = 'Densidade eletrônica ($m^{-3}$)'
-            )
-    
-    ax.set(ylabel = "Altura (km)", 
-           ylim = [100, 600])
-    
-    return ax
+    lbs = Labels().infos[parameter]
 
-def load():
-    infile = "database/Digisonde/SAA0K_20130316(075).TXT"
-    df = pd.read_csv(infile, index_col = 0)
-    df.index = pd.to_datetime(df.index)
-    df["ne"] = (1.24e4 * df["freq"]**2) * 1e6
-    return df
+    name = lbs['name']
+    units = lbs['units']
+    s.colorbar_setting(
+            img, ax, ticks, 
+            label = f'{name} ({units})'
+            )
+    
+    ax.set(ylabel = "Altura (km)", 
+           ylim = [150, 600])
+    
+    return ax
 
 
 def plot_profilogram(df):
@@ -78,8 +51,8 @@ def plot_profilogram(df):
             dpi = 300,
             sharex = True,
             sharey = True,
-            nrows = 2,
-            figsize = (12, 8)
+            nrows = 3,
+            figsize = (12, 14)
     )
     
     
@@ -87,10 +60,12 @@ def plot_profilogram(df):
     
     s.config_labels(fontsize = 20)
     
-    plot_frequency(ax[0], df)
-    plot_electron_density(ax[1], df)
+    plot_contourf(ax[0], df, parameter = 'freq')
+    plot_contourf(ax[1], df, parameter = 'ne')
+    plot_contourf(ax[2], df, parameter = 'L')
+    
     s.format_time_axes(
-            ax[1], 
+            ax[2], 
             hour_locator = 12, 
             day_locator = 1, 
             tz = "UTC",
@@ -101,30 +76,20 @@ def plot_profilogram(df):
     
     return fig
     
-# fig = plot_profilogram(load())
-# fig.savefig("digisonde/src/figures/profilogram_saa.png", dpi = 300)
 
-# import matplotlib.pyplot as plt
+def main():
+    infile = "database/Digisonde/SAA0K_20130319(078)_pro"
+    df = dg.load_profilogram(infile)
+    
+    df['L'] = df['L'] *1e5
+    
+    df = df.loc[~((df['L'] < -48) & 
+                  (df['L'] > 300) &
+                  (df['alt'] <= 150))]
+      
+    fig = plot_profilogram(df)
+    
+    # fig.savefig("digisonde/src/figures/profilogram_saa.png", dpi = 300)
+    
 
-infile = "database/Digisonde/SAA0K_20130319(078)_pro"
-df = dg.load_profilogram(infile)
-# dn = dt.datetime(2013, 3, 17, 5)
 
-# ds = 
-
-# plt.plot(ds['ne'], ds['alt'])
-
-# df.index
-
-
-
-fig, ax = plt.subplots(
-        dpi = 300,
-        # figsize = (12, 8)
-)
-
-plot_frequency(
-        ax, df, parameter = 'L'
-        )
-
-df
