@@ -81,5 +81,3 @@ def plot_vz_and_frequencies():
 
 
 # fig.savefig("digisonde/src/figures/vz_drift_heights.png", dpi = 300)
-
-

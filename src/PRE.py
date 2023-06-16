@@ -4,7 +4,8 @@ import os
 from utils import time2float
 import digisonde as dg
 import datetime as dt
-    
+from common import load
+
 
 def find_maximus(df: pd.DataFrame):
     """Get maximus for """
@@ -78,9 +79,13 @@ def get_pre(dn, df, col = "avg"):
     return df.idxmax().item(), round(df.max().item(), 3)
 
 
-def add_vzp(infile = "database/Digisonde/SAA0K_20130316(075)_freq"):
+def add_vzp(
+        infile = "database/Digisonde/SAA0K_20130216_freq.txt"
+        ):
 
-    vz = dg.drift(dg.fixed_frequencies(infile))
+    df= load(infile)
+    vz = dg.drift(df, 
+                  sel_columns = [6, 7, 8])
     
     out = {"idx": [], "vzp": []}
     for dn in np.unique(vz.index.date):
@@ -100,3 +105,12 @@ def main():
     out = []
     for dn in np.unique(vz.index.date):
         print(get_pre(dn, vz))
+
+# infile = "database/Digisonde/SAA0K_20130316(075)_freq"
+infile = "database/Digisonde/SAA0K_20130216_freq.txt"
+#df = dg.fixed_frequencies(infile)
+
+#
+
+
+# add_vzp(infile)
