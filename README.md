@@ -2,11 +2,13 @@
 
 This repository aims to describe the data processing of digisonde instrument.
 
-See (CEDAR Madrigal Database)[http://cedar.openmadrigal.org/] for more informations about database and files documentation.
+See (EMBRACE Database) for more informations about database and files documentation.
 
 - Compute vertical drift from derivate
-- Plotting and analysis themospheric temperature and winds
-- Filter and reduced the data
+- DRIFT-X analysis and data pipeline
+- Ionogram settigns (croping and plotting)
+- Analyis of digisonde characteristics (foF2, hmF2 and h`F2)
+- Process big data (many years)
 
 
 
