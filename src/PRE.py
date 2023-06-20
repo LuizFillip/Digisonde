@@ -52,21 +52,6 @@ def drift(df: pd.DataFrame,
     return data
 
 
-
-def general_vz(vz, uy, wd, i):
-    """
-    A general expression for vertical plasma drift including
-    the effect from meridional wind and plasma diffusion
-    """
-    I = np.radians(i)
-    
-    vz_term = vz * np.cos(I)
-    uy_term = uy * np.cos(I) * np.sin(I)
-    wd_term = wd * pow(np.sin(I), 2)
-    
-    return vz_term + uy_term - wd_term 
-
-
 def get_pre(dn, df, col = "avg"):
     
     b = dt.time(21, 0, 0)
@@ -74,7 +59,8 @@ def get_pre(dn, df, col = "avg"):
     
     df = df.loc[(df.index.time >= b) & 
                 (df.index.time <= e) & 
-                (df.index.date == dn), ["avg"]]
+                (df.index.date == dn), ["avg"]
+                ]
         
     return df.idxmax().item(), round(df.max().item(), 3)
 
@@ -83,9 +69,11 @@ def add_vzp(
         infile = "database/Digisonde/SAA0K_20130216_freq.txt"
         ):
 
-    df= load(infile)
-    vz = dg.drift(df, 
-                  sel_columns = [6, 7, 8])
+    df = load(infile)
+    vz = dg.drift(
+        df, 
+        sel_columns = [6, 7, 8]
+        )
     
     out = {"idx": [], "vzp": []}
     for dn in np.unique(vz.index.date):
@@ -94,6 +82,38 @@ def add_vzp(
         out["vzp"].append(vzp)
         
     return pd.DataFrame(out).set_index("idx")
+
+def repated_values(
+        drf, 
+        freq = '5min', 
+        periods = 133, 
+        timestart = 20
+        ):
+    
+    out = []
+    for day in drf.index:
+    
+        dn  = day + dt.timedelta(
+            hours = timestart
+            )
+        
+        new_index = pd.date_range(
+            dn, 
+            periods = periods, 
+            freq = '5min'
+            )
+        
+        data = drf[drf.index == day
+                         ].values.repeat(
+                             periods, axis=0)
+        
+        out.append(pd.DataFrame(data, 
+                     columns = ['vz'],
+                     index = new_index
+        ))
+        
+    return pd.concat(out)
+    
 
 def main():
     infile = "database/Digisonde/SAA0K_20130316(075)_freq"
@@ -106,11 +126,3 @@ def main():
     for dn in np.unique(vz.index.date):
         print(get_pre(dn, vz))
 
-# infile = "database/Digisonde/SAA0K_20130316(075)_freq"
-infile = "database/Digisonde/SAA0K_20130216_freq.txt"
-#df = dg.fixed_frequencies(infile)
-
-#
-
-
-# add_vzp(infile)
