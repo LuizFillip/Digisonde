@@ -1,8 +1,5 @@
 import datetime as dt
-import os
-import numpy as np
 import pandas as pd
-import math
 from utils import split_time
 
 embrace_infos = {
@@ -79,14 +76,34 @@ def get_datetime_pre(dn):
 
 
        
-def main():
-    infile = "database/process/SL_2014-2015/"
+def repated_values(
+        drf, 
+        freq = '5min', 
+        periods = 133, 
+        timestart = 20
+        ):
     
-    _, _, files = next(os.walk(infile))
+    out = []
+    for day in drf.index:
     
-    filename = files[0]
+        dn  = day + dt.timedelta(
+            hours = timestart
+            )
+        
+        new_index = pd.date_range(
+            dn, 
+            periods = periods, 
+            freq = '5min'
+            )
+        
+        data = drf[drf.index == day
+                         ].values.repeat(
+                             periods, axis=0)
+        
+        out.append(pd.DataFrame(data, 
+                     columns = ['vz'],
+                     index = new_index
+        ))
+        
+    return pd.concat(out)
     
-    name, lat, lon = get_infos(filename)
-    
-
-    print(name, lat, lon)

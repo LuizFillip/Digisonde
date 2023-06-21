@@ -1,38 +1,21 @@
 import pandas as pd
 import numpy as np
-import os
 from utils import time2float
 import digisonde as dg
 import datetime as dt
 from common import load
 
 
-def find_maximus(df: pd.DataFrame):
-    """Get maximus for """
-    result = {}
-
-    pre = df.max().values
-    times = df.idxmax().values
+def vertical_drift(
+        df: pd.DataFrame, 
+        sel_columns = None
+        ) -> pd.DataFrame:
     
-    for num, col in enumerate(df.columns[1:]):
-        
-        num = num + 1
-        
-        intime = pd.to_datetime(times[num])
-           
-        result[col] = list(
-            (time2float(intime), 
-             round(pre[num], 3))
-            )
-        
-    return result
-
-
-def drift(df: pd.DataFrame, 
-          sel_columns = None) -> pd.DataFrame:
-    
-    """Compute the vertical drift with 
-    (dh`F/dt) in meters per second"""
+    """
+    Compute the vertical drift with 
+    (dh`F/dt) from ionosonde fixed frequency 
+    (in meters per second)
+    """
     
     data = df.copy()
     
@@ -59,10 +42,51 @@ def get_pre(dn, df, col = "avg"):
     
     df = df.loc[(df.index.time >= b) & 
                 (df.index.time <= e) & 
-                (df.index.date == dn), ["avg"]
+                (df.index.date == dn), [col]
                 ]
         
     return df.idxmax().item(), round(df.max().item(), 3)
+
+
+def get_pre_in_year(df):
+    
+    year = df.index[0].yeart
+        
+    dates = pd.date_range(
+        f"{year}-1-1", 
+        f"{year + 1}-1-1", 
+        freq = "1D"
+        )
+    
+    out = {"vp": [], "time": []}
+    
+    for dn in dates:
+        
+        try:
+            df1 = df.loc[df.index.date == dn.date()]
+            tpre, vpre = get_pre(dn.date(), df1)
+            
+            out["vp"].append(vpre)
+            out["time"].append(tpre)
+        except:
+            out["vp"].append(np.nan)
+            out["time"].append(np.nan)
+            continue
+        
+        
+    ds = pd.DataFrame(out, index = dates)
+    
+    
+    
+    return ds
+
+def filter_error_vls(ds):
+    ds.loc[(ds.index.month <= 4) 
+           & (ds["vp"] < 10), "vp"] = np.nan
+    
+    ds.loc[ (ds.index.month > 9)
+           & (ds["vp"] < 10), "vp"] = np.nan
+    return ds
 
 
 def add_vzp(
@@ -83,37 +107,7 @@ def add_vzp(
         
     return pd.DataFrame(out).set_index("idx")
 
-def repated_values(
-        drf, 
-        freq = '5min', 
-        periods = 133, 
-        timestart = 20
-        ):
-    
-    out = []
-    for day in drf.index:
-    
-        dn  = day + dt.timedelta(
-            hours = timestart
-            )
-        
-        new_index = pd.date_range(
-            dn, 
-            periods = periods, 
-            freq = '5min'
-            )
-        
-        data = drf[drf.index == day
-                         ].values.repeat(
-                             periods, axis=0)
-        
-        out.append(pd.DataFrame(data, 
-                     columns = ['vz'],
-                     index = new_index
-        ))
-        
-    return pd.concat(out)
-    
+
 
 def main():
     infile = "database/Digisonde/SAA0K_20130316(075)_freq"

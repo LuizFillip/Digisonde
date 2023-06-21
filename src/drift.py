@@ -1,55 +1,6 @@
 import pandas as pd
-import os
 import numpy as np
 import datetime as dt
-
-
-
-
-def get_pre(dn, df):
-    
-    b = dt.time(21, 0, 0)
-    e = dt.time(22, 30, 0)
-    
-    df = df.loc[(df.index.time >= b) & 
-                (df.index.time <= e) & 
-                (df.index.date == dn), ["vz"]]
-        
-    return df.idxmax().item(), round(df.max().item(), 2)
-
-def get_pre_in_year(df):
-        
-    dates = pd.date_range("2013-1-1", "2013-12-31", freq = "1D")
-    
-    out = {"vp": [], "time": []}
-    
-    for dn in dates:
-        
-        try:
-            df1 = df.loc[df.index.date == dn.date()]
-            tpre, vpre = get_pre(dn.date(), df1)
-            
-            out["vp"].append(vpre)
-            out["time"].append(tpre)
-        except:
-            out["vp"].append(np.nan)
-            out["time"].append(np.nan)
-            continue
-        
-        
-    ds = pd.DataFrame(out, index = dates)
-    
-    
-    
-    return ds
-
-def filter_error_vls(ds):
-    ds.loc[(ds.index.month <= 4) 
-           & (ds["vp"] < 10), "vp"] = np.nan
-    
-    ds.loc[ (ds.index.month > 9)
-           & (ds["vp"] < 10), "vp"] = np.nan
-    return ds
 
 
 def load_export(infile):
@@ -88,44 +39,4 @@ def load_export(infile):
                   inplace = True)
         
     return df
-
-def process_day(infile, 
-                ext = "DVL", 
-                save_in = "20131.txt"):
-    
-    
-   files = os.listdir(infile)
-   files = [f for f in files if f.endswith(ext)]
-   out = []
-   for filename in files:
-       
-        out.append(load_export(os.path.join(infile, filename)))
-        
-  
-   return  pd.concat(out)
-
-
-main = 'D:\\drift\\SAA\\2013\\'
-
-files = os.listdir(main)
-
-out = []
-
-for folder in files:
-
-    infile = os.path.join(main, folder)
-    
-    print(folder)
-    try:
-        out.append(process_day(infile))
-    except:
-        
-        continue
-    
-df = pd.concat(out)
-
-df.to_csv('2013_drift.txt')
-
-print(df)
-
 
