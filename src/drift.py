@@ -99,17 +99,33 @@ def process_day(infile,
    out = []
    for filename in files:
        
-       try:
-           out.append(load_export(infile + filename))
-       except:
-           print(filename)
-           continue
-   df = pd.concat(out)
-   
-   df.to_csv(save_in, index = True)
-   
-   return df
+        out.append(load_export(os.path.join(infile, filename)))
+        
+  
+   return  pd.concat(out)
 
 
+main = 'D:\\drift\\SAA\\2013\\'
+
+files = os.listdir(main)
+
+out = []
+
+for folder in files:
+
+    infile = os.path.join(main, folder)
+    
+    print(folder)
+    try:
+        out.append(process_day(infile))
+    except:
+        
+        continue
+    
+df = pd.concat(out)
+
+df.to_csv('2013_drift.txt')
+
+print(df)
 
 
