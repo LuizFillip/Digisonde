@@ -75,9 +75,11 @@ def reindex_and_concat(df, name):
     
     for col in df.columns:
     
-        idx = pd.date_range(f"{col}", 
-                            freq = "5min", 
-                            periods = len(df))
+        idx = pd.date_range(
+            f"{col}", 
+            freq = "5min", 
+            periods = len(df)
+            )
         
         new_df = df[col]
         
@@ -105,7 +107,7 @@ def process_year(name):
 
     
 
-    
+from common import load_by_time
 
 infile = "database/Drift/SSA/PRO_2013.txt"
 
@@ -135,9 +137,30 @@ def load_drift(infile, freq = "2min"):
     df = pd.read_csv(infile, index_col = 0)
 
     df.index = pd.to_datetime(df.index)
+    
 
-    df["vz"] = smooth2(df["vz"], 3)
+    #df["vz"] = smooth2(df["vz"], 3)
     
     return sampled(df, freq = freq)
 
-# load_drift(infile, freq = "2min")
+def reduced_2():
+    df = load_drift(infile, freq = "5min")
+    
+    ds = load_by_time(infile)
+    
+    ds = ds.drop_duplicates()
+    
+    df1 = pd.DataFrame(
+         index = pd.date_range(
+             "2013-01-01 00:00", 
+             "2013-12-31 23:58", 
+             freq = '5min'
+     ))
+    
+    ds = pd.concat([ds, df1], axis = 1
+                   ).interpolate().bfill()
+    
+    
+    ds.resample('5min').asfreq().to_csv(infile)
+
+

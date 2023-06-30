@@ -1,6 +1,7 @@
 import datetime as dt
 import pandas as pd
 from utils import split_time
+from common import load_by_time
 
 embrace_infos = {
                 "FZA0M": {"name": "Fortaleza", 
@@ -80,7 +81,8 @@ def repated_values(
         drf, 
         freq = '5min', 
         periods = 133, 
-        timestart = 20
+        timestart = 20,
+        col = 'vp'
         ):
     
     out = []
@@ -96,14 +98,24 @@ def repated_values(
             freq = '5min'
             )
         
-        data = drf[drf.index == day
+        data = drf[
+            drf.index == day
                          ].values.repeat(
                              periods, axis=0)
         
         out.append(pd.DataFrame(data, 
-                     columns = ['vz'],
+                     columns = [col],
                      index = new_index
         ))
         
     return pd.concat(out)
+
+def main():
+    infile = 'database/Drift/PRE/SAA/2013.txt'
+    infile = "database/Drift/PRE/SAA/2013.txt"
     
+    df = load_by_time(infile)['vp']
+    
+    repated_values(df).to_csv('drift.txt')
+    
+# main()
