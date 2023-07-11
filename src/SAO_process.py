@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 import datetime
+import os
 
-
-def find_header(infile: str, 
-                header: str = 'yyyy.MM.dd'
-                ) -> tuple:
+def find_header(
+        infile: str, 
+        header: str = 'yyyy.MM.dd'
+        ) -> tuple:
     
     """Function for find the header and the data section"""
     
@@ -18,12 +19,8 @@ def find_header(infile: str,
             break
         else:
             count += 1
-
-    data_ = data[count + 2:]
-    
-    header_ = data[1].split()
-    
-    return (header_, data_)
+            
+    return data[1].split(), data[count + 2:]
 
 
 def time_to_float(intime) -> float:
@@ -123,6 +120,23 @@ def fixed_frequencies(infile):
     
     return df
         
-# infile = 'database/Digisonde/raw'
 
-# fixed_frequencies(infile).to_csv('SAA0K_20130216_freq.txt')
+def get_average():
+
+    infile = 'database/Digisonde/process/SL_2014-2015/'
+    
+    out = []
+    for filename in os.listdir(infile):
+    
+        df = fixed_frequencies(infile + filename)
+        
+        df['hf'] = df[[6, 7, 8]].mean(axis = 1)
+        
+        out.append(df[['hf', 'time']])
+        
+        
+    ds = pd.concat(out)
+    
+    ds.to_csv(infile + 'mean_hf.txt')
+    
+    return ds
