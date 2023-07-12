@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
-import RayleighTaylor as rt
-from common import plot_terminators
+from common import sun_terminator, load, sel_dates
 import settings as s
-
-
+import datetime as dt
+import digisonde as dg
 
 def plot_vertical_drift_and_pre(ds):
     
@@ -11,7 +10,7 @@ def plot_vertical_drift_and_pre(ds):
         figsize = (10, 5),
         dpi = 300)
     
-    ax.plot(ds[["vzp", "vz"]])
+    ax.plot(ds["vz"], label = "Vz")
     
     ax.axhline(0, linestyle = "--")
     ax.set(xlim = [ds.index[0], ds.index[-1]])
@@ -20,22 +19,18 @@ def plot_vertical_drift_and_pre(ds):
            xlim = [ds.index[0], ds.index[-1]], 
            ylim = [-75, 75])
     
-    ax.legend(["Vzp", "Vz"], loc = "upper left")
-    
-    plot_terminators(ax, ds)
-    
-    fig.suptitle("Varição diária da deriva vertical (DRIFT-X)")
+    ax.legend(loc = "upper left")
     
     return fig
 
 
+dn = dt.datetime(2014, 1, 3, 18)
+delta = dt.timedelta(hours = 10)
 
+infile = 'database/Digisonde/process/SL_2014-2015/mean_hf.txt'
 
-def main():
-    infile = "database/RayleighTaylor/reduced/300.txt"
-    df = rt.load_process(infile, apex = 300)
-    
-    ds = rt.split_by_freq(df, freq_per_split = "10D")[0]
-    
-    fig = plot_vertical_drift_and_pre(ds)
-    plt.show()
+df = dg.get_drift(load(infile))
+
+df = sel_dates(df, start = dn, end = dn + delta)
+
+plot_vertical_drift_and_pre(df)
