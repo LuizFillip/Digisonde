@@ -3,7 +3,16 @@ import numpy as np
 import digisonde as dg
 import datetime as dt
 from common import load_by_time
+from utils import smooth2
 
+def get_drift(df, col = 'hf'):
+    
+    df['vz'] = (df[col].diff() / 
+               df["time"].diff()) / 3.6
+    
+    df['vz'] = smooth2(df['vz'], 5)
+    
+    return df
 
 def vertical_drift(
         df: pd.DataFrame, 
@@ -32,7 +41,6 @@ def vertical_drift(
 
     data["avg"] = np.mean(data[columns[1:]], axis = 1)
     return data
-
 
 def get_pre(dn, df, col = "avg"):
     
@@ -97,7 +105,6 @@ def add_vzp(
         
     return pd.DataFrame(out).set_index("idx")
 
-from utils import smooth2
 
 def main():
     df = load_by_time('2013_drift.txt')
@@ -110,4 +117,3 @@ def main():
     
     ds.to_csv('database/Drift/PRE/SAA/2013.txt')
     
-# main()
