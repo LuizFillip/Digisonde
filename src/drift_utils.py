@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from utils import smooth2, time2float
+from utils import time2float
+from common import load_by_time
 
 
 def get_avg_std(df, only_values = True):
@@ -34,8 +35,10 @@ def filter_values(df,
                        arr, 
                        np.nan)
         
-        out.append(pd.DataFrame({col: res}, 
-                                index = df.index))
+        out.append(pd.DataFrame(
+            {col: res}, 
+            index = df.index)
+            )
         
     df = pd.concat(out, axis = 1)    
     if replace_nan:
@@ -107,7 +110,6 @@ def process_year(name):
 
     
 
-from common import load_by_time
 
 infile = "database/Drift/SSA/PRO_2013.txt"
 

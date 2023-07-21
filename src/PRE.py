@@ -2,10 +2,12 @@ import pandas as pd
 import numpy as np
 import digisonde as dg
 import datetime as dt
-from common import load_by_time
-from utils import smooth2
+from common import sun_terminator, load_by_time, sel_dates
+from utils import smooth2, dn2float
 
 def get_drift(df, col = 'hf'):
+    
+    df[col] = df[col].interpolate()
     
     df['vz'] = (df[col].diff() / 
                df["time"].diff()) / 3.6
@@ -42,19 +44,38 @@ def vertical_drift(
     data["avg"] = np.mean(data[columns[1:]], axis = 1)
     return data
 
-def get_pre(dn, df, col = "avg"):
+
+def sel_between_terminators(df, dn):
     
+    dn = pd.to_datetime(dn)
+    start = sun_terminator(dn, twilight_angle = 0)
+    end = sun_terminator(dn, twilight_angle = 18)
     
-    df = df.loc[
-        (df.index.time >= dt.time(21, 0, 0)) & 
-        (df.index.time <= dt.time(23, 0, 0)) & 
-        (df.index.date == dn), [col]
-        ]
+    return sel_dates(df, start = start, end = end)
+
+
+
+def get_pre(dn, df, col = "avg", dusk = True):
+    
+    if dusk:
+        df = sel_between_terminators(df, dn)
+
+    else:
         
-    return df.idxmax().item(), round(df.max().item(), 3)
+        df = df.loc[
+            (df.index.time >= dt.time(21, 0, 0)) & 
+            (df.index.time <= dt.time(23, 0, 0)) & 
+            (df.index.date == dn)
+            ]
+        
+    return df[col].idxmax(), round(df[col].max(), 3)
 
 
-def get_pre_in_year(df, col = 'vz'):
+def get_pre_in_year(
+        df, 
+        col = 'vz', 
+        dusk = True
+        ):
       
     out = {"vp": [], "time": []}
     
@@ -65,11 +86,11 @@ def get_pre_in_year(df, col = 'vz'):
         try:
             ds = df.loc[df.index.date == dn]
             tpre, vpre = get_pre(
-                dn, ds, col = col
+                dn, ds, col = col, dusk = dusk
                 )
             
             out["vp"].append(vpre)
-            out["time"].append(tpre)
+            out["time"].append(dn2float(tpre))
         except:
             out["vp"].append(np.nan)
             out["time"].append(np.nan)
@@ -78,13 +99,7 @@ def get_pre_in_year(df, col = 'vz'):
 
     return pd.DataFrame(out, index = dates)
 
-def filter_error_vls(ds):
-    ds.loc[(ds.index.month <= 4) 
-           & (ds["vp"] < 10), "vp"] = np.nan
-    
-    ds.loc[ (ds.index.month > 9)
-           & (ds["vp"] < 10), "vp"] = np.nan
-    return ds
+
 
 
 def add_vzp(
@@ -106,14 +121,28 @@ def add_vzp(
     return pd.DataFrame(out).set_index("idx")
 
 
-def main():
-    df = load_by_time('2013_drift.txt')
+def run_years():
     
-    df['vz'] = smooth2(df['vz'], 10)
+    for year in [2013, 2014, 2015]:
+        infile = f'{year}_drift.txt'
+        df = load_by_time(infile)
+        
+        df['vz'] = smooth2(df['vz'], 5)
     
-    ds = get_pre_in_year(df)
+            
+        ds = get_pre_in_year(df)
+        
+        save_in = 'database/Drift/PRE/SAA/'
+        ds.to_csv(save_in + f'{year}_2.txt')
     
-    ds['vp'].plot()
+
+    # infile = 'database/Digisonde/process/SL_2014-2015/mean_hf.txt'
     
-    ds.to_csv('database/Drift/PRE/SAA/2013.txt')
+    # df = get_drift(load_by_time(infile))
     
+    # ds = get_pre_in_year(
+    #         df, 
+    #         col = 'vz', 
+    #         dusk = True
+    #         )
+# run_years()
