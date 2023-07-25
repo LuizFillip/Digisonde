@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import digisonde as dg
 import datetime as dt
-from common import sun_terminator, load_by_time, sel_dates
-from utils import smooth2, dn2float
+from base import sun_terminator, load_by_time, sel_dates
+from base import smooth2, dn2float
 
 def get_drift(df, col = 'hf'):
     

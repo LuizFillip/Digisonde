@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-from utils import time2float
-from common import load_by_time
+from base import time2float, load_by_time
 
 
 def get_avg_std(df, only_values = True):

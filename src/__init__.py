@@ -4,9 +4,3 @@ from .utils import ionosonde_fname
 from .profilogram import load_profilogram
 from .PRE import vertical_drift, get_pre, add_vzp, get_drift
 from .utils import repated_values
-
-import settings as s
-
-s.config_labels()
-
-from .plotting import *
