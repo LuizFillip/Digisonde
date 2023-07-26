@@ -1,6 +1,4 @@
 import datetime as dt
-import pandas as pd
-from base import split_time, load_by_time
 
 
 embrace_infos = {
@@ -60,62 +58,3 @@ def ionosonde_fname(filename):
         
         
 
-def get_datetime_pre(dn):
-    infile ="database/Digisonde/vzp/FZ_PRE_2014_2015.txt"
-    
-    df = pd.read_csv(infile, index_col = 0)
-    
-    df.index = pd.to_datetime(df.index)
-   
-    time_sel = df.loc[df.index == dn, "time"]
-    
-    hour, minute = split_time(time_sel.item())
-    
-    return dt.datetime(
-        dn.year, dn.month, dn.day, 
-                hour, minute)
-
-
-       
-def repated_values(
-        drf, 
-        freq = '5min', 
-        periods = 133, 
-        timestart = 20,
-        col = 'vp'
-        ):
-    
-    out = []
-    for day in drf.index:
-    
-        dn  = day + dt.timedelta(
-            hours = timestart
-            )
-        
-        new_index = pd.date_range(
-            dn, 
-            periods = periods, 
-            freq = '5min'
-            )
-        
-        data = drf[
-            drf.index == day
-                         ].values.repeat(
-                             periods, axis=0)
-        
-        out.append(pd.DataFrame(data, 
-                     columns = [col],
-                     index = new_index
-        ))
-        
-    return pd.concat(out)
-
-def main():
-    infile = 'database/Drift/PRE/SAA/2013.txt'
-    infile = "database/Drift/PRE/SAA/2013.txt"
-    
-    df = load_by_time(infile)['vp']
-    
-    repated_values(df).to_csv('drift.txt')
-    
-# main()

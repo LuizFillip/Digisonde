@@ -55,9 +55,12 @@ def repated_values(
         
     return pd.concat(out)
 
-for year in [2013, 2014, 2015]:
-    ds = join_sao_and_drift(2014)
+def process_years():
+    
+    for year in [2013, 2014, 2015]:
+        ds = join_sao_and_drift(year)
+            
+        df = repated_values(ds)
+        save_in = f'digisonde/data/drift/PRE/SAA/R{year}.txt'
+        df.to_csv(save_in)
         
-    df = repated_values(ds)
-    save_in = f'database/Drift/PRE/SAA/R{year}.txt'
-    df.to_csv(save_in)
