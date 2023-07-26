@@ -8,8 +8,8 @@ def join_sao_and_drift(
         col = 'vp'
         ):
     
-    drift_file = f'database/Drift/PRE/SAA/{year}.txt'
-    sao_file = 'database/Digisonde/vzp/saa/2014_2015_2.txt'
+    drift_file = f'digisonde/data/drift/PRE/saa/{year}.txt'
+    sao_file = 'digisonde/data/PRE/saa/2014_2015_2.txt'
     
     df = load(drift_file)[col]
     df1 = load(sao_file)[col]
