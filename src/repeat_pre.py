@@ -45,7 +45,7 @@ def repated_values(
         data = drf[
             drf.index == day
                          ].values.repeat(
-                             periods, axis=0)
+                             periods, axis = 0)
         
         out.append(pd.DataFrame(data, 
                      columns = [col],
