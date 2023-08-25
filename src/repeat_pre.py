@@ -2,65 +2,53 @@ import pandas as pd
 from base import load
 import datetime as dt
 
-
-def join_sao_and_drift(
-        year = 2014, 
-        col = 'vp'
+def new_dataset(
+        day,
+        pre_value,
+        periods = 67, 
+        freq = '10min'
         ):
     
-    drift_file = f'digisonde/data/drift/PRE/saa/{year}.txt'
-    sao_file = 'digisonde/data/PRE/saa/2014_2015_2.txt'
+    dn = day + dt.timedelta(hours = 20)
     
-    df = load(drift_file)[col]
-    df1 = load(sao_file)[col]
+    idx = pd.date_range(
+        dn, 
+        periods = periods, 
+        freq = freq
+        )
     
-    df1 = df1.loc[df1.index.year == year]
+    dat = {'vzp': [pre_value] * periods}
     
-    ds = pd.concat([df1, df]).sort_index()
-    
-    return ds.groupby(ds.index).first().to_frame(col)
+    return pd.DataFrame(dat, index = idx)
 
-
-def repated_values(
-        drf, 
-        freq = '10min', 
-        periods = 133, 
-        timestart = 20,
-        col = 'vp'
-        ):
+def repeat_values(file):
+    
+    ds = load(file)
+    
+    ds.index = ds.index.date
     
     out = []
-    for day in drf.index:
     
-        dn  = day + dt.timedelta(
-            hours = timestart
+    for i, day in enumerate(ds.index):
+        
+        pre_value = ds.iloc[i, 0].item()
+        out.append(new_dataset(
+            pd.to_datetime(day), 
+            pre_value)
             )
-        
-        new_index = pd.date_range(
-            dn, 
-            periods = periods, 
-            freq = freq
-            )
-        
-        data = drf[
-            drf.index == day
-                         ].values.repeat(
-                             periods, axis = 0)
-        
-        out.append(pd.DataFrame(data, 
-                     columns = [col],
-                     index = new_index
-        )
-                   )
-        
+    
     return pd.concat(out)
 
 def process_years():
-    
-    for year in [2013, 2014, 2015]:
-        ds = join_sao_and_drift(year)
-            
-        df = repated_values(ds)
-        save_in = f'digisonde/data/drift/PRE/SAA/R{year}.txt'
-        df.to_csv(save_in)
+    infile = 'digisonde/data/drift/PRE/saa/'
+    for year in range(2016, 2023):
         
+        yr = f'{year}.txt'
+        df = repeat_values(infile + yr)
+
+        df.to_csv(infile +  f'R{year}.txt')
+    
+
+
+# process_years()
+

@@ -1,7 +1,7 @@
 import digisonde as dg
 import numpy as np
 import pandas as pd
-from base import (
+from base import (load,
     smooth2, dn2float)
 
 def get_drift(df, col = 'hf'):

@@ -21,7 +21,8 @@ def load_export(infile):
         
         df.index = pd.to_datetime(df[5] + " " + df[7])
         
-        df.drop(columns = list(range(8)) + list(range(18, 23)), 
+        df.drop(columns = list(
+            range(8)) + list(range(18, 23)), 
                 inplace = True)
     except:
         
@@ -39,15 +40,11 @@ def load_export(infile):
     for num, name in enumerate(df.columns):
         df.rename(columns = {name: names[num]}, 
                   inplace = True)
-        
+    
     return df
 
 
-
-
-def process_day(infile, 
-                ext = "DVL", 
-                save_in = "20131.txt"):
+def process_day(infile, ext = "DVL"):
     
     
    files = [f for f in tqdm(os.listdir(infile)) 
@@ -77,7 +74,7 @@ def process_year(main_path):
     return pd.concat(out)
 
 def run_years():
-    for year in range(2016, 2023):
+    for year in range(2012, 2023):
     
         main_path = f'D:\\drift\\SAA\\{year}\\'
         
@@ -86,8 +83,54 @@ def run_years():
             df = process_day(main_path)
         except:
             df = process_year(main_path)
+            
+            
         
         df.to_csv(f'{year}_drift.txt')
     
     
 # run_years()
+from GEO import sun_terminator
+
+year = 2014
+
+path = f'D:\\drift\{year}\\'
+
+# df= process_year(main_path)
+folder = os.listdir(path)[100]
+# df.to_csv(f'{year}_drift.txt')
+infile = os.path.join(path, folder)
+
+# df = process_day(infile)
+
+# df
+
+df = load_export(infile)
+
+dn = df.index[0].date()
+dn = pd.to_datetime(dn)
+start = sun_terminator(
+    dn, twilight_angle = 0, 
+    site = 'jic')
+end = sun_terminator(
+    dn, twilight_angle = 18, 
+    site = 'jic')
+
+import matplotlib.pyplot as plt
+import datetime as dt
+from base import smooth2, config_labels
+
+
+# df.index = df.index - dt.timedelta(hours = 5)
+
+# 
+# 
+df['vz'] = smooth2(df['vz'], 5)
+
+df['vz'].plot()
+# fig, ax = plt.subplots()
+# ax.plot(df['vz'])
+
+# ax.axvline(start)
+# ax.axvline(end)
+

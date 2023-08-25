@@ -1,49 +1,15 @@
 import pandas as pd
 import numpy as np
-import digisonde as dg
 import datetime as dt
-from base import sun_terminator, load_by_time, sel_dates
-from base import smooth2, dn2float
-
-def get_drift(df, col = 'hf'):
-    
-    df[col] = df[col].interpolate()
-    
-    df['vz'] = (df[col].diff() / 
-               df["time"].diff()) / 3.6
-    
-    df['vz'] = smooth2(df['vz'], 5)
-    
-    return df
-
-def vertical_drift(
-        df: pd.DataFrame, 
-        sel_columns = None
-        ) -> pd.DataFrame:
-    
-    """
-    Compute the vertical drift with 
-    (dh`F/dt) from ionosonde fixed frequency 
-    (in meters per second)
-    """
-    
-    data = df.copy()
-    
-    if sel_columns is not None:
-        columns = data.columns
-    else:
-        columns = sel_columns
-        
-    for col in columns:
-        
-        if col != "time":
-        
-            data[col] = (data[col].diff() / 
-                         data["time"].diff()) / 3.6
-
-    data["avg"] = np.mean(data[columns[1:]], axis = 1)
-    return data
-
+from tqdm import tqdm 
+from GEO import sun_terminator
+from base import ( 
+    load, 
+    sel_dates, 
+    smooth2, 
+    dn2float
+    )
+import os
 
 def sel_between_terminators(df, dn):
     
@@ -72,19 +38,27 @@ def get_pre(dn, df, col = "avg", dusk = True):
 
 
 def get_pre_in_year(
-        df, 
+        infile, 
         col = 'vz', 
         dusk = True
         ):
+    
+    df = load(infile)
+    
+    df['vz'] = smooth2(df['vz'], 5)
+    
       
     out = {"vp": [], "time": []}
     
     dates = np.unique(df.index.date)
+    year = str(dates[0].year)
     
-    for dn in dates:
+    
+    for dn in tqdm(dates, desc = year):
          
         try:
             ds = df.loc[df.index.date == dn]
+            
             tpre, vpre = get_pre(
                 dn, ds, col = col, dusk = dusk
                 )
@@ -99,50 +73,98 @@ def get_pre_in_year(
 
     return pd.DataFrame(out, index = dates)
 
-
-
-
-def add_vzp(
-        infile = "database/Digisonde/SAA0K_20130216_freq.txt"
-        ):
-
-    df = load_by_time(infile)
-    vz = dg.drift(
-        df, 
-        sel_columns = [6, 7, 8]
-        )
-    
-    out = {"idx": [], "vzp": []}
-    for dn in np.unique(vz.index.date):
-        idx, vzp = get_pre(dn, vz)
-        out["idx"].append(idx.date())
-        out["vzp"].append(vzp)
+def join_data(df, year):
         
-    return pd.DataFrame(out).set_index("idx")
+    infile = 'digisonde/data/PRE/saa/2014_2015_2.txt'
+    df2 = load(infile)
+
+    df2 = df2[df2.index.year == year]
+    
+    df.index = pd.to_datetime(df.index)
+    ds = pd.concat([df2, df])
+    
+    return ds.drop_duplicates()
 
 
 def run_years():
     
-    for year in [2013, 2014, 2015]:
-        infile = f'{year}_drift.txt'
-        df = load_by_time(infile)
-        
-        df['vz'] = smooth2(df['vz'], 5)
+    out = []
     
-            
-        ds = get_pre_in_year(df)
+    for year in np.arange(2013, 2023):
         
-        save_in = 'database/Drift/PRE/SAA/'
-        ds.to_csv(save_in + f'{year}_2.txt')
+        infile = 'digisonde/data/drift/data/'
+        
+        fname = f'{year}_drift.txt'
+        
+        df = get_pre_in_year(infile + fname).dropna()
+        
+        if (year == 2014 ) or (year == 2015):
+            
+            ds = join_data(df, year).copy()
+        else:
+            ds = df.copy()
+
+        out.append(ds)
+        
+    return pd.concat(out)
+        
+
+def join_sao_and_drift(
+        year = 2014, 
+        col = 'vp'
+        ):
+    
+    drift_file = f'digisonde/data/drift/PRE/saa/{year}.txt'
+    sao_file = 'digisonde/data/PRE/saa/2014_2015_2.txt'
+    
+    df = load(drift_file)[col]
+    df1 = load(sao_file)[col]
+    
+    df1 = df1.loc[df1.index.year == year]
+    
+    ds = pd.concat([df1, df]).sort_index()
+    
+    return ds.groupby(ds.index).first().to_frame(col)
+
+
     
 
-    # infile = 'database/Digisonde/process/SL_2014-2015/mean_hf.txt'
+
+
+def old_pre():
+    p = 'digisonde/data/drift/PRE/saa/'
+    out = []
+    for f in os.listdir(p):
+        
+        if 'R' not in f:
+            
+            df = load(p + f)
+            
+            df = df.rename(columns = {'vzp': 'vp'})
+            out.append(df)
+    df = pd.concat(out).sort_index()  
     
-    # df = get_drift(load_by_time(infile))
+    df.index = pd.to_datetime(df.index.date)
+    return df['vp'].to_frame('vp')
+
+
+def replacing_values():
     
-    # ds = get_pre_in_year(
-    #         df, 
-    #         col = 'vz', 
-    #         dusk = True
-    #         )
-# run_years()
+    infile = 'digisonde/data/drift/data/2022_drift.txt'
+    
+    df = load(infile)
+    
+    ds = load('pre_all_years.txt').replace(0, np.nan)
+        
+    ds = ds['vp'].to_frame('vp').dropna()
+    
+    df = old_pre().dropna()
+    
+    df2 = pd.concat([df, ds])
+     
+    df2 = df2.drop_duplicates()
+    
+    
+    df2.to_csv('pre_all_years_2.txt')
+    
+    
