@@ -9,7 +9,7 @@ from base import (
     smooth2, 
     dn2float
     )
-import os
+import digisonde as dg
 
 def sel_between_terminators(df, dn):
     
@@ -127,25 +127,6 @@ def join_sao_and_drift(
     return ds.groupby(ds.index).first().to_frame(col)
 
 
-    
-
-
-
-def old_pre():
-    p = 'digisonde/data/drift/PRE/saa/'
-    out = []
-    for f in os.listdir(p):
-        
-        if 'R' not in f:
-            
-            df = load(p + f)
-            
-            df = df.rename(columns = {'vzp': 'vp'})
-            out.append(df)
-    df = pd.concat(out).sort_index()  
-    
-    df.index = pd.to_datetime(df.index.date)
-    return df['vp'].to_frame('vp')
 
 
 def replacing_values():
@@ -158,7 +139,7 @@ def replacing_values():
         
     ds = ds['vp'].to_frame('vp').dropna()
     
-    df = old_pre().dropna()
+    df = dg.concat_all_pre_values().dropna()
     
     df2 = pd.concat([df, ds])
      
