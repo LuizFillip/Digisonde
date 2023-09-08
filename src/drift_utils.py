@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from base import time2float, load_by_time
+from base import time2float
 
 
 def get_avg_std(df, only_values = True):
@@ -144,24 +144,5 @@ def load_drift(infile, freq = "2min"):
     
     return sampled(df, freq = freq)
 
-def reduced_2():
-    df = load_drift(infile, freq = "5min")
-    
-    ds = load_by_time(infile)
-    
-    ds = ds.drop_duplicates()
-    
-    df1 = pd.DataFrame(
-         index = pd.date_range(
-             "2013-01-01 00:00", 
-             "2013-12-31 23:58", 
-             freq = '5min'
-     ))
-    
-    ds = pd.concat([ds, df1], axis = 1
-                   ).interpolate().bfill()
-    
-    
-    ds.resample('5min').asfreq().to_csv(infile)
 
 

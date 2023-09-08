@@ -3,12 +3,7 @@ import numpy as np
 import datetime as dt
 from tqdm import tqdm 
 from GEO import sun_terminator
-from base import ( 
-    load, 
-    sel_dates, 
-    smooth2, 
-    dn2float
-    )
+import base as b
 import digisonde as dg
 
 def sel_between_terminators(df, dn):
@@ -17,7 +12,7 @@ def sel_between_terminators(df, dn):
     start = sun_terminator(dn, twilight_angle = 0)
     end = sun_terminator(dn, twilight_angle = 18)
     
-    return sel_dates(df, start = start, end = end)
+    return b.sel_dates(df, start = start, end = end)
 
 
 
@@ -43,9 +38,9 @@ def get_pre_in_year(
         dusk = True
         ):
     
-    df = load(infile)
+    df = b.load(infile)
     
-    df['vz'] = smooth2(df['vz'], 5)
+    df['vz'] = b.smooth2(df['vz'], 5)
     
       
     out = {"vp": [], "time": []}
@@ -64,7 +59,7 @@ def get_pre_in_year(
                 )
             
             out["vp"].append(vpre)
-            out["time"].append(dn2float(tpre))
+            out["time"].append(b.dn2float(tpre))
         except:
             out["vp"].append(np.nan)
             out["time"].append(np.nan)
@@ -76,7 +71,7 @@ def get_pre_in_year(
 def join_data(df, year):
         
     infile = 'digisonde/data/PRE/saa/2014_2015_2.txt'
-    df2 = load(infile)
+    df2 = b.load(infile)
 
     df2 = df2[df2.index.year == year]
     
@@ -117,8 +112,8 @@ def join_sao_and_drift(
     drift_file = f'digisonde/data/drift/PRE/saa/{year}.txt'
     sao_file = 'digisonde/data/PRE/saa/2014_2015_2.txt'
     
-    df = load(drift_file)[col]
-    df1 = load(sao_file)[col]
+    df = b.load(drift_file)[col]
+    df1 = b.load(sao_file)[col]
     
     df1 = df1.loc[df1.index.year == year]
     
@@ -133,9 +128,9 @@ def replacing_values():
     
     infile = 'digisonde/data/drift/data/2022_drift.txt'
     
-    df = load(infile)
+    df = b.load(infile)
     
-    ds = load('pre_all_years.txt').replace(0, np.nan)
+    ds = b.load('pre_all_years.txt').replace(0, np.nan)
         
     ds = ds['vp'].to_frame('vp').dropna()
     
@@ -149,3 +144,8 @@ def replacing_values():
     df2.to_csv('pre_all_years_2.txt')
     
     
+    
+# infile = 'digisonde/data/drift/data/saa/2016_drift.txt'
+infile = 'G:/Meu Drive/Python/data-analysis/digisonde/data/drift/data/saa/2016_drift.txt'
+df = get_pre_in_year(infile).dropna()
+
