@@ -46,11 +46,12 @@ def vertical_drift(
                 ds[col] = b.smooth2(ds[col], 5)
         
             ds[col] = (ds[col].diff() / 
-                         ds["time"].diff()) / 3.6
+                       ds["time"].diff()) / 3.6
 
     ds["avg"] = np.mean(
-        ds[columns[1:]], axis = 1)
-    
+        ds[columns[1:]], 
+        axis = 1
+        )
     
     return ds
 
@@ -72,14 +73,18 @@ def add_vzp(
         
     return pd.DataFrame(out).set_index("idx")
 
-infile = 'database/iono/SAA0K_20130101(001).TXT'
-df = dg.fixed_frequencies(infile) 
+import datetime as dt
 
-vz = vertical_drift(
-     df, 
-     set_cols = [6, 7, 8, 9]
-     )
-
-
-
-vz
+def main():
+    
+    infile = 'database/iono/SAA0K_20130103(003).TXT'
+    
+    df = vertical_drift(
+         dg.fixed_frequencies(infile), 
+         set_cols = [5, 6, 7, 8]
+         )
+    
+    dn = dt.datetime(2013, 1, 1, 20)
+    ds = b.sel_times(df, dn)
+    
+    ds['avg'].plot()

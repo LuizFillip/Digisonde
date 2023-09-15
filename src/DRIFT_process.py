@@ -90,31 +90,13 @@ def run_years():
     
     
 # run_years()
-from GEO import sun_terminator
 
-year = 2014
-
-path = f'D:\\drift\{year}\\'
-
-# df= process_year(main_path)
-folder = os.listdir(path)[100]
-# df.to_csv(f'{year}_drift.txt')
-infile = os.path.join(path, folder)
-
-# df = process_day(infile)
-
-# df
 
 df = load_export(infile)
 
 dn = df.index[0].date()
 dn = pd.to_datetime(dn)
-start = sun_terminator(
-    dn, twilight_angle = 0, 
-    site = 'jic')
-end = sun_terminator(
-    dn, twilight_angle = 18, 
-    site = 'jic')
+
 
 import matplotlib.pyplot as plt
 import datetime as dt
