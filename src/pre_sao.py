@@ -1,23 +1,28 @@
 import digisonde as dg
 import numpy as np
 import pandas as pd
-from base import (load,
-    smooth2, dn2float)
+import base as b
 
-def get_drift(df, col = 'hf'):
+def get_drift(
+        df, 
+        set_cols = 'hf', 
+        smooth = False
+        ):
     
-    df[col] = df[col].interpolate()
+    df[set_cols] = df[set_cols].interpolate()
     
-    df['vz'] = (df[col].diff() / 
+    df['vz'] = (df[set_cols].diff() / 
                df["time"].diff()) / 3.6
     
-    df['vz'] = smooth2(df['vz'], 5)
+    if smooth:
+        df['vz'] = b.smooth2(df['vz'], 5)
     
     return df
 
 def vertical_drift(
         df: pd.DataFrame, 
-        sel_columns = None
+        set_cols = None, 
+        smooth = True
         ) -> pd.DataFrame:
     
     """
@@ -26,37 +31,55 @@ def vertical_drift(
     (in meters per second)
     """
     
-    data = df.copy()
+    ds = df.copy()
     
-    if sel_columns is not None:
-        columns = data.columns
+    if set_cols is None:
+        columns = ds.columns
     else:
-        columns = sel_columns
+        columns = set_cols
         
     for col in columns:
         
         if col != "time":
+            
+            if smooth:
+                ds[col] = b.smooth2(ds[col], 5)
         
-            data[col] = (data[col].diff() / 
-                         data["time"].diff()) / 3.6
+            ds[col] = (ds[col].diff() / 
+                         ds["time"].diff()) / 3.6
 
-    data["avg"] = np.mean(data[columns[1:]], axis = 1)
-    return data
+    ds["avg"] = np.mean(
+        ds[columns[1:]], axis = 1)
+    
+    
+    return ds
 
 def add_vzp(
         infile = "database/Digisonde/SAA0K_20130216_freq.txt"
         ):
 
-    df = load(infile)
+    df = b.load(infile)
     vz = dg.drift(
         df, 
-        sel_columns = [6, 7, 8]
+        sel_columns = [6, 7, 8, 9]
         )
     
     out = {"idx": [], "vzp": []}
     for dn in np.unique(vz.index.date):
-        idx, vzp = get_pre(dn, vz)
+        idx, vzp = dg.get_pre(dn, vz)
         out["idx"].append(idx.date())
         out["vzp"].append(vzp)
         
     return pd.DataFrame(out).set_index("idx")
+
+infile = 'database/iono/SAA0K_20130101(001).TXT'
+df = dg.fixed_frequencies(infile) 
+
+vz = vertical_drift(
+     df, 
+     set_cols = [6, 7, 8, 9]
+     )
+
+
+
+vz

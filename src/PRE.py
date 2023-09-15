@@ -146,6 +146,6 @@ def replacing_values():
     
     
 # infile = 'digisonde/data/drift/data/saa/2016_drift.txt'
-infile = 'G:/Meu Drive/Python/data-analysis/digisonde/data/drift/data/saa/2016_drift.txt'
-df = get_pre_in_year(infile).dropna()
+# infile = 'G:/Meu Drive/Python/data-analysis/digisonde/data/drift/data/saa/2016_drift.txt'
+# df = get_pre_in_year(infile).dropna()
 
