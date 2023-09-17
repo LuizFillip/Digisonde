@@ -3,21 +3,6 @@ import numpy as np
 import pandas as pd
 import base as b
 
-def get_drift(
-        df, 
-        set_cols = 'hf', 
-        smooth = False
-        ):
-    
-    df[set_cols] = df[set_cols].interpolate()
-    
-    df['vz'] = (df[set_cols].diff() / 
-               df["time"].diff()) / 3.6
-    
-    if smooth:
-        df['vz'] = b.smooth2(df['vz'], 5)
-    
-    return df
 
 def vertical_drift(
         df: pd.DataFrame, 
@@ -48,43 +33,95 @@ def vertical_drift(
             ds[col] = (ds[col].diff() / 
                        ds["time"].diff()) / 3.6
 
-    ds["avg"] = np.mean(
+    ds["vz"] = np.mean(
         ds[columns[1:]], 
         axis = 1
         )
     
     return ds
 
-def add_vzp(
-        infile = "database/Digisonde/SAA0K_20130216_freq.txt"
-        ):
 
-    df = b.load(infile)
-    vz = dg.drift(
-        df, 
-        sel_columns = [6, 7, 8, 9]
-        )
+def get_maximum_row(ts, dn, N = 5):
     
-    out = {"idx": [], "vzp": []}
-    for dn in np.unique(vz.index.date):
-        idx, vzp = dg.get_pre(dn, vz)
-        out["idx"].append(idx.date())
-        out["vzp"].append(vzp)
+    ts = ts[['vz', 'evz']]
+    
+    ts['max'] = ts['vz'].max()
+    ts['filt'] = b.running(ts['vz'], N)
+    
+    ds = dg.sel_between_terminators(ts, dn)
+    
+    if len(ds) == 0:
+        ds = ts.copy()
         
-    return pd.DataFrame(out).set_index("idx")
-
-import datetime as dt
-
-def main():
+    ds = ds.sort_values(
+        'vz',  
+        ascending = False
+        ).round(3)
     
-    infile = 'database/iono/SAA0K_20130103(003).TXT'
+
+    return ds.iloc[0, :].to_frame().T 
+
+def PRE_from_SAO(infile):
     
-    df = vertical_drift(
-         dg.fixed_frequencies(infile), 
-         set_cols = [5, 6, 7, 8]
+
+    vz = vertical_drift(
+         dg.fixed_frequencies(infile)
          )
+
+    vz['evz'] = vz.std(axis = 1)
     
-    dn = dt.datetime(2013, 1, 1, 20)
-    ds = b.sel_times(df, dn)
+    out = []
+    for dn in np.unique(vz.index.date):
+        
+        ts = vz.loc[vz.index.date == dn]
+        
+        out.append(
+            get_maximum_row(ts, dn, N = 5)
+            )
     
-    ds['avg'].plot()
+    return pd.concat(out)
+
+
+
+# concat()
+
+year = 2013
+
+
+infile = f"D:\\drift\\{year}.txt"
+df = b.load(infile)
+
+infile = f'database/iono/{year}'
+
+ds = PRE_from_SAO(infile)
+
+def join_drift_sao(ds, df):
+    
+    df1 = pd.concat([ds, df]).sort_index()
+    
+    df1['time'] = df1.index.time
+    
+    df1.index = pd.to_datetime(df1.index.date)
+    
+    df1['filt'].fillna(df1['vz'], inplace = True)
+    
+    return df1
+
+def missing_dates_2(year):
+    
+    df1 = join_drift_sao(ds, df)
+    
+    new_date_range = pd.date_range(
+        start = f"{year}-01-01", 
+        end = f"{year}-12-31", 
+        freq="D")
+    
+    
+    df1 = df1.reindex(new_date_range)
+    
+    return df1[df1['vz'].isna()].index
+
+
+missing_dates = missing_dates_2(year)
+    
+missing_dates
