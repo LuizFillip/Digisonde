@@ -6,11 +6,25 @@ from GEO import sun_terminator
 import base as b
 import digisonde as dg
 
-def sel_between_terminators(df, dn):
+pd.set_option('mode.chained_assignment', None)
+
+def sel_between_terminators(df, dn, site = 'saa'):
     
     dn = pd.to_datetime(dn)
-    start = sun_terminator(dn, twilight_angle = 0)
-    end = sun_terminator(dn, twilight_angle = 18)
+    
+    start = sun_terminator(
+        dn, 
+        twilight_angle = 0, 
+        site = site
+        )
+    end = sun_terminator(
+        dn, 
+        twilight_angle = 18, 
+        site = site
+        )
+    
+    if end < dn:
+        end += dt.timedelta(days = 1)
     
     return b.sel_dates(df, start = start, end = end)
 

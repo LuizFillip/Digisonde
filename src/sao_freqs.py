@@ -121,32 +121,11 @@ def fixed_frequencies(infile):
     return df
         
 
-def get_average():
+# infile = 'database/jic/freq/01_06_2013'
 
-    infile = 'database/Digisonde/process/SL_2014-2015/'
-    
-    out = []
-    for filename in os.listdir(infile):
-    
-        df = fixed_frequencies(infile + filename)
-        
-        df['hf'] = df[[6, 7, 8]].mean(axis = 1)
-        
-        out.append(df[['hf', 'time']])
-        
-        
-    ds = pd.concat(out)
-    
-    ds.to_csv(infile + 'mean_hf.txt')
-    
-    return ds
-
-infile = 'database/jic/sao/01_06_2013'
-
-header, data = find_header(infile)
-
-# df = pd.DataFrame(structure_the_data(data), 
-                  # columns = header)
+# df = fixed_frequencies(infile)
                   
-                  
-data[0]
+                
+# df['avg'] = df.mean(axis = 1)
+
+# df

@@ -2,6 +2,9 @@ import digisonde as dg
 import numpy as np
 import pandas as pd
 import base as b
+import GEO as gg
+
+pd.set_option('mode.chained_assignment', None)
 
 
 def vertical_drift(
@@ -41,14 +44,19 @@ def vertical_drift(
     return ds
 
 
-def get_maximum_row(ts, dn, N = 5):
+def get_maximum_row(
+        ts,
+        dn, 
+        site = 'saa',
+        N = 5
+        ):
     
     ts = ts[['vz', 'evz']]
     
     ts['max'] = ts['vz'].max()
     ts['filt'] = b.running(ts['vz'], N)
     
-    ds = dg.sel_between_terminators(ts, dn)
+    ds = dg.sel_between_terminators(ts, dn, site)
     
     if len(ds) == 0:
         ds = ts.copy()
@@ -58,10 +66,18 @@ def get_maximum_row(ts, dn, N = 5):
         ascending = False
         ).round(3)
     
+    ds = ds.iloc[0, :].to_frame().T 
+    ds.index = [dn]
+    return ds
 
-    return ds.iloc[0, :].to_frame().T 
+import datetime as dt 
 
-def PRE_from_SAO(infile):
+def empty(dn):
+    data = {'vz': np.nan, 'evz': np.nan, 
+          'max': np.nan,  'filt': np.nan}
+    return pd.DataFrame(data, index = [dn])
+
+def PRE_from_SAO(infile, site):
     
 
     vz = vertical_drift(
@@ -71,51 +87,49 @@ def PRE_from_SAO(infile):
     vz['evz'] = vz.std(axis = 1)
     
     out = []
-    for dn in np.unique(vz.index.date):
+    dates = np.unique(vz.index.date)
+    
+    for dn in pd.to_datetime(dates):
         
-        ts = vz.loc[vz.index.date == dn]
+        delta = dt.timedelta(hours = 21)
         
-        out.append(
-            get_maximum_row(ts, dn, N = 5)
+        ts =  b.sel_times(
+            vz, dn + delta, hours = 6
             )
+        
+        try:
+            out.append(
+                get_maximum_row(
+                    ts, dn, site = site
+                    )
+                )
+        except:
+            out.append(empty(dn))
+            continue
     
     return pd.concat(out)
 
 
+# vz = vertical_drift(
+#      dg.fixed_frequencies(infile)
+#      )
 
-pd.set_option('mode.chained_assignment', None)
+# vz['evz'] = vz.std(axis = 1)
 
+# vz
 
-def join_drift_sao(ds, df):
+# dates = np.unique(vz.index.date)
+
+# # for dn in pd.to_datetime(dates):
     
-    df1 = pd.concat([ds, df]).sort_index()
-    
-    df1['time'] = df1.index.time
-    
-    df1.index = pd.to_datetime(df1.index.date)
-    
-    df1['filt'].fillna(df1['vz'], inplace = True)
-    
-    return df1.sort_index()
+# dn = pd.to_datetime(dates)[0]
+# delta = dt.timedelta(hours = 21)
 
+# ts =  b.sel_times(
+#     vz, dn + delta, hours = 6
+#     )
 
-# # def main():
-# year = 2021
+# get_maximum_row(
+#     ts, dn, site = 'jic'
+#     )
 
-
-# infile = f"D:\\drift\\{year}.txt"
-# df = b.load(infile)
-
-# infile = f'database/iono/{year}'
-
-# ds = PRE_from_SAO(infile)
-
-# ds = ds.interpolate()
-
-# ds1 = join_drift_sao(ds, df)
-# # 
-# ds1['filt'].plot()
-
-
-
-# ds1
