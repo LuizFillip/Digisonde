@@ -83,17 +83,8 @@ def PRE_from_SAO(infile):
 
 
 
-# concat()
+pd.set_option('mode.chained_assignment', None)
 
-year = 2013
-
-
-infile = f"D:\\drift\\{year}.txt"
-df = b.load(infile)
-
-infile = f'database/iono/{year}'
-
-ds = PRE_from_SAO(infile)
 
 def join_drift_sao(ds, df):
     
@@ -105,23 +96,26 @@ def join_drift_sao(ds, df):
     
     df1['filt'].fillna(df1['vz'], inplace = True)
     
-    return df1
-
-def missing_dates_2(year):
-    
-    df1 = join_drift_sao(ds, df)
-    
-    new_date_range = pd.date_range(
-        start = f"{year}-01-01", 
-        end = f"{year}-12-31", 
-        freq="D")
-    
-    
-    df1 = df1.reindex(new_date_range)
-    
-    return df1[df1['vz'].isna()].index
+    return df1.sort_index()
 
 
-missing_dates = missing_dates_2(year)
-    
-missing_dates
+# # def main():
+# year = 2021
+
+
+# infile = f"D:\\drift\\{year}.txt"
+# df = b.load(infile)
+
+# infile = f'database/iono/{year}'
+
+# ds = PRE_from_SAO(infile)
+
+# ds = ds.interpolate()
+
+# ds1 = join_drift_sao(ds, df)
+# # 
+# ds1['filt'].plot()
+
+
+
+# ds1

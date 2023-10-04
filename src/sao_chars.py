@@ -3,36 +3,42 @@ import pandas as pd
 
 
 
-def pro_characteristics(infile):
+def pipeline_char(infile):
     f = open(infile).readlines()
     
     raw_data = [f[i].split() for i 
                 in range(2, len(f))]
         
-    colums = ["date", "doy", "time", 
-              'foF2', 'h`F2', 'QF', 
-              'hmF2', 'f(hF2)']
+    colums = [
+        "date", "doy", "time", 
+              'foF2', 'hF2', 'QF', 
+              'hmF2', 'f(hF)', 'f(hF2)']
     
-    df = pd.DataFrame(raw_data, columns = colums)
+    df = pd.DataFrame(
+        raw_data, 
+        columns = colums)
     
     df.index = pd.to_datetime(
         df["date"] + " " + df["time"]
         )
     
-    df.drop(columns = colums[:3], inplace = True)
+    df.drop(
+        columns = colums[:3], 
+        inplace = True
+        )
     
     df = df.replace("---", np.nan)
     
     for col in df.columns:
         df[col] = pd.to_numeric(df[col])
     
-    return df#.interpolate()
+    return df
 
 def main():
     infile = "database/Digisonde/SAA0K_20130316(075)_cha_raw"
     
-    df = pro_characteristics(infile)
+    df = pipeline_char(infile)
     df.to_csv(infile)
   
 
-# main()
+

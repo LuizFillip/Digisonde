@@ -140,3 +140,13 @@ def get_average():
     ds.to_csv(infile + 'mean_hf.txt')
     
     return ds
+
+infile = 'database/jic/sao/01_06_2013'
+
+header, data = find_header(infile)
+
+# df = pd.DataFrame(structure_the_data(data), 
+                  # columns = header)
+                  
+                  
+data[0]

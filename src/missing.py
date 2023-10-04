@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 from base import load, sel_times 
 import os
+import digisonde as dg 
+
 
 
 def find_missing_values(a, b):
@@ -52,4 +54,19 @@ def test(year, dn):
     ts = df.between_time('18:00', '23:00')
 
 
-# miss_data
+def missing_dates_2(year):
+    
+    df = load( f"D:\\drift\\{year}.txt")
+    ds = dg.PRE_from_SAO(f'database/iono/{year}')
+    
+    df1 = dg.join_drift_sao(ds, df)
+    
+    new_date_range = pd.date_range(
+        start = f"{year}-01-01", 
+        end = f"{year}-12-31", 
+        freq="D")
+    
+    
+    df1 = df1.reindex(new_date_range)
+    
+    return df1[df1['vz'].isna()].index

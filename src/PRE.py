@@ -16,7 +16,12 @@ def sel_between_terminators(df, dn):
 
 
 
-def get_pre(dn, df, col = "avg", dusk = True):
+def get_pre(
+        dn, 
+        df, 
+        col = "avg", 
+        dusk = True
+        ):
     
     if dusk:
         df = sel_between_terminators(df, dn)
