@@ -1,7 +1,9 @@
 import pandas as pd
 import os
 from tqdm import tqdm
-
+# import matplotlib.pyplot as plt
+# import datetime as dt
+import base as b 
 
 def load_export(infile):
     
@@ -41,6 +43,8 @@ def load_export(infile):
         df.rename(columns = {name: names[num]}, 
                   inplace = True)
     
+    
+
     return df
 
 
@@ -74,45 +78,35 @@ def process_year(main_path):
     return pd.concat(out)
 
 def run_years():
-    for year in range(2012, 2023):
-    
-        main_path = f'D:\\drift\\SAA\\{year}\\'
+    finfile = 'D:\\drift\\JIC\\2017\\'
+
+    files = os.listdir(infile)
+
+    out = []
+    date = []
+    for fname in files:
         
         try:
+            df = load_export(infile + fname)
+            df['vz'] = b.smooth2(df['vz'], 5)
             
-            df = process_day(main_path)
+            dn = pd.to_datetime(
+                df.index[0].date(
+                    ))
+            
+            ds = b.sel_times(df, dn, hours = 1.5)
+            
+            out.append(ds['vz'].max())
+            date.append(dn)
+                
         except:
-            df = process_year(main_path)
-            
-            
+            continue
         
-        df.to_csv(f'{year}_drift.txt')
+        
+    plt.scatter(date, out)
+
     
     
-# run_years()
 
 
-df = load_export(infile)
-
-dn = df.index[0].date()
-dn = pd.to_datetime(dn)
-
-
-import matplotlib.pyplot as plt
-import datetime as dt
-from base import smooth2, config_labels
-
-
-# df.index = df.index - dt.timedelta(hours = 5)
-
-# 
-# 
-df['vz'] = smooth2(df['vz'], 5)
-
-df['vz'].plot()
-# fig, ax = plt.subplots()
-# ax.plot(df['vz'])
-
-# ax.axvline(start)
-# ax.axvline(end)
-
+# ds['vz'].plot()

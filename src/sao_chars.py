@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
+import digisonde as dg
+import base as b 
+import datetime as dt 
 
 
-
-def pipeline_char(infile):
+def chars(infile):
     f = open(infile).readlines()
     
     raw_data = [f[i].split() for i 
@@ -11,12 +13,14 @@ def pipeline_char(infile):
         
     colums = [
         "date", "doy", "time", 
-              'foF2', 'hF2', 'QF', 
-              'hmF2', 'f(hF)', 'f(hF2)']
+        'foF2', 'hF2', 'QF', 
+        'hmF2', 'f(hF)', 'f(hF2)'
+        ]
     
     df = pd.DataFrame(
         raw_data, 
-        columns = colums)
+        columns = colums
+        )
     
     df.index = pd.to_datetime(
         df["date"] + " " + df["time"]
@@ -34,11 +38,54 @@ def pipeline_char(infile):
     
     return df
 
-def main():
-    infile = "database/Digisonde/SAA0K_20130316(075)_cha_raw"
+
+
+
+
+
+def velocity(df, col = 'hF2'):
     
-    df = pipeline_char(infile)
-    df.to_csv(infile)
+    df['time'] = b.time2float(df.index.time)
+    
+    df['vz'] = (df[col].diff() /  df['time'].diff()) / 3.6
+    
+    df['vz'] = b.smooth2(df['vz'], 5)
+    
+    return df
+
+import matplotlib.pyplot as plt
+
+infile = "database/jic/sao/2015"
+
+
+df =  velocity(
+    chars(infile), col = 'hF2'
+    )
+
+dates = pd.to_datetime(
+    np.unique(df.index.date)
+    )
+
+out = []
+for dn in dates:
+    
+    delta = dt.timedelta(hours = 20)
+
+# ds = dg.sel_between_terminators(
+#         df, 
+#         dn + delta, 
+#         site = 'jic'
+#         )
+
+    ds = b.sel_times(
+        df,
+        dn + delta, 
+        hours = 5
+        )
+    
+    out.append(ds['vz'].max())
+    
+
+plt.scatter(dates, out)
   
-
-
+plt.ylim([0, 50])

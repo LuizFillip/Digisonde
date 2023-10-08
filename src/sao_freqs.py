@@ -8,7 +8,8 @@ def find_header(
         header: str = 'yyyy.MM.dd'
         ) -> tuple:
     
-    """Function for find the header and the data section"""
+    """Function for find the header
+    and the data section"""
     
     with open(infile) as f:
         data = [line.strip() for line in f.readlines()]
@@ -23,27 +24,28 @@ def find_header(
     return data[1].split(), data[count + 2:]
 
 
-def time_to_float(intime) -> float:
+def time_to_float(dn) -> float:
     """
     Function for to convert time into float number
     Parameters
     ---------
-        intime: str (like "22:10:00") or datetime.time or datetime.datetime
-    >>> intime = datetime.datetime(2013, 1, 1, 22, 10, 0)
-    >>> time_to_float(intime)
+        dn: str (like "22:10:00") or datetime.time 
+        or datetime.datetime
+    >>> dn = datetime.datetime(2013, 1, 1, 22, 10, 0)
+    >>> time_to_float(dn)
     ... 22.167
     """
     try:
-        if (isinstance(intime, datetime.datetime) or 
-            isinstance(intime, datetime.time)):
+        if (isinstance(dn, datetime.datetime) or 
+            isinstance(dn, datetime.time)):
             
-            time_list = [intime.hour, 
-                         intime.minute, 
-                         intime.second]
+            time_list = [dn.hour, 
+                         dn.minute, 
+                         dn.second]
             
-        elif ":" in intime:
+        elif ":" in dn:
             time_list = [int(num) for num 
-                         in str(intime).split(":")]
+                         in str(dn).split(":")]
     except:
         raise TypeError("The input parameter" + 
                         "must be datetime.datime or clock format")
@@ -56,7 +58,8 @@ def time_to_float(intime) -> float:
 def structure_the_data(data: list) -> np.array:
     
     """
-    Function for organize the data (get from find_header function)
+    Function for organize the data 
+    (get from find_header function)
     in array format
     """
     out_second = []

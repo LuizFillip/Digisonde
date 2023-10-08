@@ -2,15 +2,27 @@ import digisonde as dg
 import numpy as np
 import pandas as pd
 import base as b
-import GEO as gg
-
+import datetime as dt 
+import matplotlib.pyplot as plt 
+import os
+from tqdm import tqdm 
 pd.set_option('mode.chained_assignment', None)
 
+def velocity(
+        ds, col, 
+        smooth = True
+        ):
+    if smooth:
+        ds[col] = b.smooth2(ds[col], 5)
+
+    ds[col] = (ds[col].diff() / 
+               ds["time"].diff()) / 3.6
+    
+    return ds
 
 def vertical_drift(
         df: pd.DataFrame, 
-        set_cols = None, 
-        smooth = True
+        set_cols = None
         ) -> pd.DataFrame:
     
     """
@@ -29,13 +41,11 @@ def vertical_drift(
     for col in columns:
         
         if col != "time":
-            
-            if smooth:
-                ds[col] = b.smooth2(ds[col], 5)
-        
-            ds[col] = (ds[col].diff() / 
-                       ds["time"].diff()) / 3.6
+            ds[col] = b.smooth2(ds[col], 5)
 
+            ds[col] = (ds[col].diff() / 
+                   ds["time"].diff()) / 3.6
+            
     ds["vz"] = np.mean(
         ds[columns[1:]], 
         axis = 1
@@ -56,7 +66,8 @@ def get_maximum_row(
     ts['max'] = ts['vz'].max()
     ts['filt'] = b.running(ts['vz'], N)
     
-    ds = dg.sel_between_terminators(ts, dn, site)
+    ds = dg.sel_between_terminators(
+        ts, dn, site)
     
     if len(ds) == 0:
         ds = ts.copy()
@@ -70,11 +81,14 @@ def get_maximum_row(
     ds.index = [dn]
     return ds
 
-import datetime as dt 
 
 def empty(dn):
-    data = {'vz': np.nan, 'evz': np.nan, 
-          'max': np.nan,  'filt': np.nan}
+    data = {
+        'vz': np.nan, 
+        'evz': np.nan, 
+        'max': np.nan, 
+        'filt': np.nan
+        }
     return pd.DataFrame(data, index = [dn])
 
 def PRE_from_SAO(infile, site):
@@ -89,12 +103,12 @@ def PRE_from_SAO(infile, site):
     out = []
     dates = np.unique(vz.index.date)
     
-    for dn in pd.to_datetime(dates):
+    for dn in tqdm(pd.to_datetime(dates)):
         
         delta = dt.timedelta(hours = 21)
         
         ts =  b.sel_times(
-            vz, dn + delta, hours = 6
+            vz, dn + delta, hours = 4
             )
         
         try:
@@ -110,26 +124,15 @@ def PRE_from_SAO(infile, site):
     return pd.concat(out)
 
 
-# vz = vertical_drift(
-#      dg.fixed_frequencies(infile)
-#      )
+infile = 'database/jic/freq/'
 
-# vz['evz'] = vz.std(axis = 1)
+out = []
+for fname in os.listdir(infile):
+    out.append(
+        PRE_from_SAO(infile + fname,
+                     site = 'jic'))
 
-# vz
+df = pd.concat(out)
+save_in = 'digisonde/data/PRE/jic/2013_2021.txt'
 
-# dates = np.unique(vz.index.date)
-
-# # for dn in pd.to_datetime(dates):
-    
-# dn = pd.to_datetime(dates)[0]
-# delta = dt.timedelta(hours = 21)
-
-# ts =  b.sel_times(
-#     vz, dn + delta, hours = 6
-#     )
-
-# get_maximum_row(
-#     ts, dn, site = 'jic'
-#     )
-
+df.to_csv(save_in)

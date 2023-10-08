@@ -44,7 +44,8 @@ def filter_values(df,
         
         df["avg"] = avg
         for col in df.columns:
-            df.loc[df[col].isnull(), col] = df['avg']
+            df.loc[
+                df[col].isnull(), col] = df['avg']
             
         del df["avg"]
         return df
@@ -56,9 +57,11 @@ def pivot_data(n, col,
                smoothed = True, 
                resample = True):
 
-    df = load_drift(n, 
-                    smoothed = smoothed, 
-                    resample = resample)
+    df = load_drift(
+        n, 
+        smoothed = smoothed, 
+        resample = resample
+        )
     
    
     df["time"] = time2float(df.index.time)
@@ -87,7 +90,9 @@ def reindex_and_concat(df, name):
         
         new_df.index = idx
         
-        out.append(new_df.to_frame(name = name))
+        out.append(
+            new_df.to_frame(name)
+            )
         
     return pd.concat(out)
 
@@ -104,15 +109,6 @@ def process_year(name):
             df_filtered, name))
     
     return pd.concat(out)
-
-
-
-    
-
-
-infile = "database/Drift/SSA/PRO_2013.txt"
-
-
 
 
 
@@ -138,10 +134,7 @@ def load_drift(infile, freq = "2min"):
     df = pd.read_csv(infile, index_col = 0)
 
     df.index = pd.to_datetime(df.index)
-    
-
-    #df["vz"] = smooth2(df["vz"], 3)
-    
+        
     return sampled(df, freq = freq)
 
 
