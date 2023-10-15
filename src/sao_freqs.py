@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-import datetime
-import os
+import datetime as dt
+import base as b
 
 def find_header(
         infile: str, 
@@ -36,8 +36,8 @@ def time_to_float(dn) -> float:
     ... 22.167
     """
     try:
-        if (isinstance(dn, datetime.datetime) or 
-            isinstance(dn, datetime.time)):
+        if (isinstance(dn, dt.datetime) or 
+            isinstance(dn, dt.time)):
             
             time_list = [dn.hour, 
                          dn.minute, 
@@ -82,7 +82,7 @@ def structure_the_data(data: list) -> np.array:
     return np.array(out_second)
     
       
-def fixed_frequencies(infile):
+def freq_fixed(infile):
     
     """
     Get pandas dataframe from the data (already organized), 
@@ -105,7 +105,8 @@ def fixed_frequencies(infile):
         df["date"] + " " + df["time"]
         )
     
-    df["time"] = df["time"].apply(lambda x: time_to_float(x))
+    df["time"] = df["time"].apply(
+        lambda x: time_to_float(x))
     
     for col in df.columns[3:]:
         
@@ -115,20 +116,17 @@ def fixed_frequencies(infile):
                   inplace = True)
         
         df[name] = df[name].apply(
-            pd.to_numeric, errors = 'coerce'
+            pd.to_numeric, 
+            errors = 'coerce'
             )
         
     df.drop(columns = {"date", "doy"}, 
             inplace = True) 
     
+    for col in df.columns:
+        if col != 'time':
+            df[col] = b.smooth2(df[col], 5)
+    
     return df
         
 
-# infile = 'database/jic/freq/01_06_2013'
-
-# df = fixed_frequencies(infile)
-                  
-                
-# df['avg'] = df.mean(axis = 1)
-
-# df
