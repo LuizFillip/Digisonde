@@ -8,6 +8,10 @@ import os
 from tqdm import tqdm 
 pd.set_option('mode.chained_assignment', None)
 
+
+PATH_FREQ = 'database/jic/freq/'
+
+
 def velocity(
         ds, col, 
         smooth = True
@@ -51,7 +55,10 @@ def vertical_drift(
         axis = 1
         )
     
-    return ds
+    midnight = (ds.index.time == dt.time(0, 0))
+    ds.loc[midnight] = np.nan
+    
+    return ds#.interpolate()
 
 
 def get_maximum_row(
@@ -61,7 +68,7 @@ def get_maximum_row(
         N = 5
         ):
     
-    ts = ts[['vz', 'evz']]
+    # ts = ts[['vz', 'evz']]
     
     ts['max'] = ts['vz'].max()
     ts['filt'] = b.running(ts['vz'], N)
@@ -95,7 +102,7 @@ def PRE_from_SAO(infile, site):
     
 
     vz = vertical_drift(
-         dg.fixed_frequencies(infile)
+         dg.freq_fixed(infile)
          )
 
     vz['evz'] = vz.std(axis = 1)
@@ -124,15 +131,60 @@ def PRE_from_SAO(infile, site):
     return pd.concat(out)
 
 
-infile = 'database/jic/freq/'
+def check_night(ts):
+    
+    drop_ts = ts.dropna(subset = 'vz')
 
-out = []
-for fname in os.listdir(infile):
-    out.append(
-        PRE_from_SAO(infile + fname,
-                     site = 'jic'))
+    if len(drop_ts) < 5:
+        return np.nan
+    else:
+        return drop_ts.interpolate()
 
-df = pd.concat(out)
-save_in = 'digisonde/data/PRE/jic/2013_2021.txt'
 
-df.to_csv(save_in)
+def data_pre(ts, dn):
+    
+    ts = check_night(ts)
+    
+    try:
+        out = {'vz': ts['vz'].max()}
+    except:
+        out = {'vz': np.nan}
+    
+    return pd.DataFrame(
+        out, index = [dn])
+
+def run():
+    
+    out = []
+    for fname in os.listdir(PATH_FREQ):
+    
+        infile = os.path.join(
+            PATH_FREQ, 
+            fname
+            )
+        
+        vz = vertical_drift(
+             dg.freq_fixed(infile)
+             )
+        
+        
+        # def unique_dates()
+        dates = pd.to_datetime(
+            np.unique(vz.index.date)
+            )
+     
+        for dn in dates:
+            
+            delta = dt.timedelta(hours = 21)
+            
+            ds = b.sel_times(
+                    vz, dn + delta, hours = 8
+                    )
+            
+            out.append(data_pre(ds, dn))
+            
+            
+    return pd.concat(out).sort_index()
+
+
+# ds.loc[ds.index.year == 2021].plot()
