@@ -76,15 +76,16 @@ def process_year(main_path):
         except:
             continue
     return pd.concat(out)
-
-def run_years():
-    finfile = 'D:\\drift\\JIC\\2017\\'
+from tqdm import tqdm 
+import matplotlib.pyplot as plt
+def run_years(year):
+    infile = f'D:\\drift\\JIC\\{year}\\'
 
     files = os.listdir(infile)
 
     out = []
     date = []
-    for fname in files:
+    for fname in tqdm(files):
         
         try:
             df = load_export(infile + fname)
@@ -109,4 +110,4 @@ def run_years():
     
 
 
-# ds['vz'].plot()
+run_years(2020)

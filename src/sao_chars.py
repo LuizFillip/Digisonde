@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import digisonde as dg
 import base as b 
-import datetime as dt 
 
 
 def chars(infile):
@@ -38,54 +37,32 @@ def chars(infile):
     
     return df
 
-
-
-
-
-
 def velocity(df, col = 'hF2'):
     
     df['time'] = b.time2float(df.index.time)
     
-    df['vz'] = (df[col].diff() /  df['time'].diff()) / 3.6
+    df['vz'] = (df[col].diff() / 
+                df['time'].diff()) / 3.6
     
     df['vz'] = b.smooth2(df['vz'], 5)
     
     return df
 
 import matplotlib.pyplot as plt
+import os
 
-infile = "database/jic/sao/2015"
+def run_year():
 
+    infile = "database/jic/sao/"
+    out = []
+    for file in os.listdir(infile):
+        out.append(chars(infile + file))
 
-df =  velocity(
-    chars(infile), col = 'hF2'
-    )
-
-dates = pd.to_datetime(
-    np.unique(df.index.date)
-    )
-
-out = []
-for dn in dates:
+    df = pd.concat(out).sort_index()
+    save_in = 'digisonde/data/chars.txt'
     
-    delta = dt.timedelta(hours = 20)
-
-# ds = dg.sel_between_terminators(
-#         df, 
-#         dn + delta, 
-#         site = 'jic'
-#         )
-
-    ds = b.sel_times(
-        df,
-        dn + delta, 
-        hours = 5
-        )
-    
-    out.append(ds['vz'].max())
-    
-
-plt.scatter(dates, out)
-  
-plt.ylim([0, 50])
+    df.to_csv(save_in)
+   # df = df.loc[df.index.time == dt.time(0, 0)]
+   # df['hF2'].plot()
+        
+# run_year()

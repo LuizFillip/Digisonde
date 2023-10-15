@@ -49,6 +49,12 @@ def process_years():
         df.to_csv(infile +  f'R{year}.txt')
     
 
+def repeat_single_file(site = 'saa'):
+    infile = f'digisonde/data/PRE/{site}/'
+    
+    year = '2013_2021.txt'
+    df = repeat_values(infile + year)
+    df.to_csv(infile +  f'R{year}')
 
-# process_years()
 
+# repeat_single_file(site = 'saa')

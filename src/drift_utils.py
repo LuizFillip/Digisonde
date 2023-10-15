@@ -45,7 +45,8 @@ def filter_values(df,
         df["avg"] = avg
         for col in df.columns:
             df.loc[
-                df[col].isnull(), col] = df['avg']
+                df[col].isnull(), col
+                ] = df['avg']
             
         del df["avg"]
         return df

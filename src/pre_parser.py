@@ -37,3 +37,18 @@ def main():
     
     df = concat_all_pre_values(site = 'saa')
     df.to_csv(Filename(df))
+    
+    
+def join_pre():
+    infile = 'database/jic/freq/'
+    
+    out = []
+    for fname in os.listdir(infile):
+        out.append(
+            dg.PRE_from_SAO(infile + fname,
+                         site = 'jic'))
+    
+    df = pd.concat(out)
+    save_in = 'digisonde/data/PRE/jic/2013_2021.txt'
+    
+    df.to_csv(save_in)
