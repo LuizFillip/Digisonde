@@ -12,7 +12,8 @@ def find_header(
     and the data section"""
     
     with open(infile) as f:
-        data = [line.strip() for line in f.readlines()]
+        data = [line.strip() for line 
+                in f.readlines()]
     
     count = 0
     for num in range(len(data)):
@@ -48,7 +49,7 @@ def time_to_float(dn) -> float:
                          in str(dn).split(":")]
     except:
         raise TypeError("The input parameter" + 
-                        "must be datetime.datime or clock format")
+                        "must be datetime or clock format")
         
     return round(time_list[0] + 
                  (time_list[1] / 60) + 

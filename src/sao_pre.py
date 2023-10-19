@@ -22,7 +22,8 @@ def velocity(
     ds[col] = (ds[col].diff() / 
                ds["time"].diff()) / 3.6
     
-    return ds
+    return ds.interpolate()
+    
 
 def vertical_drift(
         df: pd.DataFrame, 
@@ -58,7 +59,7 @@ def vertical_drift(
     midnight = (ds.index.time == dt.time(0, 0))
     ds.loc[midnight] = np.nan
     
-    return ds#.interpolate()
+    return ds
 
 
 def get_maximum_row(
@@ -67,9 +68,7 @@ def get_maximum_row(
         site = 'saa',
         N = 5
         ):
-    
-    # ts = ts[['vz', 'evz']]
-    
+        
     ts['max'] = ts['vz'].max()
     ts['filt'] = b.running(ts['vz'], N)
     
@@ -98,37 +97,6 @@ def empty(dn):
         }
     return pd.DataFrame(data, index = [dn])
 
-def PRE_from_SAO(infile, site):
-    
-
-    vz = vertical_drift(
-         dg.freq_fixed(infile)
-         )
-
-    vz['evz'] = vz.std(axis = 1)
-    
-    out = []
-    dates = np.unique(vz.index.date)
-    
-    for dn in tqdm(pd.to_datetime(dates)):
-        
-        delta = dt.timedelta(hours = 21)
-        
-        ts =  b.sel_times(
-            vz, dn + delta, hours = 4
-            )
-        
-        try:
-            out.append(
-                get_maximum_row(
-                    ts, dn, site = site
-                    )
-                )
-        except:
-            out.append(empty(dn))
-            continue
-    
-    return pd.concat(out)
 
 
 def check_night(ts):
@@ -153,10 +121,20 @@ def data_pre(ts, dn):
     return pd.DataFrame(
         out, index = [dn])
 
+
+def unique_dates(df, hours = 21):
+    
+    dates = pd.to_datetime(
+        np.unique(df.index.date)
+        )
+    delta = dt.timedelta(hours)
+    
+    return [d + delta for d in dates]
+
 def run():
     
     out = []
-    for fname in os.listdir(PATH_FREQ):
+    for fname in tqdm(os.listdir(PATH_FREQ)):
     
         infile = os.path.join(
             PATH_FREQ, 
@@ -167,18 +145,10 @@ def run():
              dg.freq_fixed(infile)
              )
         
-        
-        # def unique_dates()
-        dates = pd.to_datetime(
-            np.unique(vz.index.date)
-            )
-     
-        for dn in dates:
-            
-            delta = dt.timedelta(hours = 21)
+        for dn in unique_dates(vz):
             
             ds = b.sel_times(
-                    vz, dn + delta, hours = 8
+                    vz, dn, hours = 8
                     )
             
             out.append(data_pre(ds, dn))
@@ -187,4 +157,11 @@ def run():
     return pd.concat(out).sort_index()
 
 
-# ds.loc[ds.index.year == 2021].plot()
+
+
+# df = run()
+
+
+
+# infile = 'digisonde/data/PRE/jic/2013_2021_2.txt'
+# df.to_csv(infile)

@@ -39,16 +39,24 @@ def main():
     df.to_csv(Filename(df))
     
     
-def join_pre():
-    infile = 'database/jic/freq/'
+
     
-    out = []
-    for fname in os.listdir(infile):
-        out.append(
-            dg.PRE_from_SAO(infile + fname,
-                         site = 'jic'))
-    
-    df = pd.concat(out)
-    save_in = 'digisonde/data/PRE/jic/2013_2021.txt'
-    
-    df.to_csv(save_in)
+infile = 'digisonde/data/PRE/jic/2013_2021.txt'
+
+
+df = b.load(infile)[['vz']]
+
+infile = 'digisonde/data/PRE/jic/2013_2021_2.txt'
+
+
+df1 = b.load(infile)
+
+ds = pd.concat([df, df1]).sort_index()
+
+ds = ds[~ds.index.duplicated(keep = 'first')]
+
+ds = ds.loc[~((ds['vz'] > 60) | (ds['vz'] < 0))]
+
+
+
+ds.loc[ds.index.year == 2020].plot()
