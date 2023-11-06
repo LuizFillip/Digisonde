@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
-import digisonde as dg
 import base as b 
+import os
+
 
 
 def chars(infile):
@@ -48,8 +49,6 @@ def velocity(df, col = 'hF2'):
     
     return df
 
-import matplotlib.pyplot as plt
-import os
 
 def run_year():
 

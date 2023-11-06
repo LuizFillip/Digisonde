@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 from tqdm import tqdm 
-from GEO import sun_terminator
+from GEO import dusk_from_site
 import base as b
 
 pd.set_option('mode.chained_assignment', None)
@@ -15,12 +15,12 @@ def sel_between_terminators(
     
     dn = pd.to_datetime(dn)
     
-    start = sun_terminator(
+    start = dusk_from_site(
         dn, 
         twilight_angle = 0, 
         site = site
         )
-    end = sun_terminator(
+    end = dusk_from_site(
         dn, 
         twilight_angle = 18, 
         site = site
@@ -95,5 +95,3 @@ def get_pre_in_year(
     return pd.DataFrame(out, index = dates)
 
     
-    
-# 
