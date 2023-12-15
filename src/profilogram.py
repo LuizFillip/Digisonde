@@ -39,14 +39,7 @@ def process_data(infile):
         
     return pd.concat(out)
 
-def main():
-    infile = "database/Digisonde/SAA0K_20130316(075).TXT"
 
-    df = process_data(infile)
-    
-    df.to_csv(infile.replace("raw", "pro"))
-    
-    
 def load_profilogram(infile):
     df = pd.read_csv(infile, index_col = 0)
     df.index = pd.to_datetime(df.index)
@@ -57,3 +50,11 @@ def load_profilogram(infile):
     return df
 
 
+def main():
+    infile = "database/Digisonde/SAA0K_20130316(075).TXT"
+
+    df = process_data(infile)
+    
+    df.to_csv(infile.replace("raw", "pro"))
+    
+    
