@@ -39,8 +39,8 @@ def repeat_values(file):
     
     return pd.concat(out)
 
-def process_years():
-    infile = 'digisonde/data/drift/PRE/saa/'
+def process_years(infile):
+    
     for year in range(2016, 2023):
         
         yr = f'{year}.txt'
@@ -49,12 +49,6 @@ def process_years():
         df.to_csv(infile +  f'R{year}.txt')
     
 
-def repeat_single_file(site = 'saa'):
-    infile = f'digisonde/data/PRE/{site}/'
-    
-    year = '2013_2021.txt'
-    df = repeat_values(infile + year)
-    df.to_csv(infile +  f'R{year}')
 
-
+infile = 'digisonde/data/drift/PRE/saa/'
 # repeat_single_file(site = 'saa')
