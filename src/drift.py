@@ -76,8 +76,7 @@ def process_year(main_path):
         except:
             continue
     return pd.concat(out)
-from tqdm import tqdm 
-import matplotlib.pyplot as plt
+
 def run_years(year):
     infile = f'D:\\drift\\JIC\\{year}\\'
 
@@ -104,10 +103,3 @@ def run_years(year):
             continue
         
         
-    plt.scatter(date, out)
-
-    
-    
-
-
-run_years(2020)

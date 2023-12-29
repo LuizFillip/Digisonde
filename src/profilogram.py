@@ -1,7 +1,7 @@
 import datetime as dt
 import pandas as pd
 import numpy as np
-import ionosphere as io
+import aeronomy as io
 np.seterr(divide='ignore', invalid='ignore')
 
 

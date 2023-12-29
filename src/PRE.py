@@ -5,8 +5,6 @@ from tqdm import tqdm
 from GEO import dusk_from_site
 import base as b
 
-pd.set_option('mode.chained_assignment', None)
-
 def sel_between_terminators(
         df, 
         dn, 
