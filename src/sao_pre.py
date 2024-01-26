@@ -27,7 +27,8 @@ def velocity(
 
 def vertical_drift(
         df: pd.DataFrame, 
-        set_cols = None
+        set_cols = None,
+        smooth = 5
         ) -> pd.DataFrame:
     
     """
@@ -46,11 +47,13 @@ def vertical_drift(
     for col in columns:
         
         if col != "time":
-            ds[col] = b.smooth2(ds[col], 5)
 
             ds[col] = (ds[col].diff() / 
                    ds["time"].diff()) / 3.6
-            
+    
+    ds = ds.loc[~(ds[col] > 100)]
+    
+    
     ds["vz"] = np.mean(
         ds[columns[1:]], 
         axis = 1
@@ -58,6 +61,10 @@ def vertical_drift(
     
     midnight = (ds.index.time == dt.time(0, 0))
     ds.loc[midnight] = np.nan
+    
+    if smooth is not None:
+        for col in ds.columns:
+            ds[col] = b.smooth2(ds[col], smooth)
     
     return ds
 
