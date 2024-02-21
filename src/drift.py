@@ -1,8 +1,6 @@
 import pandas as pd
 import os
 from tqdm import tqdm
-# import matplotlib.pyplot as plt
-# import datetime as dt
 import base as b 
 
 def load_export(infile):

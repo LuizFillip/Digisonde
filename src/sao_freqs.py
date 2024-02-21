@@ -113,19 +113,29 @@ def freq_fixed(infile, snum = 2):
         
         name = int(float(col))
         
-        df.rename(columns = {col: name}, 
-                  inplace = True)
+        df.rename(columns = {col: name}, inplace = True)
         
-        df[name] = df[name].apply(
-            pd.to_numeric, 
-            errors = 'coerce'
-            )
+        df[name] = df[name].apply(pd.to_numeric, errors = 'coerce')
         
-    df.drop(columns = {"date", "doy"}, 
-            inplace = True) 
+    df.drop(columns = {"date", "doy"}, inplace = True) 
     
     for col in df.columns:
         if col != 'time':
             df[col] = b.smooth2(df[col], snum)
     
     return df
+
+
+import os
+
+def run():
+    infile =  'database/jic/freq/'
+    
+    out = []
+    for file in os.listdir(infile):
+        
+        out.append(freq_fixed(infile + file, snum = 2))
+        
+    df = pd.concat(out)
+    
+    df.to_csv('digisonde/data/jic_freqs.txt')
