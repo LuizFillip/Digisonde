@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import base as b
 import datetime as dt 
-import matplotlib.pyplot as plt 
+import GEO as gg
 import os
 from tqdm import tqdm 
 pd.set_option('mode.chained_assignment', None)
@@ -12,15 +12,12 @@ pd.set_option('mode.chained_assignment', None)
 PATH_FREQ = 'database/jic/freq/'
 
 
-def velocity(
-        ds, col, 
-        smooth = True
-        ):
+def velocity(ds, col, smooth = True):
+    
     if smooth:
         ds[col] = b.smooth2(ds[col], 5)
 
-    ds[col] = (ds[col].diff() / 
-               ds["time"].diff()) / 3.6
+    ds[col] = (ds[col].diff() / ds["time"].diff()) / 3.6
     
     return ds.interpolate()
     
@@ -50,13 +47,8 @@ def vertical_drift(
 
             ds[col] = (ds[col].diff() / ds["time"].diff()) / 3.6
     
-    ds = ds.loc[~(ds[col] > 100)]
-    
-    
     ds["vz"] = np.mean(ds[columns[1:]], axis = 1)
     
-    midnight = (ds.index.time == dt.time(0, 0))
-    ds.loc[midnight] = np.nan
     
     if smooth is not None:
         for col in ds.columns:
@@ -102,85 +94,56 @@ def empty(dn):
 
 
 
-def check_night(ts):
-    
-    drop_ts = ts.dropna(subset = 'vz')
 
-    if len(drop_ts) < 5:
-        return np.nan
-    else:
-        return drop_ts.interpolate()
-
-
-def data_pre(ts, dn):
+def time_between_terminator(df, dn, site = 'jic'):
     
-    ts = check_night(ts)
-    
-    try:
-        out = {'vz': ts['vz'].max()}
-    except:
-        out = {'vz': np.nan}
-    
-    return pd.DataFrame(
-        out, index = [dn])
-
-
-def unique_dates(df, hours = 21):
-    
-    dates = pd.to_datetime(
-        np.unique(df.index.date)
-        )
-    delta = dt.timedelta(hours)
-    
-    return [d + delta for d in dates]
-
-def run():
-    
-    out = []
-    for fname in tqdm(os.listdir(PATH_FREQ)):
-    
-        infile = os.path.join(
-            PATH_FREQ, 
-            fname
+    dusk = gg.dusk_from_site(
+            dn, 
+            site = site,
+            twilight_angle = 18
             )
+    
+    delta = dt.timedelta(hours = 1)
+    
+    sel = df.loc[
+        (df.index > dusk - delta) &
+        (df.index < dusk + delta), ['vz']
+        ]
+    
+    if len(sel) == 0:
+        return np.nan 
+    else:
+        return sel['vz'].idxmax(), sel.max().item()
+
+index = []
+values = []
+
+year = 2015
+
+infile =  f'database/jic/freq/{year}'
+df = dg.freq_fixed(infile)
+
+
+for day in tqdm(range(365), str(year)):
+ 
+     delta = dt.timedelta(days = day)
+     
+     dn = dt.datetime(year, 1, 1, 20) + delta
+     
+     try:
+         ds = b.sel_times(df, dn, hours = 7).interpolate()
         
-        vz = vertical_drift(
-             dg.freq_fixed(infile)
-             )
-        
-        for dn in unique_dates(vz):
+         vz = dg.vertical_drift(ds)
             
-            ds = b.sel_times(
-                    vz, dn, hours = 8
-                    )
-            
-            out.append(data_pre(ds, dn))
-            
-            
-    return pd.concat(out).sort_index()
+         idx, vmax = time_between_terminator(vz, dn)
+         
+         index.append(idx)
+         values.append(vmax)
+     except:
+         continue
 
+df = pd.DataFrame({'vp': values}, index = index)
 
+infile = 'jic20151'
 
-        
-
-
-import matplotlib.pyplot as plt
-
-
-def main():
-
-    infile =  'database/jic/freq/2015'
-    
-    df = dg.freq_fixed(infile, snum = 2)
-    
-    dn = dt.datetime(2015, 1, 6, 20)
-    
-    ds = b.sel_times(df, dn)
-    
-    ds[[5, 6, 7, 8]].plot(figsize = (10, 4))
-    
-    df = vertical_drift(ds)
-    
-    df[[5, 6, 7, 8]].plot(figsize = (10, 4))
-    
-    
+df.to_csv(infile)
