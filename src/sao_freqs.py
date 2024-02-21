@@ -129,5 +129,3 @@ def freq_fixed(infile, snum = 2):
             df[col] = b.smooth2(df[col], snum)
     
     return df
-        
-

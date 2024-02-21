@@ -50,18 +50,23 @@ def velocity(df, col = 'hF2'):
     return df
 
 
-def run_year():
+def run_year(site = 'jic'):
 
-    infile = "database/jic/sao/"
+    infile = f"database/{site}/sao/"
     out = []
     for file in os.listdir(infile):
         out.append(chars(infile + file))
 
     df = pd.concat(out).sort_index()
-    save_in = 'digisonde/data/chars.txt'
+    save_in = f'digisonde/data/{site}_chars.txt'
     
     df.to_csv(save_in)
-   # df = df.loc[df.index.time == dt.time(0, 0)]
-   # df['hF2'].plot()
-        
-# run_year()
+   
+    
+import base as b 
+import datetime as dt 
+
+
+infile = 'database/jic/sao/'
+
+run_year()
