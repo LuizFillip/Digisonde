@@ -48,16 +48,12 @@ def vertical_drift(
         
         if col != "time":
 
-            ds[col] = (ds[col].diff() / 
-                   ds["time"].diff()) / 3.6
+            ds[col] = (ds[col].diff() / ds["time"].diff()) / 3.6
     
     ds = ds.loc[~(ds[col] > 100)]
     
     
-    ds["vz"] = np.mean(
-        ds[columns[1:]], 
-        axis = 1
-        )
+    ds["vz"] = np.mean(ds[columns[1:]], axis = 1)
     
     midnight = (ds.index.time == dt.time(0, 0))
     ds.loc[midnight] = np.nan
@@ -165,10 +161,26 @@ def run():
 
 
 
-
-# df = run()
-
+        
 
 
-# infile = 'digisonde/data/PRE/jic/2013_2021_2.txt'
-# df.to_csv(infile)
+import matplotlib.pyplot as plt
+
+
+def main():
+
+    infile =  'database/jic/freq/2015'
+    
+    df = dg.freq_fixed(infile, snum = 2)
+    
+    dn = dt.datetime(2015, 1, 6, 20)
+    
+    ds = b.sel_times(df, dn)
+    
+    ds[[5, 6, 7, 8]].plot(figsize = (10, 4))
+    
+    df = vertical_drift(ds)
+    
+    df[[5, 6, 7, 8]].plot(figsize = (10, 4))
+    
+    
