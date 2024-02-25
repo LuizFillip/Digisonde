@@ -57,4 +57,8 @@ def main():
     
     df.to_csv(infile.replace("raw", "pro"))
     
-    
+# infile = 'digisonde/data/jic/prof/2015'
+# df = process_data(infile)
+
+
+# df.to_csv('prof_2015')

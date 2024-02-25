@@ -62,11 +62,5 @@ def run_year(site = 'jic'):
     
     df.to_csv(save_in)
    
-    
-import base as b 
-import datetime as dt 
+# 
 
-
-infile = 'database/jic/sao/'
-
-run_year()
