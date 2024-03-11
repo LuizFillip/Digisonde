@@ -1,7 +1,6 @@
 import pandas as pd
 import os
 from tqdm import tqdm
-import base as b 
 
 def load_export(infile):
     
@@ -49,8 +48,7 @@ def load_export(infile):
 def process_day(infile, ext = "DVL"):
     
     
-   files = [f for f in tqdm(os.listdir(infile)) 
-            if f.endswith(ext)]
+   files = [f for f in os.listdir(infile) if f.endswith(ext)]
    
    out = [load_export(
        os.path.join(infile, filename)
@@ -75,29 +73,13 @@ def process_year(main_path):
             continue
     return pd.concat(out)
 
-def run_years(year):
-    infile = f'D:\\drift\\JIC\\{year}\\'
 
-    files = os.listdir(infile)
 
-    out = []
-    date = []
-    for fname in tqdm(files):
-        
-        try:
-            df = load_export(infile + fname)
-            df['vz'] = b.smooth2(df['vz'], 5)
-            
-            dn = pd.to_datetime(
-                df.index[0].date(
-                    ))
-            
-            ds = b.sel_times(df, dn, hours = 1.5)
-            
-            out.append(ds['vz'].max())
-            date.append(dn)
-                
-        except:
-            continue
-        
-        
+site = 'saa'
+year = 2023
+
+def process_drift(year, site):
+    path = f'D:\\drift\\{site}\\{year}\\'
+    df = process_year(path)
+    save_in = f'digisonde/data/drift/data/{site}/{year}_drift.txt'
+    df.to_csv(save_in)

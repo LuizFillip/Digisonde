@@ -56,9 +56,14 @@ def main():
     df = process_data(infile)
     
     df.to_csv(infile.replace("raw", "pro"))
+
+def run():
+    import os 
+    from tqdm import tqdm 
     
-# infile = 'digisonde/data/jic/prof/2015'
-# df = process_data(infile)
-
-
-# df.to_csv('prof_2015')
+    infile = 'digisonde/data/jic/prof/'
+    outfile = 'digisonde/data/jic/profiles/'
+    
+    for file in tqdm(os.listdir(infile)):
+        df = process_data(infile + file)
+        df.to_csv(outfile + file)
