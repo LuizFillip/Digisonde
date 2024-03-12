@@ -81,31 +81,40 @@ def time_between_terminator(df, dn, site = 'jic'):
         vp = sel.max().item()
         
         
-    return{'time': time, 'vp': vp, 'dusk': dusk, 'dn': dn.date()}
+    return dusk#{'time': time, 'vp': vp, 'dusk': dusk, 'dn': dn.date()}
 
 
-def running_pre(df, year):
+def get_values(sel):
+    dn = sel.index[0]
+    time = sel['vz'].idxmax()
+    vp = sel.max().item()
+    return {'time': time, 'vp': vp, 'dn': dn.date()}    
+
+
+def running_pre(df, site = 'saa'):
     
+    year  = df.index[0].year
     df = df.drop(columns = ['8', '9'])
-    
-    values = []
-
+    values = {'vp': []}
+    time = []
     for day in tqdm(range(365), str(year)):
      
          delta = dt.timedelta(days = day)
          
-         dn = dt.datetime(year, 1, 1, 20) + delta
+         dn = dt.datetime(year, 1, 1, 19) + delta
          
          try:
-             ds = b.sel_times(df, dn, hours = 7).interpolate()
-           
+             
+             ds = b.sel_times(df, dn, hours = 5).interpolate()
              vz = dg.vertical_drift(ds)
-             values.append(time_between_terminator(vz, dn))
+             
+             values['vp'].append(vz['vz'].max())
+             time.append(dn.date())
         
          except:
              continue
     
-    return pd.DataFrame(values).set_index('dn')
+    return pd.DataFrame(values, index = time) #.set_index('dn')
     
 
 def run_years():
@@ -121,7 +130,24 @@ def run_years():
     df.to_csv('jic_freqs2')
     
 # run_years()
-# infile = 'digisonde/data/jic_freqs.txt'
-# df = b.load(infile)
-# year = 2015
-# running_pre(df, year)
+infile = 'digisonde/data/chars/freqs/saa_2023'
+df = b.load(infile)
+ds = running_pre(df, site = 'saa')
+
+# 
+
+ds['vp'].plot()
+
+# dn = dt.datetime(2023, 1, 5, 20)
+
+# ds = b.sel_times(df, dn, hours = 7).interpolate()
+
+
+# # ds[['5', '6', '7']].plot()
+
+
+# vz = dg.vertical_drift(ds)
+
+# vz['vz'].plot()
+
+# # time_between_terminator(vz, dn, site = 'saa')
