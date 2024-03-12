@@ -129,13 +129,15 @@ def freq_fixed(infile, snum = 2):
 import os
 
 def run():
-    infile =  'database/jic/freq/'
+    infile =  'digisonde/data/chars/'
     
     out = []
-    for file in os.listdir(infile):
+    for file in ['SAA0K_20230101(001)C', 'SAA0K_20230702(183)C']:
         
         out.append(freq_fixed(infile + file, snum = 2))
         
     df = pd.concat(out)
     
-    df.to_csv('digisonde/data/jic_freqs.txt')
+    df.to_csv('digisonde/data/chars/freqs/saa_2023')
+    
+# run()

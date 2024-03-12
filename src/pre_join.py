@@ -14,6 +14,29 @@ def join_data(df, year):
     return ds.drop_duplicates()
 
 
+def run_years():
+    
+    out = []
+    
+    for year in np.arange(2013, 2023):
+        
+        infile = 'digisonde/data/drift/data/'
+        
+        fname = f'{year}_drift.txt'
+        
+        df = get_pre_in_year(infile + fname).dropna()
+        
+        if (year == 2014 ) or (year == 2015):
+            
+            ds = join_data(df, year).copy()
+        else:
+            ds = df.copy()
+
+        out.append(ds)
+        
+    return pd.concat(out)
+        
+
 def join_sao_and_drift(
         year = 2014, 
         col = 'vp'
@@ -32,11 +55,8 @@ def join_sao_and_drift(
     return ds.groupby(ds.index).first().to_frame(col)
 
 
-infile = 'digisonde/data/drift/data/saa/2023_drift.txt'
+# infile = 'digisonde/data/drift/data/saa/2023_drift.txt'
 
 
-df = b.load(infile)
-df = df.replace(0, float('nan'))
-
-
-df[['vz']].dropna()
+# df = b.load(infile)
+# df = df.replace(0,float('nan'))
