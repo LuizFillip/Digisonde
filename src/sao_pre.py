@@ -56,15 +56,15 @@ def vertical_drift(
 
 
 
-def time_between_terminator(df, dn, site = 'jic'):
-    
+def time_between_terminator(df, site = 'jic'):
+    dn = df.index[0]
     dusk = gg.dusk_from_site(
             dn, 
             site = site,
             twilight_angle = 18
             )
     
-    delta = dt.timedelta(minutes = 30)
+    delta = dt.timedelta(minutes = 60)
     
     sel = df.loc[
         (df.index > dusk - delta) &
@@ -81,7 +81,10 @@ def time_between_terminator(df, dn, site = 'jic'):
         vp = sel.max().item()
         
         
-    return dusk#{'time': time, 'vp': vp, 'dusk': dusk, 'dn': dn.date()}
+    return {'time': time, 
+            'vp': vp, 
+            'dusk': dusk, 
+            'dn': dn.date()}
 
 
 def get_values(sel):
@@ -129,25 +132,3 @@ def run_years():
     
     df.to_csv('jic_freqs2')
     
-# run_years()
-infile = 'digisonde/data/chars/freqs/saa_2023'
-df = b.load(infile)
-ds = running_pre(df, site = 'saa')
-
-# 
-
-ds['vp'].plot()
-
-# dn = dt.datetime(2023, 1, 5, 20)
-
-# ds = b.sel_times(df, dn, hours = 7).interpolate()
-
-
-# # ds[['5', '6', '7']].plot()
-
-
-# vz = dg.vertical_drift(ds)
-
-# vz['vz'].plot()
-
-# # time_between_terminator(vz, dn, site = 'saa')

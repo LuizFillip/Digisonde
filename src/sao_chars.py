@@ -10,17 +10,29 @@ def chars(infile):
     
     raw_data = [f[i].split() for i 
                 in range(2, len(f))]
-        
-    colums = [
-        "date", "doy", "time", 
-        'foF2', 'hF2', 'QF', 
-        'hmF2', 'f(hF)', 'f(hF2)'
-        ]
     
-    df = pd.DataFrame(
-        raw_data, 
-        columns = colums
-        )
+    try:    
+        colums = [
+            "date", "doy", "time", 
+            'foF2', 'hF2', 'QF', 
+            'hmF2', 'f(hF)', 'f(hF2)'
+            ]
+        
+        df = pd.DataFrame(
+            raw_data, 
+            columns = colums
+            )
+    except:
+        colums = [
+            "date", "doy", "time", 
+            'foF2', 'hF2', 'hF', 'QF', 
+            'hmF2'
+            ]
+    
+        df = pd.DataFrame(
+            raw_data, 
+            columns = colums
+            )
     
     df.index = pd.to_datetime(
         df["date"] + " " + df["time"]

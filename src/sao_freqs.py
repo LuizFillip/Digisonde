@@ -25,36 +25,6 @@ def find_header(
     return data[1].split(), data[count + 2:]
 
 
-def time_to_float(dn) -> float:
-    """
-    Function for to convert time into float number
-    Parameters
-    ---------
-        dn: str (like "22:10:00") or datetime.time 
-        or datetime.datetime
-    >>> dn = datetime.datetime(2013, 1, 1, 22, 10, 0)
-    >>> time_to_float(dn)
-    ... 22.167
-    """
-    try:
-        if (isinstance(dn, dt.datetime) or 
-            isinstance(dn, dt.time)):
-            
-            time_list = [dn.hour, 
-                         dn.minute, 
-                         dn.second]
-            
-        elif ":" in dn:
-            time_list = [int(num) for num 
-                         in str(dn).split(":")]
-    except:
-        raise TypeError("The input parameter" + 
-                        "must be datetime or clock format")
-        
-    return round(time_list[0] + 
-                 (time_list[1] / 60) + 
-                 (time_list[2] / 3600), 3)
-
 
 def structure_the_data(data: list) -> np.array:
     
@@ -106,8 +76,7 @@ def freq_fixed(infile, snum = 2):
         df["date"] + " " + df["time"]
         )
     
-    df["time"] = df["time"].apply(
-        lambda x: time_to_float(x))
+    df["time"] = b.time2float(df.index, sum_from = 15)
     
     for col in df.columns[3:]:
         
@@ -125,19 +94,3 @@ def freq_fixed(infile, snum = 2):
     
     return df
 
-
-import os
-
-def run():
-    infile =  'digisonde/data/chars/'
-    
-    out = []
-    for file in ['SAA0K_20230101(001)C', 'SAA0K_20230702(183)C']:
-        
-        out.append(freq_fixed(infile + file, snum = 2))
-        
-    df = pd.concat(out)
-    
-    df.to_csv('digisonde/data/chars/freqs/saa_2023')
-    
-# run()
