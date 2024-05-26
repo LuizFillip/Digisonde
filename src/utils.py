@@ -56,9 +56,3 @@ def path_ionogram(dn, target = None, site = 'SAA0K'):
         
         return site, f'{path_in}{filename}'
     
-    
-# infile = 'database/ionogram/20140102F/'
-
-# for file in os.listdir(infile):
-#     if 'IO' in file:
-#         os.remove(infile + file)

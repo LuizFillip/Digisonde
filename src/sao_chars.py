@@ -1,54 +1,6 @@
 import numpy as np
 import pandas as pd
 import base as b 
-import os
-
-
-
-def chars(infile):
-    f = open(infile).readlines()
-    
-    raw_data = [f[i].split() for i 
-                in range(2, len(f))]
-    
-    try:    
-        colums = [
-            "date", "doy", "time", 
-            'foF2', 'hF2', 'QF', 
-            'hmF2', 'f(hF)', 'f(hF2)'
-            ]
-        
-        df = pd.DataFrame(
-            raw_data, 
-            columns = colums
-            )
-    except:
-        colums = [
-            "date", "doy", "time", 
-            'foF2', 'hF2', 'hF', 'QF', 
-            'hmF2'
-            ]
-    
-        df = pd.DataFrame(
-            raw_data, 
-            columns = colums
-            )
-    
-    df.index = pd.to_datetime(
-        df["date"] + " " + df["time"]
-        )
-    
-    df.drop(
-        columns = colums[:3], 
-        inplace = True
-        )
-    
-    df = df.replace("---", np.nan)
-    
-    for col in df.columns:
-        df[col] = pd.to_numeric(df[col])
-    
-    return df
 
 def velocity(df, col = 'hF2'):
     
@@ -61,27 +13,32 @@ def velocity(df, col = 'hF2'):
     return df
 
 
-def run_year(site = 'jic'):
+def chars(infile):
+    f = open(infile).readlines()
 
-    infile = f"database/{site}/sao/"
-    out = []
-    for file in os.listdir(infile):
-        out.append(chars(infile + file))
+    raw_data = [f[i].split() for i in range(2, len(f))]
 
-    df = pd.concat(out).sort_index()
-    save_in = f'digisonde/data/{site}_chars.txt'
+    columns = ["date", "doy", "time"]
+    columns.extend(f[0].split()[3:])
     
-    df.to_csv(save_in)
-   
+    columns = [c.replace('`', '') for c in columns]
+    df = pd.DataFrame(raw_data, columns = columns)
 
-    out = [] 
-    infile = 'digisonde/data/chars/'
+    df.index = pd.to_datetime(
+        df["date"] + " " + df["time"]
+        )
     
-    for file in ['SAA0K_20230101(001).TXT', 
-                 'SAA0K_20230702(183).TXT']:
-        
-        out.append(chars(infile + file))
-        
-    df = pd.concat(out)
+    df.drop(
+        columns = columns[:3], 
+        inplace = True
+        )
     
-    df.to_csv('digisonde/data/chars/chars/saa_2023')
+    df = df.replace("---", np.nan)
+    
+    for col in df.columns:
+        df[col] = pd.to_numeric(df[col])
+    
+    return df
+
+
+
