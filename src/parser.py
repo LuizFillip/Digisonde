@@ -1,38 +1,20 @@
 import datetime as dt
-import base as b
-import os 
-import shutil
-from tqdm import tqdm 
 
 
 embrace_infos = {
-    "FZA0M": {"name": "Fortaleza", 
-              "lat":  -3.73, 
-              "lon": -38.522},
+    "FZA0M": "Fortaleza",
     
-    "SAA0K": {"name": "Sao luis", 
-              "lat":  -2.53,
-              "lon": -44.296}, 
+    "SAA0K": "São Luis", 
     
-    "BLJ03": {"name": "Belem", 
-              "lat": -1.4563, 
-              "lon": -48.5013}, 
+    "BLJ03": "Belem", 
     
-    "BVJ03": {"name": "Boa Vista", 
-              "lat":  2.8701, 
-              "lon": -60.7109},
+    "BVJ03": "Boa Vista",
     
-    "CGK21": {"name": "Campo Grande", 
-              "lat":  -20.4649, 
-              "lon": -54.6218},
+    "CGK21": "Campo Grande",
     
-    "CAJ2M": {"name": "Cachoeira Paulista", 
-              "lat": -22.7038, 
-              "lon": -45.0093},
+    "CAJ2M": "Cachoeira Paulista",
     
-    "SMK29": {"name": "Santa Maria", 
-              "lat": -29.6897, 
-              "lon": -53.8043},
+    "SMK29": "Santa Maria",
     }
 
 def get_infos(filename):
@@ -57,3 +39,7 @@ def site_datetime_from_file(file, hours = 21):
         )
     delta = dt.timedelta(hours = hours)
     return args[0][:3].lower(), dn + delta
+
+
+# filename = 'CAJ2M_20220724(205).TXT'
+
