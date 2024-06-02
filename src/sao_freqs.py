@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import datetime as dt
 import base as b
 
 def find_header(
@@ -72,11 +71,7 @@ def freq_fixed(infile, snum = 2):
         inplace = True
         )
     
-    df.index = pd.to_datetime(
-        df["date"] + " " + df["time"]
-        )
-    
-    df["time"] = b.time2float(df.index, sum_from = 15)
+    df.index = pd.to_datetime(df["date"] + " " + df["time"])
     
     for col in df.columns[3:]:
         
@@ -89,8 +84,7 @@ def freq_fixed(infile, snum = 2):
     df.drop(columns = {"date", "doy"}, inplace = True) 
     
     for col in df.columns:
-        if col != 'time':
-            df[col] = b.smooth2(df[col], snum)
+        df[col] = b.smooth2(df[col], snum)
     
     return df
 

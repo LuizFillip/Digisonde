@@ -35,6 +35,7 @@ def vertical_drift(
     
     ds = df.copy()
     
+    ds["time"] = b.time2float(ds.index, sum_from = 15)
     if set_cols is None:
         columns = ds.columns
     else:
