@@ -52,6 +52,7 @@ def vertical_drift(
         for col in ds.columns:
             ds[col] = b.smooth2(ds[col], smooth)
     
+    ds = ds.replace(0, float('nan'))
     return ds
 
 
@@ -120,15 +121,3 @@ def running_pre(df, site = 'saa'):
     return pd.DataFrame(values, index = time) #.set_index('dn')
     
 
-def run_years():
-    
-    infile = 'digisonde/data/jic_freqs.txt'
-    df = b.load(infile)
-    out = []
-    for year in range(2013, 2022):
-        out.append(running_pre(df, year))
-        
-    df = pd.concat(out)
-    
-    df.to_csv('jic_freqs2')
-    
