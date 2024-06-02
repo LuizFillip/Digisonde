@@ -11,8 +11,7 @@ def find_header(
     and the data section"""
     
     with open(infile) as f:
-        data = [line.strip() for line 
-                in f.readlines()]
+        data = [line.strip() for line in f.readlines()]
     
     count = 0
     for num in range(len(data)):
@@ -83,8 +82,8 @@ def freq_fixed(infile, snum = 2):
         
     df.drop(columns = {"date", "doy"}, inplace = True) 
     
-    for col in df.columns:
-        df[col] = b.smooth2(df[col], snum)
+    # for col in df.columns:
+    #     df[col] = b.smooth2(df[col], snum)
     
     return df
 

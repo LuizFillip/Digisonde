@@ -12,7 +12,9 @@ def velocity(df, col = 'hF2'):
     
     return df
 
-
+columns_e = ["date", "doy", "time", 
+           'foF2', 'hF', 'QF', 'hmF2',
+           'f(h`F)', '(h`F2)']
 def chars(infile):
     f = open(infile).readlines()
 
@@ -22,7 +24,11 @@ def chars(infile):
     columns.extend(f[0].split()[3:])
     
     columns = [c.replace('`', '') for c in columns]
-    df = pd.DataFrame(raw_data, columns = columns)
+    
+    try:
+        df = pd.DataFrame(raw_data, columns = columns)
+    except:
+        df = pd.DataFrame(raw_data, columns = columns_e)
 
     df.index = pd.to_datetime(
         df["date"] + " " + df["time"]
