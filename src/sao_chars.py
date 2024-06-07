@@ -13,8 +13,10 @@ def velocity(df, col = 'hF2'):
     return df
 
 columns_e = ["date", "doy", "time", 
-           'foF2', 'hF', 'QF', 'hmF2',
+           'foF2', 'hF2', 'QF', 'hmF2',
            'f(h`F)', '(h`F2)']
+
+
 def chars(infile):
     f = open(infile).readlines()
 

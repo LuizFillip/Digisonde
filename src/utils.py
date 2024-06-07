@@ -3,7 +3,7 @@ import base as b
 import os
 
 
-def ionosonde_fname(filename):
+def fn2dn(filename):
     
     args = filename.split("_")
     
@@ -27,7 +27,7 @@ def ionosonde_fname(filename):
 
 def closest_iono(target, path_in):
     iono_times = [
-        ionosonde_fname(f) for f in
+        fn2dn(f) for f in
         os.listdir(path_in) if 'PNG' in f ]
   
     return b.closest_datetime(iono_times, target)

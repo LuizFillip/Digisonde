@@ -34,6 +34,73 @@ def sel_between_terminators(
         )
 
 
+def time_between_terminator(df, site = 'jic'):
+    dn = df.index[0]
+    dusk = gg.dusk_from_site(
+            dn, 
+            site = site,
+            twilight_angle = 18
+            )
+    
+    delta = dt.timedelta(minutes = 60)
+    
+    sel = df.loc[
+        (df.index > dusk - delta) &
+        (df.index < dusk + delta), ['vz']
+        ]
+    
+    
+    if len(sel) == 0:
+        time = np.nan
+        vp = np.nan 
+        
+    else:
+        time = sel['vz'].idxmax()
+        vp = sel.max().item()
+        
+        
+    return {'time': time, 
+            'vp': vp, 
+            'dusk': dusk, 
+            'dn': dn.date()}
+
+
+def get_values(sel):
+    dn = sel.index[0]
+    time = sel['vz'].idxmax()
+    vp = sel.max().item()
+    return {'time': time, 'vp': vp, 'dn': dn.date()}    
+
+
+def running_pre(df, site = 'saa'):
+    
+    year  = df.index[0].year
+    df = df.drop(columns = ['8', '9'])
+    values = {'vp': []}
+    time = []
+    for day in tqdm(range(365), str(year)):
+     
+         delta = dt.timedelta(days = day)
+         
+         dn = dt.datetime(year, 1, 1, 19) + delta
+         
+         try:
+             
+             ds = b.sel_times(df, dn, hours = 5).interpolate()
+             vz = dg.vertical_drift(ds)
+             
+             values['vp'].append(vz['vz'].max())
+             time.append(dn.date())
+        
+         except:
+             continue
+    
+    return pd.DataFrame(values, index = time) #.set_index('dn')
+    
+
+
+
+
 
 def get_pre(
         dn, 

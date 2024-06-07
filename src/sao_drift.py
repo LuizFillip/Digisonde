@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 import base as b
 import datetime as dt 
-import GEO as gg
-from tqdm import tqdm 
 
 
 
@@ -22,9 +20,9 @@ def velocity(ds, col, smooth = True):
     
 
 def vertical_drift(
-        df: pd.DataFrame, 
+        ds: pd.DataFrame, 
         set_cols = None,
-        smooth = 5
+        smooth = None
         ) -> pd.DataFrame:
     
     """
@@ -33,93 +31,32 @@ def vertical_drift(
     (in meters per second)
     """
     
-    ds = df.copy()
+    cols = ds.columns
     
     ds["time"] = b.time2float(ds.index, sum_from = 15)
     
-    if set_cols is None:
-        columns = ds.columns
-    else:
-        columns = set_cols
-        
-    for col in columns:
+    for col in cols:
         
         if col != "time":                         
 
             ds[col] = (ds[col].diff() / ds["time"].diff()) / 3.6
     
-    ds["vz"] = np.mean(ds[columns[1:]], axis = 1)
+    ds["vz"] = np.mean(ds[cols], axis = 1)
+    # print(cols[:-1])
     
     if smooth is not None:
-        for col in ds.columns:
+        for col in cols:
             ds[col] = b.smooth2(ds[col], smooth)
     
     ds = ds.replace(0, float('nan'))
     return ds
 
 
+# def test():
+file = 'SAA0K_20151202(336).TXT'
+cols = list(range(5, 8, 1))
+ds = dg.IonoChar(file, cols).heights 
 
-def time_between_terminator(df, site = 'jic'):
-    dn = df.index[0]
-    dusk = gg.dusk_from_site(
-            dn, 
-            site = site,
-            twilight_angle = 18
-            )
-    
-    delta = dt.timedelta(minutes = 60)
-    
-    sel = df.loc[
-        (df.index > dusk - delta) &
-        (df.index < dusk + delta), ['vz']
-        ]
-    
-    
-    if len(sel) == 0:
-        time = np.nan
-        vp = np.nan 
-        
-    else:
-        time = sel['vz'].idxmax()
-        vp = sel.max().item()
-        
-        
-    return {'time': time, 
-            'vp': vp, 
-            'dusk': dusk, 
-            'dn': dn.date()}
+df = vertical_drift(ds, smooth=None)
 
-
-def get_values(sel):
-    dn = sel.index[0]
-    time = sel['vz'].idxmax()
-    vp = sel.max().item()
-    return {'time': time, 'vp': vp, 'dn': dn.date()}    
-
-
-def running_pre(df, site = 'saa'):
-    
-    year  = df.index[0].year
-    df = df.drop(columns = ['8', '9'])
-    values = {'vp': []}
-    time = []
-    for day in tqdm(range(365), str(year)):
-     
-         delta = dt.timedelta(days = day)
-         
-         dn = dt.datetime(year, 1, 1, 19) + delta
-         
-         try:
-             
-             ds = b.sel_times(df, dn, hours = 5).interpolate()
-             vz = dg.vertical_drift(ds)
-             
-             values['vp'].append(vz['vz'].max())
-             time.append(dn.date())
-        
-         except:
-             continue
-    
-    return pd.DataFrame(values, index = time) #.set_index('dn')
-    
-
+df
