@@ -40,10 +40,10 @@ class IonoChar(object):
         except:
             return  None
         
-    def drift(self, set_cols = None, smooth = None):
+    def drift(self, smooth = 3):
         
 
-        return dg.vertical_drift(self.heights, set_cols, smooth)
+        return dg.vertical_drift(self.heights, smooth)
     
     @property 
     def chars(self):
