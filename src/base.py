@@ -7,6 +7,7 @@ FREQ_PATH = 'digisonde/data/chars/freqs/'
 PATH_CHAR = 'digisonde/data/chars/midnight/'
 
 code_name = {
+    'JI91J': 'Jicamarca',
     "FZA0M": "Fortaleza",
     "SAA0K": "São Luis", 
     "BLJ03": "Belem", 
@@ -20,7 +21,7 @@ code_name = {
 class IonoChar(object):
     
     
-    def __init__(self, file, cols = None):
+    def __init__(self, file, cols = list(range(5, 8, 1))):
         
         file_temp = os.path.split(file)[-1]
         code, rest = tuple(file_temp.split('_'))
@@ -39,11 +40,10 @@ class IonoChar(object):
         except:
             return  None
         
-    def drift(self, set_cols = None, smooth = 5):
+    def drift(self, set_cols = None, smooth = None):
         
-        ds = self.heights
-    
-        return dg.vertical_drift(ds, set_cols, smooth)["vz"]
+
+        return dg.vertical_drift(self.heights, set_cols, smooth)
     
     @property 
     def chars(self):
@@ -63,22 +63,3 @@ class IonoChar(object):
         return ds[self.cols].interpolate()
     
 
-
-import base as b 
-
-def main():
-    file = 'digisonde/data/jic/freq/2015'
-    # IonoChar(file).heights
-    
-    
-    df = dg.freq_fixed(file)
-    
-    
-    # file = 'digisonde/data/jic/sao/2015'
-    
-    
-    # df = dg.chars(file)
-    
-    dn = dt.datetime(2015, 12, 20, 20)
-    
-    ds = b.sel_times(df, dn, hours = 18)
