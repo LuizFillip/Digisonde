@@ -44,11 +44,11 @@ def path_ionogram(dn, target = None, site = 'SAA0K'):
         try:
             path_in = f'{path}S/'
             
-            site = 'FZA0M'
+            site = 'SAA0K' 
             closest_dn = closest_iono(target, path_in)
         except:
             path_in = f'{path}F/'
-            site = 'SAA0K'
+            site = 'FZA0M'
             closest_dn = closest_iono(target, path_in )
         
         filename = closest_dn.strftime(
@@ -56,3 +56,7 @@ def path_ionogram(dn, target = None, site = 'SAA0K'):
         
         return site, f'{path_in}{filename}'
     
+# dn = dt.datetime(2014, 1, 2, 21)
+# target =  dt.datetime(2014, 1, 3, 3)
+# path_ionogram(dn, target, site = 'SAA0K')
+

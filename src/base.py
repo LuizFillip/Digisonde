@@ -55,10 +55,12 @@ class IonoChar(object):
     @property 
     def heights(self):
         
-        try:
-            ds = dg.freq_fixed(FREQ_PATH + self.file)
-        except:
-            ds  = dg.freq_fixed(self.file)
+        # try:
+        #     ds = dg.freq_fixed(FREQ_PATH + self.file)
+        # except:
+        #     ds  = dg.freq_fixed(self.file)
+            
+        ds = dg.freq_fixed(FREQ_PATH + self.file)
             
         return ds[self.cols].interpolate()
     
