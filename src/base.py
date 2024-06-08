@@ -1,7 +1,7 @@
 import digisonde as dg 
 import datetime as dt 
 import os 
-
+import base as b 
 
 FREQ_PATH = 'digisonde/data/chars/freqs/'
 PATH_CHAR = 'digisonde/data/chars/midnight/'
@@ -21,7 +21,12 @@ code_name = {
 class IonoChar(object):
     
     
-    def __init__(self, file, cols = list(range(5, 8, 1))):
+    def __init__(
+            self, 
+            file, 
+            cols = list(range(5, 8, 1)), 
+            sel_from = 20
+            ):
         
         file_temp = os.path.split(file)[-1]
         code, rest = tuple(file_temp.split('_'))
@@ -31,6 +36,8 @@ class IonoChar(object):
         self.rest = rest
         self.cols = cols    
         self.file = file
+        self.sel_from = sel_from 
+        
     
     @property 
     def date(self):
@@ -41,27 +48,33 @@ class IonoChar(object):
             return  None
         
     def drift(self, smooth = 3):
-        
-
-        return dg.vertical_drift(self.heights, smooth)
+        df = dg.vertical_drift(self.heights, smooth)
+        return self.sel_time(df)
     
     @property 
     def chars(self):
         
         fn = f'{self.code}_{self.rest}'
 
-        return dg.chars(PATH_CHAR + fn)
+        ds = dg.chars(PATH_CHAR + fn)
+        
+        return self.sel_time(ds)
+    
+    def sel_time(self, ds):
+        
+        if self.sel_from is not None:
+            self.dn = self.date.replace(hour = self.sel_from)
+            return b.sel_times(ds, self.dn, hours = 14)
+        else:
+            return ds
     
     @property 
     def heights(self):
         
-        # try:
-        #     ds = dg.freq_fixed(FREQ_PATH + self.file)
-        # except:
-        #     ds  = dg.freq_fixed(self.file)
-            
         ds = dg.freq_fixed(FREQ_PATH + self.file)
             
-        return ds[self.cols].interpolate()
+        ds = ds[self.cols].interpolate()
+        
+        return self.sel_time(ds)
     
 
