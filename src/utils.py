@@ -49,7 +49,7 @@ def path_ionogram(dn, target = None, site = 'SAA0K', root = 'E:\\'):
         
         return site, f'{path_in}{filename}'
     
-# dn = dt.datetime(2014, 1, 2, 21)
+dn = dt.datetime(2014, 1, 2, 21)
 # target =  dt.datetime(2014, 1, 3, 3)
-# path_ionogram(dn, target, site = 'SAA0K')
+# path_ionogram(dn, target = None, site = 'SAA0K')
 

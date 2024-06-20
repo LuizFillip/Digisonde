@@ -33,13 +33,3 @@ def vertical_drift(
     ds = ds.replace(0, float('nan'))
     return ds
 
-
-def test():
-    file = 'SAA0K_20151220(354).TXT'
-    # digisonde/data/chars/freqs/
-    cols = list(range(5, 8, 1))
-    ds = dg.IonoChar(file, cols).heights 
-    
-    df = vertical_drift(ds, smooth= 3)
-    
-    df['vz'].plot()

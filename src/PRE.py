@@ -1,41 +1,13 @@
 import pandas as pd
 import numpy as np
 import datetime as dt
-from tqdm import tqdm 
-from GEO import dusk_from_site
-import base as b
-
-def sel_between_terminators(
-        df, 
-        dn, 
-        site = 'saa'
-        ):
-    
-    dn = pd.to_datetime(dn)
-    
-    start = dusk_from_site(
-        dn, 
-        twilight_angle = 0, 
-        site = site
-        )
-    end = dusk_from_site(
-        dn, 
-        twilight_angle = 18, 
-        site = site
-        )
-    
-    if end < dn:
-        end += dt.timedelta(days = 1)
-    
-    return b.sel_dates(
-        df, 
-        start = start, 
-        end = end
-        )
+import digisonde as dg 
+import GEO as gg 
 
 
-def time_between_terminator(df, site = 'jic'):
-    dn = df.index[0]
+
+def get_infos(df, dn, site = 'jic'):
+
     dusk = gg.dusk_from_site(
             dn, 
             site = site,
@@ -59,104 +31,44 @@ def time_between_terminator(df, site = 'jic'):
         vp = sel.max().item()
         
         
-    return {'time': time, 
-            'vp': vp, 
-            'dusk': dusk, 
-            'dn': dn.date()}
-
-
-def get_values(sel):
-    dn = sel.index[0]
-    time = sel['vz'].idxmax()
-    vp = sel.max().item()
-    return {'time': time, 'vp': vp, 'dn': dn.date()}    
-
-
-def running_pre(df, site = 'saa'):
+    data = {'time': time, 'vp': vp, 'dusk': dusk}
     
-    year  = df.index[0].year
-    df = df.drop(columns = ['8', '9'])
-    values = {'vp': []}
-    time = []
-    for day in tqdm(range(365), str(year)):
-     
-         delta = dt.timedelta(days = day)
-         
-         dn = dt.datetime(year, 1, 1, 19) + delta
-         
-         try:
-             
-             ds = b.sel_times(df, dn, hours = 5).interpolate()
-             vz = dg.vertical_drift(ds)
-             
-             values['vp'].append(vz['vz'].max())
-             time.append(dn.date())
+    return pd.DataFrame(data, index = [dn.date()])
+
+
+def pre_getting(file, site = 'bvj'):
+    
+    cols = list(range(5, 9, 1))
+    ds = dg.IonoChar(file, cols, sel_from = None).heights 
+    df = dg.vertical_drift(ds, smooth= 3)
         
-         except:
-             continue
+    dates = sorted(list(set(df.index.date)))
     
-    return pd.DataFrame(values, index = time) #.set_index('dn')
-    
-
-
-
-
-
-def get_pre(
-        dn, 
-        df, 
-        col = "avg", 
-        dusk = True
-        ):
-    
-    if dusk:
-        df = sel_between_terminators(df, dn)
-
-    else:
+    out = []
+   
+    for date in dates:
         
-        df = df.loc[
-            (df.index.time >= dt.time(21, 0, 0)) & 
-            (df.index.time <= dt.time(23, 0, 0)) & 
-            (df.index.date == dn)
-            ]
+        dn = dt.datetime.combine(date, dt.time(21,0))
         
-    return df[col].idxmax(), round(df[col].max(), 3)
-
-
-def get_pre_in_year(
-        infile, 
-        col = 'vz', 
-        dusk = True
-        ):
-    
-    df = b.load(infile)
-    
-    df['vz'] = b.smooth2(df['vz'], 5)
-    
-      
-    out = {"vp": [], "time": []}
-    
-    dates = np.unique(df.index.date)
-    year = str(dates[0].year)
-    
-    
-    for dn in tqdm(dates, desc = year):
-         
-        try:
-            ds = df.loc[df.index.date == dn]
-            
-            tpre, vpre = get_pre(
-                dn, ds, col = col, dusk = dusk
-                )
-            
-            out["vp"].append(vpre)
-            out["time"].append(b.dn2float(tpre))
-        except:
-            out["vp"].append(np.nan)
-            out["time"].append(np.nan)
-            continue
+        out.append(get_infos(df, dn, site))
         
+    return pd.concat(out)
 
-    return pd.DataFrame(out, index = dates)
 
+def run_by_files(files):
     
+    return pd.concat([pre_getting(f) for f in files])
+
+
+
+
+file = 'BVJ03_20130812(224).TXT'
+
+
+files = [
+    'BVJ03_20140101(001).TXT', 
+    'BVJ03_20140701(182).TXT']
+
+
+
+df = run_by_files(files)
