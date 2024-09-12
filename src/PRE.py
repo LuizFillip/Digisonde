@@ -6,7 +6,7 @@ import GEO as gg
 
 
 
-def get_infos(df, dn, site = 'jic'):
+def get_infos(df, dn, site = 'jic', dicts = True):
 
     dusk = gg.dusk_from_site(
             dn, 
@@ -29,11 +29,12 @@ def get_infos(df, dn, site = 'jic'):
     else:
         time = sel['vz'].idxmax()
         vp = sel.max().item()
-        
-        
-    data = {'time': time, 'vp': vp, 'dusk': dusk}
     
-    return pd.DataFrame(data, index = [dn.date()])
+    data = {'time': time, 'vp': vp, 'dusk': dusk}
+    if dicts:
+        return data
+    else:
+        return pd.DataFrame(data, index = [dn.date()])
 
 
 def pre_getting(file, site = 'bvj'):
@@ -66,9 +67,19 @@ file = 'BVJ03_20130812(224).TXT'
 
 
 files = [
+    # 'BVJ03_20130812(224).TXT',
     'BVJ03_20140101(001).TXT', 
-    'BVJ03_20140701(182).TXT']
+    'BVJ03_20140701(182).TXT', 
+    'BVJ03_20150701(182).TXT',
+    'BVJ03_20150701(182).TXT',
+    'BVJ03_20160101(001).TXT',
+    'BVJ03_20170328(087).TXT',
+    # 'BVJ03_20170921(264).TXT'
+    ]
 
 
 
-df = run_by_files(files)
+# df = run_by_files(files)
+
+
+# df.to_csv('digisonde/data/PRE/bvj/2013_2021.txt')

@@ -17,7 +17,7 @@ class IonoAverage(object):
         
         self.cols = cols
         self.dn  = dn 
-        self.file = self.dn2fn(self.dn, site)
+        self.file = dg.dn2fn(self.dn, site)
         
         self.data = dg.IonoChar(
             self.file, 
@@ -30,10 +30,7 @@ class IonoAverage(object):
         else:
             self.ref = ref 
             self.ref_data = dg.IonoChar(self.dn2fn(ref, site))
-    
-    @staticmethod        
-    def dn2fn(dn, site):
-        return dn.strftime(f'{site}_%Y%m%d(%j).TXT')
+        
     
     @property
     def drift(self):
@@ -58,7 +55,7 @@ class IonoAverage(object):
         
         df = pd.DataFrame(data, index = ds.index)
             
-        df.index = self.new_index_by_ref(self.ref, df.index)
+        df.index = b.new_index_by_ref(self.ref, df.index)
         df['vz'] = b.smooth2(df['vz'], 2)
         return df
     
@@ -66,38 +63,9 @@ class IonoAverage(object):
         
         df = self.pivot_mean(self.data.chars, parameter)
         
-        df.index = self.new_index_by_ref(self.ref, df.index)
+        df.index = b.new_index_by_ref(self.ref, df.index)
         
         return df
-    
-    @staticmethod
-    def new_index_by_ref(ref, float_times):
-        
-        ref = ref.replace(hour = 0, minute = 0)
-        
-        out = []
-        for i in float_times:
-            
-            hour, minutes = tuple(str(i).split('.'))
-            
-            minute = round(float('0.' + minutes) * 60)
-            hour = int(hour)
-            if hour >= 24:
-                hour -= 24
-                delta = dt.timedelta(
-                    hours = hour, 
-                    minutes = minute, 
-                    days = 1
-                    )
-            else: 
-                delta = dt.timedelta(
-                    hours = hour, 
-                    minutes = minute
-                    )
-            
-            out.append(ref + delta)
-             
-        return out 
 
     @staticmethod
     def pivot_mean(df, parameter = 'hF2'):

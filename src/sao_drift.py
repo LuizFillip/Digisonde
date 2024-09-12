@@ -1,11 +1,11 @@
-import digisonde as dg
 import numpy as np
 import pandas as pd
 import base as b
 
 def vertical_drift(
         ds: pd.DataFrame, 
-        smooth = None
+        smooth = None, 
+        sum_from = 15,
         ) -> pd.DataFrame:
     
     """
@@ -16,7 +16,8 @@ def vertical_drift(
     
     cols = ds.columns
     
-    ds["time"] = b.time2float(ds.index, sum_from = 15)
+    ds["time"] = b.time2float(
+        ds.index, sum_from = sum_from)
     
     for col in cols:
         
