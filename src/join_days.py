@@ -17,6 +17,7 @@ def join_iono_days(
         dn,
         parameter = 'drift',
         number = 4,
+        smooth = 5,
         cols = list(range(3, 8, 1))
         ):
 
@@ -32,26 +33,13 @@ def join_iono_days(
         
         if parameter == 'drift':
             
-            out.append(df.drift()['vz'].to_frame(site))
+            out.append(df.drift(smooth)['vz'].to_frame(site))
         else:
             out.append(df.heights)
         
     return pd.concat(out).sort_index()
 
-def plot_multi_sites():
-    
-    fig, ax = plt.subplots(figsize = (12, 6))
-    
 
-    site = ['SAA0K', 'BVJ03', 'CAJ2M'][2]
-    
-    ds = join_iono_days(
-            site, 
-            dn = dt.datetime(2015, 12, 19) ,
-            cols = list(range(3, 8, 1))
-            )
-    
-    ds.plot(ax = ax)
     
 dates = [
     dt.datetime(2015, 12, 2, 9), 
@@ -60,8 +48,6 @@ dates = [
     # dt.datetime(2015, 12, 18, 9),
     dt.datetime(2015, 12, 29, 9)
     ]
-
-# dn = dates[0]
 
 
 def quiet_time_avg(
@@ -77,7 +63,9 @@ def quiet_time_avg(
         
         df = dg.IonoChar(file, cols, sum_from = None)
         
-        ds = df.drift(smooth = smooth).set_index('time')['vz'].dropna()
+        ds = df.drift(
+            smooth = smooth
+            ).set_index('time')['vz'].dropna()
         
         out.append(ds.sort_index().to_frame(dn.day))
         
@@ -86,11 +74,11 @@ def quiet_time_avg(
     
 
 def float_to_time2(float_time):
-    hour, minutes = tuple(str(float_time).split('.'))
-
-    minute = round(float('0.' + minutes) * 60)
-    hour = int(hour)
-    return hour, minute
+    import math 
+    
+    minute, hour = math.modf(float_time)
+  
+    return hour, minute * 60
 
 
 def renew_index_from_date(df, dn):
@@ -115,7 +103,9 @@ def renew_index_from_date(df, dn):
 
 
 def repeat_quiet_days(
-        site, number = 4):
+        site, 
+        number = 4
+        ):
 
     out = []
     
@@ -130,5 +120,6 @@ def repeat_quiet_days(
         out.append(renew_index_from_date(df, dn))
         
     return pd.concat(out)
+
 
 

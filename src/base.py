@@ -61,7 +61,7 @@ class IonoChar(object):
         
         ds = dg.freq_fixed(FREQ_PATH + self.file)
             
-        # ds = ds[self.cols].interpolate()
+    
         
         return self.sel_time(ds)[self.cols]
     
