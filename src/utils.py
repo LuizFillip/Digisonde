@@ -46,8 +46,9 @@ def path_ionogram(
         dn, 
         target = None, 
         site = 'SAA0K', 
-        root = 'E:\\'):
-    folder_ion = dn.strftime('%Y%m%d')
+        root = 'E:\\'
+        ):
+    folder_ion = dn.strftime('%Y/%Y%m%d')
     
     path = os.path.join(root, 'ionogram', folder_ion)
     
@@ -57,16 +58,18 @@ def path_ionogram(
     else:
         try:
             path_in = f'{path}S/'
-            
             site = 'SAA0K' 
             closest_dn = closest_iono(target, path_in)
         except:
             path_in = f'{path}F/'
             site = 'FZA0M'
-            closest_dn = closest_iono(target, path_in )
+            closest_dn = closest_iono(target, path_in)
         
         fmt = f'{site}_%Y%m%d(%j)%H%M%S.PNG'
         filename = closest_dn.strftime(fmt)
         
         return site, f'{path_in}{filename}'
     
+# dn = dt.datetime(2018, 12, 12)
+
+# path_ionogram(dn)

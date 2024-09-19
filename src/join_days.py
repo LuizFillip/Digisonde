@@ -1,8 +1,6 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import base as b 
 import digisonde as dg 
-import numpy as np 
 import datetime as dt 
 
 b.config_labels()
@@ -45,7 +43,7 @@ dates = [
     dt.datetime(2015, 12, 2, 9), 
     dt.datetime(2015, 12, 13, 9),
     dt.datetime(2015, 12, 16, 9), 
-    # dt.datetime(2015, 12, 18, 9),
+    dt.datetime(2015, 12, 18, 9),
     dt.datetime(2015, 12, 29, 9)
     ]
 
@@ -101,9 +99,11 @@ def renew_index_from_date(df, dn):
     
     return df 
 
+start_date = dt.datetime(2015, 12, 19)
 
 def repeat_quiet_days(
         site, 
+        start_date,
         number = 4
         ):
 
@@ -113,7 +113,7 @@ def repeat_quiet_days(
         
         delta = dt.timedelta(days = i)
     
-        dn = dt.datetime(2015, 12, 19) + delta
+        dn = start_date + delta
         
         df = quiet_time_avg(site)
         
@@ -122,4 +122,10 @@ def repeat_quiet_days(
     return pd.concat(out)
 
 
-
+# site = 'CAJ2M' #'SAA0K' #'BVJ03' #
+# df = quiet_time_avg(
+#         site = site,
+#         cols = list(range(3, 8, 1)), 
+#         smooth = 10
+#         )
+# df
