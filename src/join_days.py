@@ -8,6 +8,18 @@ b.config_labels()
 
 
 
+def load_drift(
+        site, 
+        dn, 
+        smooth = 5,
+        cols = list(range(3, 8, 1))
+        
+        ):
+    file =  dg.dn2fn(dn, site)
+    
+    df = dg.IonoChar(file, cols, sum_from = None)
+    
+    return df.drift(smooth)['vz'].to_frame(site)
 
 
 def join_iono_days(
@@ -68,6 +80,7 @@ def quiet_time_avg(
         out.append(ds.sort_index().to_frame(dn.day))
         
     df = pd.concat(out, axis = 1).mean(axis = 1)
+    
     return df.sort_index().iloc[:-1]
     
 
@@ -80,7 +93,7 @@ def float_to_time2(float_time):
 
 
 def renew_index_from_date(df, dn):
-    
+    dn = dn.replace(hour = 0, minute = 0)
     out = []
     for t in df.index:
         try:
@@ -122,10 +135,22 @@ def repeat_quiet_days(
     return pd.concat(out)
 
 
-# site = 'CAJ2M' #'SAA0K' #'BVJ03' #
+site =  'SAA0K' #'BVJ03' #'CAJ2M'
 # df = quiet_time_avg(
 #         site = site,
 #         cols = list(range(3, 8, 1)), 
 #         smooth = 10
 #         )
-# df
+
+dn = dt.datetime(2015, 12, 20, 18)
+df = quiet_time_avg(site)
+
+ds = load_drift(site, dn)
+
+# ds.max(), df.max()
+
+# ds.loc[ds.index < dn].idxmax() #plot(figsize = (12, 6))
+
+
+renew_index_from_date(df, dn)
+
