@@ -140,7 +140,7 @@ def repeat_quiet_days(
 
 # def main():
 
-sites =['CAJ2M', 'SAA0K', 'BVJ03']
+sites = ['SAA0K', 'BVJ03'] #'CAJ2M', 
 
 
 
@@ -166,7 +166,9 @@ def get_infos(ds, dn, site):
     
     out = []
     for i, cond in enumerate(conds):
+        
         df = ds.loc[cond].max().to_frame(names[i]).round(2).T
+        
         df.rename(columns = {site: 'distur'}, inplace = True)
         
         df.columns = pd.MultiIndex.from_product(
@@ -201,22 +203,20 @@ def run_phases(dn):
         out.append(infos_in_sites(dn + delta, name))
         
         
-    df = pd.concat(out, axis =1)
+    return pd.concat(out, axis =1)
     
-    # print(df.to_latex(decimal = ','))
-    
-    df
-
 # site = 'SAA0K'
 
-site = 'CAJ2M'
+# site = 'CAJ2M'
 dn = dt.datetime(2015, 12, 21, 21)
 
-ds = concat_disturbed_quiet(site, dn)
-# get_infos(ds, dn)
-# name = 'Fase principal'
-# df = infos_in_sites(dn, name)
+# ds = concat_disturbed_quiet(site, dn)
+# # get_infos(ds, dn)
+# # name = 'Fase principal'
+# # df = infos_in_sites(dn, name)
 
-# ds.plot()
+# # ds.plot()
 
-get_infos(ds, dn, site)
+# get_infos(ds, dn, site)
+
+# run_phases(dn)
