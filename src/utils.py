@@ -28,6 +28,10 @@ def closest_iono(target, path_in):
   
     return b.closest_datetime(iono_times, target)
 
+def dn2PNG(dn, site):
+    fmt = f'{site}_%Y%m%d(%j)%H%M%S.PNG'
+    return dn.strftime(fmt)
+
 def code_name(code):
     codes = {
         'JI91J': 'Jicamarca',
@@ -65,11 +69,40 @@ def path_ionogram(
             site = 'FZA0M'
             closest_dn = closest_iono(target, path_in)
         
-        fmt = f'{site}_%Y%m%d(%j)%H%M%S.PNG'
-        filename = closest_dn.strftime(fmt)
-        
+    
+        filename = dn2PNG(closest_dn, site)
         return site, f'{path_in}{filename}'
     
-# dn = dt.datetime(2018, 12, 12)
+# dn = dt.datetime(2022, 7, 24, 23)
+# site = 'FZA0M'
+# root = 'E:\\'
 
-# path_ionogram(dn)
+def path_from_site_dn(dn, site, root = 'E:\\'):
+    
+    if dn.hour < 18:
+        start = dn - dt.timedelta(days = 1)
+    else:
+        start = dn
+        
+    
+    folder_ion = start.strftime(f'%Y/%Y%m%d{site[0]}')
+     
+    path_in = os.path.join(root, 'ionogram', folder_ion)
+     
+    figure_name = dn2PNG(closest_iono(dn, path_in), site)
+    
+    return os.path.join(path_in, figure_name)
+
+
+def ionogram_path(dn, site, root = 'E:\\'):
+    
+    start = dn - dt.timedelta(days = 1)
+    folder_ion = start.strftime(f'%Y/%Y%m%d{site[0]}')
+    
+    fmt = f'{site}_%Y%m%d(%j)%H%M%S.PNG'
+    
+    target = dn.strftime(fmt)
+    
+    return os.path.join(root, 'ionogram', folder_ion, target)
+    
+ 
