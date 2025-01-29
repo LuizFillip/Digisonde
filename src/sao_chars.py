@@ -48,7 +48,8 @@ def chars(infile):
     return df
 
 
-# infile = 'digisonde/data/chars/midnight/SAA0K_20151220(354).TXT'
-# infile = 'digisonde/data/chars/midnight/JI91J_20151220(354).TXT'
-# # infile = 'digisonde/data/chars/midnight/JI91J_20151202(336).TXT'
-# chars(infile)
+# infile = 'spectrum/src/SAA0K_2018123123'
+
+# df = chars(infile)
+
+# df.to_csv(infile)
