@@ -51,8 +51,10 @@ class IonoChar(object):
     def sel_time(self, ds):
         
         if self.sum_from is not None:
-            self.dn = self.date.replace(hour = self.sum_from)
-            return b.sel_times(ds, self.dn, hours = 14)
+            self.dn = self.date.replace(
+                hour = self.sum_from)
+            return b.sel_times(
+                ds, self.dn, hours = 14)
         else:
             return ds
     

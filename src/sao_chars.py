@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import base as b 
+import os 
 
 def velocity(df, col = 'hF2'):
     
@@ -48,8 +49,10 @@ def chars(infile):
     return df
 
 
-# infile = 'spectrum/src/SAA0K_2018123123'
+# infile = 'spectral/data/Fortaleza/'
 
-# df = chars(infile)
-
-# df.to_csv(infile)
+# for file in os.listdir(infile):
+    
+#     df = chars(infile + file)  
+    
+#     df.to_csv(infile + file)
