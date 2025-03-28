@@ -68,10 +68,10 @@ def run():
         df = process_data(infile + file)
         df.to_csv(outfile + file)
 
-name = 'BVJ03'
-infile = f"digisonde/data/chars/profiles/{name}_20231014(287).TXT"
+# name = 'BVJ03'
+# infile = f"digisonde/data/chars/profiles/{name}_20231014(287).TXT"
 
-df = process_data(infile)
-path = 'digisonde/data/chars/'
-df.to_csv(path + name)
+# df = process_data(infile)
+# path = 'digisonde/data/chars/'
+# df.to_csv(path + name)
 

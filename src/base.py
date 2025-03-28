@@ -3,8 +3,8 @@ import datetime as dt
 import os 
 import base as b 
 
-FREQ_PATH = 'digisonde/data/chars/freqs/'
-PATH_CHAR = 'digisonde/data/chars/midnight/'
+FREQ_PATH = 'digisonde/data/SAO/freqs/'
+PATH_CHAR = 'digisonde/data/SAO/chars/'
 
 
 

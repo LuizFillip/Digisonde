@@ -17,7 +17,12 @@ columns_e = ["date", "doy", "time",
            'foF2', 'hF2', 'QF', 'hmF2',
            'f(h`F)', '(h`F2)']
 
-
+columns_e = [
+    "date", "doy", "time", 
+    'foF2' ,  'hF2',  'hF',  'QF', 
+    'QE', 'foEs', 'hEs', 
+    'fminEs',  'fbEs',   'hmF2'
+    ]
 def chars(infile):
     f = open(infile).readlines()
 
@@ -48,11 +53,3 @@ def chars(infile):
     
     return df
 
-
-# infile = 'spectral/data/Fortaleza/'
-
-# for file in os.listdir(infile):
-    
-#     df = chars(infile + file)  
-    
-#     df.to_csv(infile + file)
