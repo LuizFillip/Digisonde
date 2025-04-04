@@ -2,6 +2,7 @@ import datetime as dt
 import base as b 
 import os
 
+root = 'E:/ionogram/'
 
 def dn2fn(dn, site):
     return dn.strftime(f'{site}_%Y%m%d(%j).TXT')
@@ -50,11 +51,11 @@ def path_ionogram(
         dn, 
         target = None, 
         site = 'SAA0K', 
-        root = 'E:\\'
+        root = 'E:\\ionogram'
         ):
     folder_ion = dn.strftime('%Y/%Y%m%d')
     
-    path = os.path.join(root, 'ionogram', folder_ion)
+    path = os.path.join(root, folder_ion)
     
     if target is None:
         return f'{path}{site[0]}/'
@@ -77,21 +78,32 @@ def path_ionogram(
 # site = 'FZA0M'
 # root = 'E:\\'
 
-def path_from_site_dn(dn, site, root = 'E:\\'):
+def path_from_site_dn(dn, site, root = 'E:\\ionogram'):
     
-    if dn.hour < 18:
-        start = dn - dt.timedelta(days = 1)
-    else:
-        start = dn
+    ext = site[:2].upper()
+    
+    # if dn.hour < 18:
+    #     start = dn - dt.timedelta(days = 1)
+    # else:
+    #     start = dn
         
     
-    folder_ion = start.strftime(f'%Y/%Y%m%d{site[0]}')
+    try:
+        folder_ion = start.strftime(f'%Y/%Y%m%d{site[0]}')
+         
+        path_in = os.path.join(root, folder_ion)
      
-    path_in = os.path.join(root, 'ionogram', folder_ion)
+        figure_name = dn2PNG(closest_iono(dn, path_in), site)
+    except:
+        folder_ion = start.strftime(f'%Y/%Y%m%d{ext}')
+         
+        path_in = os.path.join(root, folder_ion)
      
-    figure_name = dn2PNG(closest_iono(dn, path_in), site)
-    
+        figure_name = dn2PNG(closest_iono(dn, path_in), site)
+        
     return os.path.join(path_in, figure_name)
+    
+        
 
 
 def ionogram_path(dn, site, root = 'E:\\'):
@@ -104,5 +116,24 @@ def ionogram_path(dn, site, root = 'E:\\'):
     target = dn.strftime(fmt)
     
     return os.path.join(root, 'ionogram', folder_ion, target)
+
+import pandas as pd 
     
- 
+start = dt.datetime(2015, 12, 20, 21)
+
+times = pd.date_range(start, freq = '2H', periods = 8)
+
+dn = times[0]
+
+sites = [ 'SAA0K', 'BVJ03', 'FZA0M', 'CAJ2M', 'CGK21']
+
+
+site = sites[0]
+
+def folder_dir(dn):
+
+    fmt = f'%Y/%Y%m%d{site[0]}'
+    
+    dir_month = start.strftime(f'%Y/%Y%m%d{site[0]}')
+    
+    files = os.listdir(f'{root}{dir_month}')

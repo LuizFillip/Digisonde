@@ -138,7 +138,6 @@ def repeat_quiet_days(
         
     return pd.concat(out)
 
-# def main():
 
 sites = ['SAA0K', 'BVJ03'] #'CAJ2M', 
 
