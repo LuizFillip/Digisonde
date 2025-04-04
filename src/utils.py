@@ -4,34 +4,8 @@ import os
 
 root = 'E:/ionogram/'
 
-def dn2fn(dn, site):
-    return dn.strftime(f'{site}_%Y%m%d(%j).TXT')
 
-def fn2dn(filename):
-    
-    args = filename.split("_")
-    
-    try:
-        date_str = args[1][:8] + args[1][13:-4]
-        fmt =  "%Y%m%d%H%M%S"
-        return dt.datetime.strptime(date_str, fmt)
-    
-    except:
-        date_str = args[1].split('.')[0]
-        fmt = "%Y%m%d(%j)%H%M%S"
-        return dt.datetime.strptime(date_str, fmt)
 
-        
-def closest_iono(target, path_in):
-    iono_times = [
-        fn2dn(f) for f in
-        os.listdir(path_in) if 'PNG' in f ]
-  
-    return b.closest_datetime(iono_times, target)
-
-def dn2PNG(dn, site):
-    fmt = f'{site}_%Y%m%d(%j)%H%M%S.PNG'
-    return dn.strftime(fmt)
 
 def code_name(code):
     codes = {
@@ -117,23 +91,3 @@ def ionogram_path(dn, site, root = 'E:\\'):
     
     return os.path.join(root, 'ionogram', folder_ion, target)
 
-import pandas as pd 
-    
-start = dt.datetime(2015, 12, 20, 21)
-
-times = pd.date_range(start, freq = '2H', periods = 8)
-
-dn = times[0]
-
-sites = [ 'SAA0K', 'BVJ03', 'FZA0M', 'CAJ2M', 'CGK21']
-
-
-site = sites[0]
-
-def folder_dir(dn):
-
-    fmt = f'%Y/%Y%m%d{site[0]}'
-    
-    dir_month = start.strftime(f'%Y/%Y%m%d{site[0]}')
-    
-    files = os.listdir(f'{root}{dir_month}')
