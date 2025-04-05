@@ -12,7 +12,7 @@ dn = times[0]
 sites = [ 'SAA0K', 'BVJ03', 'FZA0M', 'CAJ2M', 'CGK21']
 
 
-site = sites[0]
+site = sites[2]
 
 # def folder_dir(dn):
 
@@ -57,10 +57,11 @@ class IonoDir(object):
         self.site = site
         self.dn = dn 
         self.root = 'E:/ionogram/'
-
+        self.ext = self.site[:2]
+        
     @property
     def name_folder(self):
-        fmt = f'%Y/%Y%m%d{self.site[:2]}'
+        fmt = '%Y/%Y%m%d' + self.ext
         return self.dn.strftime(fmt)
     
     @property
@@ -95,4 +96,4 @@ class IonoDir(object):
 
 p = IonoDir(site, dn)
 
-p.path_from_dn
+p.name_folder

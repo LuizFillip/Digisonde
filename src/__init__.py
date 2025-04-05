@@ -7,5 +7,5 @@ from .utils import *
 from .base import *
 from .avg import IonoAverage
 from .PRE import get_infos
-from .join_days import join_iono_days, repeat_quiet_days
+from .join_days import *
 from .dirs import IonoDir

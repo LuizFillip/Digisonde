@@ -5,8 +5,6 @@ import os
 root = 'E:/ionogram/'
 
 
-
-
 def code_name(code):
     codes = {
         'JI91J': 'Jicamarca',
@@ -27,6 +25,11 @@ def path_ionogram(
         site = 'SAA0K', 
         root = 'E:\\ionogram'
         ):
+    
+    '''
+    Reescrever no novo layout 
+    
+    '''
     folder_ion = dn.strftime('%Y/%Y%m%d')
     
     path = os.path.join(root, folder_ion)
@@ -48,36 +51,9 @@ def path_ionogram(
         filename = dn2PNG(closest_dn, site)
         return site, f'{path_in}{filename}'
     
-# dn = dt.datetime(2022, 7, 24, 23)
-# site = 'FZA0M'
-# root = 'E:\\'
 
-def path_from_site_dn(dn, site, root = 'E:\\ionogram'):
-    
-    ext = site[:2].upper()
-    
-    # if dn.hour < 18:
-    #     start = dn - dt.timedelta(days = 1)
-    # else:
-    #     start = dn
-        
-    
-    try:
-        folder_ion = start.strftime(f'%Y/%Y%m%d{site[0]}')
-         
-        path_in = os.path.join(root, folder_ion)
-     
-        figure_name = dn2PNG(closest_iono(dn, path_in), site)
-    except:
-        folder_ion = start.strftime(f'%Y/%Y%m%d{ext}')
-         
-        path_in = os.path.join(root, folder_ion)
-     
-        figure_name = dn2PNG(closest_iono(dn, path_in), site)
-        
-    return os.path.join(path_in, figure_name)
-    
-        
+
+
 
 
 def ionogram_path(dn, site, root = 'E:\\'):
