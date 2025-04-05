@@ -92,6 +92,8 @@ dn = dt.datetime(2015, 12, 20)
 
 # name = 'main'
 # infos_in_sites(dn, name)
+import GEO as gg 
+
 
 sites = ['SAA0K', 'BVJ03']
 
@@ -99,28 +101,28 @@ site = sites[0]
 
 ds = concat_disturbed_quiet(site, dn)
 
-# ds.plot(figsize = (12, 9)) 
-
-import GEO as gg 
-
-site_like = site[:3].lower()
-
-dusk = gg.dusk_from_site(
-        dn, 
-        site_like,
-        twilight_angle = 0
+def extract_dusk_maxs(ds):
+    site = ds.columns[1]
+    dn = ds.index[0]
+    
+    site_like = site[:3].lower()
+    
+    dusk = gg.dusk_from_site(
+            dn, 
+            site_like,
+            twilight_angle = 18
+            )
+    
+    delta = dt.timedelta(hours = 2)
+    
+    sel_index = ds.loc[
+        ((ds.index > dusk - delta) & 
+        (ds.index < dusk + delta))
+        ]
+    sel_index.rename(
+        columns = {site: 'storm'}, 
+        inplace = True
         )
+    return sel_index.max().to_frame(site).T
 
-
-delta = dt.timedelta(hours = 2)
-
-conds = []
-
-
-sel_index = ds.loc[
-    ((ds.index > dusk - delta) & 
-    (ds.index < dusk + delta))
-    ]
-
-
-
+extract_dusk_maxs(ds)
