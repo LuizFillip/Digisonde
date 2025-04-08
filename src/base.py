@@ -62,9 +62,7 @@ class IonoChar(object):
     def heights(self):
         
         ds = dg.freq_fixed(FREQ_PATH + self.file)
-            
-    
-        
+                  
         return self.sel_time(ds)[self.cols]
     
     def drift(self, smooth = 3):
