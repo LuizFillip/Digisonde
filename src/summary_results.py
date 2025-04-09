@@ -49,7 +49,7 @@ def extract_maximums_vls(ds, ref_time):
         columns = {site: 'storm'}, 
         inplace = True
         )
-    
+    # print(sel_index.max(), sel_index.idxmax())
     return sel_index.max().to_frame(site).T.round(2)
 
 def run_comparation_by_sites(
