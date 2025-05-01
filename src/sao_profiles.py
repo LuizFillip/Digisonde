@@ -70,8 +70,12 @@ def run():
 
 # name = 'BVJ03'
 # infile = f"digisonde/data/chars/profiles/{name}_20231014(287).TXT"
+# fn = 'SAA0K_20151219(353).TXT'
+# infile = 'digisonde/data/SAO/profiles/'
+# df = process_data(infile + fn)
+# # path = 'digisonde/data/chars/'
 
-# df = process_data(infile)
-# path = 'digisonde/data/chars/'
-# df.to_csv(path + name)
+# path = 'digisonde/data/SAO/pro_profiles/'
+# df.to_csv(path + fn)
+
 
