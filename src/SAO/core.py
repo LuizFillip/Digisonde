@@ -1,46 +1,10 @@
 import re
 import pandas as pd 
+import datetime as dt 
 
 
-fn = "E:\\ionogram\\2015\\20151220CA\\CAJ2M_2015354101000.SAO"
-fn = "E:\\database\\CAS_ionossonda\\2025\\2025\\01\\28\\OCGD_IDIS01_IOPA_L2_STP_20250128234500_V01.00.SAO"
 
-lines = open(fn).readlines()
-
-
-def scaled_characteristics(f):
-    
-    col_names = [
-       "foF2", "foF1", "M(D)", "MUF(D)", 
-       "fmin", "foEs", "fminF", "fminE", "foE",
-       "fxI", "h'F", "h'F2", "h'E", "h'Es", "zmE",
-       "yE", "QF", "QE", "DownF", "DownE", "DownEs",
-       "FF", "FE", "D", "fMUF", "h'(fMUF)", 
-       "delta_foF2", "foEp", "f(h'F)", "f(h'F2)",
-       "foF1p", "hF2_peak", "hF1_peak", "zhalfNm", 
-       "foF2p", "fminEs", "yF2", "yF1", "TEC",
-       "ScaleHeightF2", "B0", "B1", "D1", "foEa",
-       "h'Ea", "foP", "h'P", "fbEs", "TypeEs"
-    ]
-
-
-    table = ''.join(f[5:9]).replace('\n', '')
-    
-    out = []
-    for ln in table.split():
-    
-        if '999' in ln:
-            s = re.findall(r'\d+\.\d{3}', ln)
-            out.extend(s)
-        else:
-            out.append(ln)
-            
-            
-    return pd.DataFrame([out], columns=col_names)
-
-# df = scaled_characteristics(f)
-
-def parse_sao_line(line):
+def dps_system_preface_parameters(line):
     # Define os campos com suas posições e descrições
     fields = [
         (1, 2, "Version Indicator"),
@@ -99,9 +63,116 @@ def parse_sao_line(line):
 
     return parsed
 
+def extract_datetime(parsed):
+    try:
+        year = int(parsed["Year"])
+        day_of_year = int(parsed["Day of Year"])
+        hour = int(parsed["Hour (UT)"])
+        minute = int(parsed["Minutes"])
+        second = int(parsed["Seconds"])
+
+        # Cria a data base a partir do dia do ano
+        dn = dt.datetime(year, 1, 1) + dt.timedelta(days=day_of_year - 1)
+        # Adiciona hora, minuto e segundo
+        dn = dn.replace(hour=hour, minute=minute, second=second)
+
+        return dn
+    except Exception as e:
+        print("Erro ao construir datetime:", e)
+        return None
+
+def scaled_characteristics(lines):
+    
+    col_names = [
+       "foF2", "foF1", "M(D)", "MUF(D)", 
+       "fmin", "foEs", "fminF", "fminE", 
+       "foE", "fxI", "h'F", "h'F2", "h'E", 
+       "h'Es", "zmE",
+       "yE", "QF", "QE", "DownF", 
+       "DownE", "DownEs",
+       "FF", "FE", "D", "fMUF", "h'(fMUF)", 
+       "delta_foF2", "foEp", "f(h'F)", "f(h'F2)",
+       "foF1p", "hF2_peak", "hF1_peak", "zhalfNm", 
+       "foF2p", "fminEs", "yF2", "yF1", "TEC",
+       "ScaleHeightF2", "B0", "B1", "D1", "foEa",
+       "h'Ea", "foP", "h'P", "fbEs", "TypeEs"
+    ]
 
 
-parsed_data = parse_sao_line(lines[4])
+    table = ''.join(lines).replace('\n', '')
+    
+    out = []
+    for ln in table.split():
+    
+        if '999' in ln:
+            s = re.findall(r'\d+\.\d{3}', ln)
+            out.extend(s)
+        else:
+            out.append(ln)
 
-parsed_data
+    return pd.DataFrame([out], columns=col_names)
 
+
+def fn2dn(fn):
+    date_str = fn.split('_')[-2]
+    fmt = '%Y%m%d%H%M%S'
+    return dt.datetime.strptime(date_str, fmt)
+
+
+def SAO_data(infile):
+    
+    lines = open(infile).readlines()
+    
+    df = scaled_characteristics(lines[5:9])
+    
+    # parsed = dps_system_preface_parameters(lines[4])
+    
+    # df.index = [extract_datetime(parsed)]
+    
+    return df 
+
+
+# for month_path in root.iterdir():
+#     if month_path.is_dir():
+#         for day_path in month_path.iterdir():
+#             if day_path.is_dir():
+#                 for file_path in day_path.iterdir():
+#                     if file_path.is_file():
+#                         print(file_path)
+#                         # out.append(SAO_data(file_path))
+                        
+
+from tqdm import tqdm 
+
+def run_in_root():
+    
+    root = 'E:\\database\\CAS_ionossonda\\2025\\2025\\'
+    import os 
+    out = []
+    for month in os.listdir(root):
+        
+        month_path = f'{root}{month}'
+        for day in tqdm(os.listdir(month_path), month):
+            
+            day_path = f'{root}{month}\\{day}'
+            
+            for file in os.listdir(day_path):
+                
+                infile  = f'{day_path}\\{file}'
+                
+                if file.endswith('SAO'):
+                    try:
+                        df = SAO_data(infile) 
+                        df.index = [fn2dn(file)]
+                        out.append(df)
+                    except:
+                        # print(file)
+                        continue
+                    
+    
+    ds = pd.concat(out)
+    
+    
+    ds.to_csv('digisonde/src/SAO/test') 
+    
+# run_in_root()
