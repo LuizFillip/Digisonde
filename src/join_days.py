@@ -21,11 +21,12 @@ dates = [
     ]
 
 
-def quiet_time_avg(
+def drift_quiet_time(
         site = 'SAA0K',
         cols = list(range(3, 10, 1)), 
         smooth = 3
         ):
+    
     out = []
     
     for dn in dates:
@@ -49,7 +50,7 @@ def quiet_time_avg(
     return df.sort_index().iloc[:-1]
     
 
-def get_time_avg_chars( 
+def chars_time_avg( 
         site = 'SAA0K',  
         parameter = 'hF'
         ):
@@ -79,26 +80,37 @@ def get_time_avg_chars(
     mean = b.running(df.mean(axis = 1), 3)
     std =  b.running(df.std(axis = 1), 3)
     
-   
-    return  pd.DataFrame({'mean':  mean, 
-                          'std':  std}, index  = df.index)
+    data =  {'mean':  mean, 'std':  std}
+    return  pd.DataFrame(data, index  = df.index)
 
 def repeat_quiet_days(
         site, 
         start_date,
         parameter = 'hF',
-        number = 4
+        number = 4,
+        cols = list(range(3, 10, 1)), 
+        smooth = 2
         ):
 
     out = []
     
-    for i in range(number):
+    for day in range(number):
         
-        delta = dt.timedelta(days = i)
+        delta = dt.timedelta(days = day)
     
         dn = start_date + delta
         
-        df = get_time_avg_chars(site, parameter)
+        if parameter == 'drift':
+            df = drift_quiet_time(
+                    site,
+                    cols = cols, 
+                    smooth = smooth
+                    )
+        else:
+            df = chars_time_avg( 
+                    site,  
+                    parameter
+                    )
         
         out.append(b.renew_index_from_date(df, dn))
         
@@ -131,7 +143,6 @@ def join_iono_days(
         elif parameter in base_parameters:
             
             df = df.chars 
-            # df[parameter] = b.smooth2(df[parameter], smooth)
             out.append(df[parameter].to_frame(site))
             
         else:
