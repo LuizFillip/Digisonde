@@ -2,6 +2,7 @@ import digisonde as dg
 import datetime as dt 
 import os 
 import base as b 
+import numpy as np
 
 FREQ_PATH = 'digisonde/data/SAO/freqs/'
 PATH_CHAR = 'digisonde/data/SAO/chars/'
@@ -65,14 +66,40 @@ class IonoChar(object):
                   
         return self.sel_time(ds)[self.cols]
     
-    def drift(self, smooth = 3):
+    def drift(self, smooth = None):
         
-        df = dg.vertical_drift(
-            self.heights, 
-            smooth, 
+         
+        """
+        Compute the vertical drift with 
+        (dh`F/dt) from ionosonde fixed frequency 
+        (in meters per second)
+        """
+        
+        ds = self.heights
+    
+        cols = ds.columns
+        
+        ds["time"] = b.time2float(
+            ds.index, 
             sum_from = self.sum_from
             )
         
-        return self.sel_time(df)
+        for col in cols:
+            
+            if col != "time":                         
+
+                ds[col] = (ds[col].diff() / ds["time"].diff()) / 3.6
+                
+                if smooth is not None:
+                    
+                    ds[col] = b.smooth2(ds[col], smooth)
+        
+        ds["vz"] = np.mean(ds[cols], axis = 1)
+
+        ds = ds.replace(0, float('nan'))
+        
+        return self.sel_time(ds)
+
+
 
 
