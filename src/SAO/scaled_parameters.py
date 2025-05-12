@@ -18,16 +18,22 @@ def plot_example(ds):
     ax.plot(ds["h'F2"])
     
     ds = ds.between_time('19:00', '00:00')
+    
     max_hf2 = ds["h'F2"].max()
     idx_max = ds["h'F2"].idxmax()
     
     ax.scatter(idx_max, max_hf2 )
+    
+    ax.set(ylabel = 'h´F2', 
+           ylim = [0, 500])
     
     b.format_time_axes(
         ax, pad = 85, 
         hour_locator = 2, 
         translate = True
         )
+    
+    return fig
     
 
 def dn2fl(dn):
@@ -95,35 +101,36 @@ def plot_timeseries(ax, sst, time, pm = 'hF2'):
            xticks = np.arange(0, 80, 10)
            )
     
-df = b.load('digisonde/src/SAO/test')
-
-
-df = df.replace(9999, np.nan)
-df = df.loc[df["h'F2"] < 999]
-
-dates = np.unique(df.index.date)
-
-out = {'hF2': [], 'foF2': [], 'tn': []}
-
-for dn in dates: 
-    # dn = dates[7]
-
-    ds = df.loc[df.index.date == dn]
     
-    # plot_example(ds)
+def get_averages_on_data():
     
-    hF2, foF2, tn = mean_by_day(ds)
     
-    out['hF2'].append(hF2)
-    out['foF2'].append(foF2)
-    out['tn'].append(tn)
-
+    df = b.load('digisonde/src/SAO/test')
+     
+    df = df.replace(9999, np.nan)
+    df = df.loc[df["h'F2"] < 999]
     
-df = pd.DataFrame(out, index = dates)
-
-df.index = pd.to_datetime(df.index)
-
-df['doy'] = df.index.day_of_year
+    dates = np.unique(df.index.date)
+    
+    out = {'hF2': [], 'foF2': [], 'tn': []}
+    
+    for dn in dates: 
+  
+        ds = df.loc[df.index.date == dn]
+  
+        hF2, foF2, tn = mean_by_day(ds)
+        
+        out['hF2'].append(hF2)
+        out['foF2'].append(foF2)
+        out['tn'].append(tn)
+    
+        
+    df = pd.DataFrame(out, index = dates)
+    
+    df.index = pd.to_datetime(df.index)
+    
+    df['doy'] = df.index.day_of_year
+    return df 
 
 def plot_timeseries_and_wavelet(df):
     
@@ -152,4 +159,22 @@ def plot_timeseries_and_wavelet(df):
     plot_wavelet(ax[1, 1], sst, time, pm = 'foF2')
     
 
-plot_timeseries_and_wavelet(df)
+# plot_timeseries_and_wavelet(df)
+
+
+df = b.load('digisonde/src/SAO/test')
+ 
+df = df.replace(9999, np.nan)
+df = df.loc[df["h'F2"] < 999]
+
+dates = np.unique(df.index.date)
+
+for dn in dates:
+
+    ds = df.loc[df.index.date == dn]
+    
+    fig = plot_example(ds)
+    
+    figname = dn.strftime('%Y%m%d')
+    
+    fig.savefig('E:\\ionossonde_plots\\' + figname)

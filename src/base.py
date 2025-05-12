@@ -17,7 +17,7 @@ class IonoChar(object):
             self, 
             file, 
             cols = list(range(5, 8, 1)), 
-            sum_from = 20
+            sum_from = None
             ):
         
         file_temp = os.path.split(file)[-1]

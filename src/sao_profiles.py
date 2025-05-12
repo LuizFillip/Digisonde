@@ -68,14 +68,49 @@ def run():
         df = process_data(infile + file)
         df.to_csv(outfile + file)
 
-# name = 'BVJ03'
-# infile = f"digisonde/data/chars/profiles/{name}_20231014(287).TXT"
-# fn = 'SAA0K_20151219(353).TXT'
-# infile = 'digisonde/data/SAO/profiles/'
-# df = process_data(infile + fn)
-# # path = 'digisonde/data/chars/'
+import base as b 
 
-# path = 'digisonde/data/SAO/pro_profiles/'
-# df.to_csv(path + fn)
+infile = 'digisonde/data/SAO/profiles/'
+
+files = [
+    'SAA0K_20151213(347).TXT',
+    'SAA0K_20151216(350).TXT', 
+    'SAA0K_20151218(352).TXT', 
+    'SAA0K_20151229(363).TXT']
+
+def quiettime_gradient_scale():
+    
+
+    out = []
+    alt = 250
+    
+    for fn in files:
+        
+        df = process_data(infile + fn)
+        
+        df.index = pd.to_datetime(df.index)
+        
+        df["ne"] = (1.24e4 * df["freq"]**2) * 1e6
+        
+        df["L"] = io.scale_gradient(df["ne"], df["alt"])
+        
+        df = df.loc[df['alt'] == alt, ['L']]
+        # df.columns = df.index[0].day
+        df.index = b.time2float(
+            df.index, sum_from = None)
+        
+        
+        out.append(df.iloc[:-1])
+    
+    
+    ds = pd.concat(out, axis = 1).sort_index()
+
+    ds['q_L'] = ds.mean(axis = 1)
+    
+    return ds[['q_L']]
+
+
+
+
 
 

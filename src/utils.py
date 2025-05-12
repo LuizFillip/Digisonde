@@ -1,5 +1,4 @@
 import datetime as dt
-import base as b 
 import os
 
 root = 'E:/ionogram/'
@@ -18,41 +17,6 @@ def code_name(code):
         }
     return codes[code]
     
-
-def path_ionogram(
-        dn, 
-        target = None, 
-        site = 'SAA0K', 
-        root = 'E:\\ionogram'
-        ):
-    
-    '''
-    Reescrever no novo layout 
-    
-    '''
-    folder_ion = dn.strftime('%Y/%Y%m%d')
-    
-    path = os.path.join(root, folder_ion)
-    
-    if target is None:
-        return f'{path}{site[0]}/'
-        
-    else:
-        try:
-            path_in = f'{path}S/'
-            site = 'SAA0K' 
-            closest_dn = closest_iono(target, path_in)
-        except:
-            path_in = f'{path}F/'
-            site = 'FZA0M'
-            closest_dn = closest_iono(target, path_in)
-        
-    
-        filename = dn2PNG(closest_dn, site)
-        return site, f'{path_in}{filename}'
-    
-
-
 
 
 

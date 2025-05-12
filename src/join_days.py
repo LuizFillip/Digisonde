@@ -13,7 +13,6 @@ def dn2fn(dn, site):
 
     
 dates = [
-  #  dt.datetime(2015, 12, 2, 9), 
     dt.datetime(2015, 12, 13, 9),
     dt.datetime(2015, 12, 16, 9), 
     dt.datetime(2015, 12, 18, 9),
@@ -21,7 +20,7 @@ dates = [
     ]
 
 
-def drift_quiet_time(
+def quiettime_drift(
         site = 'SAA0K',
         cols = list(range(3, 10, 1)), 
         smooth = 3
@@ -36,7 +35,6 @@ def drift_quiet_time(
         df = dg.IonoChar(file, cols, sum_from = None)
                 
         ds = df.drift(
-            smooth = smooth
             )
         
         ds = ds.loc[ds.index.date == dn.date()]
@@ -101,7 +99,7 @@ def repeat_quiet_days(
         dn = start_date + delta
         
         if parameter == 'drift':
-            df = drift_quiet_time(
+            df = quiettime_drift(
                     site,
                     cols = cols, 
                     smooth = smooth
@@ -116,6 +114,21 @@ def repeat_quiet_days(
         
     return pd.concat(out) 
 
+
+def smooth_in_time(df, dn, window = 3):
+    
+    delta = dt.timedelta(hours = 19)
+    
+    end = dn + delta
+    
+    df.loc[dn: end] = df.loc[dn: end].rolling(
+        window = window, 
+        center = True
+        ).mean()
+    
+    return df['vz']
+
+
 def join_iono_days(
         site, 
         dn,
@@ -128,17 +141,20 @@ def join_iono_days(
     base_parameters = ['hF', 'hmF2', 'foF2', 'hF2']
     out = []
     
-    for i in range(number):
+    for day in range(number):
         
-        delta = dt.timedelta(days = i)
+        delta = dt.timedelta(days = day)
+        date = dn + delta
         
-        file =  dn2fn(dn + delta, site)
+        file = dn2fn(date, site)
         
-        df = dg.IonoChar(file, cols, sum_from = None)
+        df = dg.IonoChar(file, cols)
         
         if parameter == 'drift':
             
-            out.append(df.drift(smooth)['vz'].to_frame(site))
+            df = smooth_in_time(df.drift(), date)
+            
+            out.append(df.to_frame(site))
             
         elif parameter in base_parameters:
             
@@ -178,5 +194,26 @@ def concat_quiet_and_disturb():
 
 
 
-
-# concat_quiet_and_disturb()
+def test_join_drift():
+    
+    site = 'SAA0K'
+    
+    dn = dt.datetime(2015, 12, 19)
+    
+    df = join_iono_days(
+            site, 
+            dn,
+            parameter = 'drift',
+            number = 4,
+            smooth = 3,
+            cols = [5, 6]
+            )
+    
+    df.plot()
+    
+    
+quiettime_drift(
+        site = 'SAA0K',
+        cols = list(range(3, 10, 1)), 
+        smooth = 3
+        )
