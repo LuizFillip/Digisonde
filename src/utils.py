@@ -13,7 +13,7 @@ def code_name(code):
         "BVJ03": "Boa Vista",
         "CGK21": "Campo Grande",
         "CAJ2M": "Cachoeira Paulista",
-        "SMK29": "Santa Maria",
+        "SMK29": "Santa Maria"
         }
     return codes[code]
     

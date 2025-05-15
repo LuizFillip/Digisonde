@@ -169,12 +169,30 @@ df = df.loc[df["h'F2"] < 999]
 
 dates = np.unique(df.index.date)
 
-for dn in dates:
+# for dn in dates:
 
-    ds = df.loc[df.index.date == dn]
+#     ds = df.loc[df.index.date == dn]
     
-    fig = plot_example(ds)
+#     fig = plot_example(ds)
     
-    figname = dn.strftime('%Y%m%d')
+#     figname = dn.strftime('%Y%m%d')
     
-    fig.savefig('E:\\ionossonde_plots\\' + figname)
+#     fig.savefig('E:\\ionossonde_plots\\' + figname)
+
+
+df['doy'] = df.index.day_of_year + (df.index.hour / 24) + (df.index.minute / 60)
+
+df.set_index('doy', inplace = True)
+
+
+ds = df[['foF2', "h'F2"]]
+
+# ds["h'F2"].plot()
+
+ds = get_averages_on_data()
+
+ds.set_index('doy', inplace = True)
+
+del ds['tn']
+
+ds.to_csv('juazeirinho2025.txt', sep = ' ')

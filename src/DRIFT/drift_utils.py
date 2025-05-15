@@ -54,7 +54,8 @@ def filter_values(df,
         return df
 
 
-def pivot_data(n, col, 
+def pivot_data(
+        n, col, 
                smoothed = True, 
                resample = True):
 

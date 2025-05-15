@@ -20,10 +20,25 @@ dates = [
     ]
 
 
+
+def smooth_in_time(df, dn, window = 3):
+    
+    delta = dt.timedelta(hours = 19)
+    
+    end = dn + delta
+    
+    df.loc[dn: end] = df.loc[dn: end].rolling(
+        window = window, 
+        center = True
+        ).mean()
+    
+    return df
+
+
 def quiettime_drift(
         site = 'SAA0K',
         cols = list(range(3, 10, 1)), 
-        smooth = 3
+        window = 3
         ):
     
     out = []
@@ -32,20 +47,19 @@ def quiettime_drift(
         
         file =  dn2fn(dn, site)
         
-        df = dg.IonoChar(file, cols, sum_from = None)
-                
-        ds = df.drift(
-            )
+        ds = dg.IonoChar(file, cols).drift()
         
+        ds = smooth_in_time(ds, dn, window = window)
         ds = ds.loc[ds.index.date == dn.date()]
-                
-        sel_vz = ds.set_index('time')['vz'].dropna()
         
-        out.append(sel_vz.sort_index().to_frame(dn.day))
+        df = ds.set_index('time')
         
+        out.append(df['vz'].to_frame(dn.day).dropna())
+    
+ 
     df = pd.concat(out, axis = 1).mean(axis = 1)
     
-    return df.sort_index().iloc[:-1]
+    return df.sort_index().iloc[:-1].to_frame('vz')
     
 
 def chars_time_avg( 
@@ -86,8 +100,8 @@ def repeat_quiet_days(
         start_date,
         parameter = 'hF',
         number = 4,
-        cols = list(range(3, 10, 1)), 
-        smooth = 2
+        cols = [5, 6], 
+        window = 3
         ):
 
     out = []
@@ -99,10 +113,11 @@ def repeat_quiet_days(
         dn = start_date + delta
         
         if parameter == 'drift':
+            
             df = quiettime_drift(
                     site,
                     cols = cols, 
-                    smooth = smooth
+                    window = window
                     )
         else:
             df = chars_time_avg( 
@@ -115,18 +130,6 @@ def repeat_quiet_days(
     return pd.concat(out) 
 
 
-def smooth_in_time(df, dn, window = 3):
-    
-    delta = dt.timedelta(hours = 19)
-    
-    end = dn + delta
-    
-    df.loc[dn: end] = df.loc[dn: end].rolling(
-        window = window, 
-        center = True
-        ).mean()
-    
-    return df['vz']
 
 
 def join_iono_days(
@@ -134,8 +137,8 @@ def join_iono_days(
         dn,
         parameter = 'drift',
         number = 4,
-        smooth = 3,
-        cols = list(range(3, 8, 1))
+        window = 3,
+        cols = [5, 6]
         ):
     
     base_parameters = ['hF', 'hmF2', 'foF2', 'hF2']
@@ -152,9 +155,13 @@ def join_iono_days(
         
         if parameter == 'drift':
             
-            df = smooth_in_time(df.drift(), date)
+            df = smooth_in_time(
+                df.drift(), 
+                date, 
+                window = window
+                )
             
-            out.append(df.to_frame(site))
+            out.append(df['vz'].to_frame(site))
             
         elif parameter in base_parameters:
             
@@ -210,10 +217,29 @@ def test_join_drift():
             )
     
     df.plot()
+
+def test_smmoth_drift():
     
+
+    site = 'SAA0K'
+    dn = dt.datetime(2015, 12, 19)
+        
     
-quiettime_drift(
-        site = 'SAA0K',
-        cols = list(range(3, 10, 1)), 
-        smooth = 3
-        )
+    file =  dn2fn(dn, site)
+    
+    ds = dg.IonoChar(
+        file, 
+        cols = [5, 6], 
+        sum_from = None
+        ).drift()
+    
+    ds = smooth_in_time(ds, dn)
+
+#'FZA0M', 'SAA0K', 'BVJ03'
+
+# site ='FZA0M'
+# quiettime_drift(
+#         site ,
+#         cols = list(range(3, 10, 1)), 
+#         smooth = 3
+#         )
