@@ -9,12 +9,7 @@ import base as b
 
 infile = 'digisonde/data/SAO/profiles/'
 
-files = [
-    'SAA0K_20151213(347).TXT',
-    'SAA0K_20151216(350).TXT', 
-    'SAA0K_20151218(352).TXT', 
-    'SAA0K_20151229(363).TXT'
-    ]
+
 
 def profile_data(infile):
     
@@ -39,42 +34,56 @@ def region_E_mean(infile):
     return df 
 
 
-
-p = 'ne'
-out = []
-for fn in files:
-
-    df = region_E_mean(infile + fn)
+def quiet_time_avg(site, p = 'ne'):
     
-    df.index = df.index.hour + df.index.minute / 60
+    files = [
+        'SAA0K_20151213(347).TXT',
+        'SAA0K_20151216(350).TXT', 
+        'SAA0K_20151218(352).TXT', 
+        'SAA0K_20151229(363).TXT'
+        ]
+    out = []
+    for fn in files:
     
-    df = df.loc[~df.index.duplicated(keep='first')]
+        df = region_E_mean(infile + fn)
+        
+        df.index = df.index.hour + df.index.minute / 60
+        
+        df = df.loc[~df.index.duplicated(keep='first')]
+        
+        out.append(df[p].to_frame())
+        
+    avg = pd.concat(out, axis = 1).mean(axis = 1)
+
+    avg = c.repeat_in_stormtime(avg).to_frame('quiet')
     
-    out.append(df[p].to_frame())
+    return avg 
+   
+def shift_quiet_storm_time(site, avg, p = 'ne'):
+     
+    files = [
+        f'{site}_20151219(353).TXT', 
+        f'{site}_20151220(354).TXT', 
+        f'{site}_20151221(355).TXT', 
+        f'{site}_20151222(356).TXT'
+        ]
     
-avg = pd.concat(out, axis = 1).mean(axis = 1)
-
-
-avg = c.repeat_in_stormtime(avg).to_frame('quiet')
-
-
-
-fn = 'SAA0K_20151219(353).TXT'
-
-
-
-df = region_E_mean(infile + fn) 
-
-
-
-df['quiet'] = df.index.map(avg['quiet'])
-
-df = df.resample('30min').mean()
-
-
-df['shift'] = ((df[p] - df['quiet']) / df['quiet']) * 100 
-
-df['shift'] = b.smooth2(df['shift'], 2)
+    out = []
+    for fn in files:
+        
+        out.append(region_E_mean(infile + fn))
+        
+    df = pd.concat(out)
+        
+    df['quiet'] = df.index.map(avg['quiet'])
+    
+    df = df.resample('30min').mean()
+     
+    df['shift'] = ((df[p] - df['quiet']) / df['quiet']) * 100 
+    
+    df['shift'] = b.smooth2(df['shift'], 2)
+    
+    return df
 
 def plot_shift_of_parameters(df):
     
@@ -117,9 +126,21 @@ def plot_shift_of_parameters(df):
     ax.set(ylim = [-20, 20])
     
     b.format_time_axes(
-        ax, hour_locator = 12, pad = 85, 
-    format_date = '%d/%m/%y', 
-    translate = True)
+        ax, 
+        hour_locator = 12, 
+        pad = 85, 
+        format_date = '%d/%m/%y', 
+        translate = True
+        )
+    
+    return fig
     
     
-plot_shift_of_parameters(df)
+# 
+site = 'FZA0M'
+
+avg = quiet_time_avg(site, p = 'ne')
+
+df = shift_quiet_storm_time(site, avg, p = 'ne')
+
+fig = plot_shift_of_parameters(df)
