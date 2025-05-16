@@ -18,6 +18,12 @@ def code_name(code):
     return codes[code]
     
 
+def dn2fn(dn, site):
+    '''
+    get filename from date and site name
+    '''
+    return dn.strftime(f'{site}_%Y%m%d(%j).TXT')
+
 
 
 def ionogram_path(dn, site, root = 'E:\\'):

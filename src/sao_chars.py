@@ -37,6 +37,7 @@ def chars(infile):
         df = pd.DataFrame(raw_data, columns = columns)
     except:
         df = pd.DataFrame(raw_data, columns = columns_e)
+        
     df.index = pd.to_datetime(
         df["date"] + " " + df["time"]
         )

@@ -7,9 +7,6 @@ b.config_labels()
 
 
     
-def dn2fn(dn, site):
-    return dn.strftime(f'{site}_%Y%m%d(%j).TXT')
-
 
     
 dates = [
@@ -37,7 +34,7 @@ def smooth_in_time(df, dn, window = 3):
 
 def quiettime_drift(
         site = 'SAA0K',
-        cols = list(range(3, 10, 1)), 
+        cols = [5, 6], 
         window = 3
         ):
     
@@ -45,7 +42,7 @@ def quiettime_drift(
     
     for dn in dates:
         
-        file =  dn2fn(dn, site)
+        file =  dg.dn2fn(dn, site)
         
         ds = dg.IonoChar(file, cols).drift()
         
@@ -71,7 +68,7 @@ def chars_time_avg(
     
     for dn in dates:
         
-        file =  dn2fn(dn, site)
+        file =  dg.dn2fn(dn, site)
         
         ds = dg.IonoChar(
             file, 
@@ -149,7 +146,7 @@ def join_iono_days(
         delta = dt.timedelta(days = day)
         date = dn + delta
         
-        file = dn2fn(date, site)
+        file = dg.dn2fn(date, site)
         
         df = dg.IonoChar(file, cols)
         
@@ -174,13 +171,8 @@ def join_iono_days(
     return pd.concat(out).sort_index()
 
 
-def concat_quiet_and_disturb():
-    
-
-    # df = get_time_avg_chars()
-    
-    site = 'SAA0K'
-    
+def concat_quiet_and_disturb(site = 'SAA0K'):
+      
     dn = dt.datetime(2015, 12, 19)
     
     ds = join_iono_days(
@@ -188,7 +180,6 @@ def concat_quiet_and_disturb():
             dn,
             parameter = 'hF',
             number = 4,
-            smooth = 3,
             cols = list(range(3, 8, 1))
             )
     
@@ -225,7 +216,7 @@ def test_smmoth_drift():
     dn = dt.datetime(2015, 12, 19)
         
     
-    file =  dn2fn(dn, site)
+    file = dg.dn2fn(dn, site)
     
     ds = dg.IonoChar(
         file, 
