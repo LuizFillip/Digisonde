@@ -5,15 +5,20 @@ import aeronomy as io
 
 infile = 'digisonde/data/SAO/profiles/'
 
-files = [
-    'SAA0K_20151213(347).TXT',
-    'SAA0K_20151216(350).TXT', 
-    'SAA0K_20151218(352).TXT', 
-    'SAA0K_20151229(363).TXT'
-    ]
 
-def quiettime_gradient_scale(alt = 250, parameter = 'L'):
+def quiettime_gradient_scale(
+        site = 'SAA0K', 
+        alt = 250, parameter = 'L'
+        ):
     
+    
+    files = [
+        f'{site}_20151213(347).TXT',
+        f'{site}_20151216(350).TXT', 
+        f'{site}_20151218(352).TXT', 
+        f'{site}_20151229(363).TXT'
+        ]
+
 
     out = []
     
@@ -35,9 +40,14 @@ def quiettime_gradient_scale(alt = 250, parameter = 'L'):
             sum_from = None
             )
         
+        df = df.loc[~df.index.duplicated()]
+        
         out.append(df.iloc[:-1])
         
     ds = pd.concat(out, axis = 1).sort_index().mean(axis = 1)
 
     return ds.to_frame(parameter)
-
+    
+   
+    
+    
