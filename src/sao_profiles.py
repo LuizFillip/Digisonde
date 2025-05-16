@@ -2,6 +2,7 @@ import datetime as dt
 import pandas as pd
 import numpy as np
 import aeronomy as io
+
 np.seterr(divide='ignore', invalid='ignore')
 
 
@@ -26,7 +27,7 @@ def frame_from_row(row):
     
 
 
-def process_data(infile):
+def Profilegram(infile):
     f = open(infile).read()
     
     out = []
@@ -50,62 +51,30 @@ def load_profilogram(infile):
     return df
 
 
-def main():
-    infile = "database/Digisonde/SAA0K_20130316(075).TXT"
-
-    df = process_data(infile)
+def storm_profiles(site = 'FZA0M'):
     
-    df.to_csv(infile.replace("raw", "pro"))
-
-def run():
-    import os 
-    from tqdm import tqdm 
+    path_profiles = 'digisonde/data/SAO/profiles/'
     
-    infile = 'digisonde/data/jic/prof/'
-    outfile = 'digisonde/data/jic/profiles/'
+    files = [
+        f'{site}_20151219(353).TXT', 
+        f'{site}_20151220(354).TXT', 
+        f'{site}_20151221(355).TXT', 
+        f'{site}_20151222(356).TXT'
+        ]
     
-    for file in tqdm(os.listdir(infile)):
-        df = process_data(infile + file)
-        df.to_csv(outfile + file)
-
-import base as b 
-
-infile = 'digisonde/data/SAO/profiles/'
-
-files = [
-    'SAA0K_20151213(347).TXT',
-    'SAA0K_20151216(350).TXT', 
-    'SAA0K_20151218(352).TXT', 
-    'SAA0K_20151229(363).TXT'
-    ]
-
-def quiettime_gradient_scale(alt = 250, parameter = 'L'):
-    
-
     out = []
     
-    
     for fn in files:
+        infile = path_profiles + fn 
         
-        df = process_data(infile + fn)
+        out.append(Profilegram(infile))
         
-        df.index = pd.to_datetime(df.index)
-        
-        df["ne"] = (1.24e4 * df["freq"]**2) * 1e6
-        
-        df["L"] = io.scale_gradient(
-            df["ne"], df["alt"])
-        
-        df = df.loc[df['alt'] == alt, [parameter]]
-        
-        df.index = b.time2float(
-            df.index, 
-            sum_from = None
-            )
-        
-        out.append(df.iloc[:-1])
-        
-    ds = pd.concat(out, axis = 1).sort_index().mean(axis = 1)
+    df = pd.concat(out)
+    
+    df["ne"] = (1.24e4 * df["freq"]**2) * 1e6
+    df["L"] = io.scale_gradient(df["ne"], df["alt"])
+    
+    return df 
 
-    return ds.to_frame(parameter)
 
+# 
