@@ -81,7 +81,7 @@ def shift_quiet_storm_time(site, avg, p = 'ne'):
      
     df['shift'] = ((df[p] - df['quiet']) / df['quiet']) * 100 
     
-    df['shift'] = b.smooth2(df['shift'], 2)
+    df['shift'] = b.smooth2(df['shift'], 1)
     
     return df
 
@@ -138,9 +138,11 @@ def plot_shift_of_parameters(df):
     
 # 
 site = 'FZA0M'
+# site = 'SAA0K'
 
-avg = quiet_time_avg(site, p = 'ne')
+p = 'freq'
+avg = quiet_time_avg(site, p = p)
 
-df = shift_quiet_storm_time(site, avg, p = 'ne')
+df = shift_quiet_storm_time(site, avg, p = p)
 
 fig = plot_shift_of_parameters(df)

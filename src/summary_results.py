@@ -19,17 +19,17 @@ def load_drift(
     
     df = df.interpolate()
     
-    df[site] = b.smooth2(df[site], smooth)
+    # df[site] = b.smooth2(df[site], smooth)
     
     return df
 
 def concat_disturbed_quiet(site, dn):
     
-    df = dg.quiet_time_avg(site)
+    df = dg.quiettime_drift(site)
     
     df = dg.renew_index_from_date(df, dn)
     
-    ds = load_drift(site, dn)
+    ds = load_drift(site, dn, cols = [5, 6])
     
     return pd.concat([df, ds], axis = 1)
 
