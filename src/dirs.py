@@ -1,26 +1,7 @@
 import os 
-import pandas as pd 
+import digisonde as dg
 import datetime as dt 
 import base as b 
-
-start = dt.datetime(2015, 12, 20, 21)
-
-times = pd.date_range(start, freq = '2H', periods = 8)
-
-dn = times[0]
-
-sites = [ 'SAA0K', 'BVJ03', 'FZA0M', 'CAJ2M', 'CGK21']
-
-
-site = sites[2]
-
-# def folder_dir(dn):
-
-    # fmt = f'%Y/%Y%m%d{site[0]}'
-    
-    # dir_month =
-    
-    # files = os.listdir(f'{root}{dir_month}')
 
 
 def closest_iono(target, path_in):
@@ -48,6 +29,23 @@ def fn2dn(filename):
         fmt = "%Y%m%d(%j)%H%M%S"
         return dt.datetime.strptime(date_str, fmt)
 
+def iono_path_from_target(target, site, root = 'E:\\'):
+    '''
+    Localize o caminho de um arquivo de um ionograma
+    (formato PNG) para um tempo de entrada (target)
+    de um tempo mais próximo (e.g, imagem do imageador)
+    '''
+    folder_fmt = f'%Y/%Y%m%d{site[0]}'
+    
+    folder_ion = target.strftime(folder_fmt)
+    
+    PATH_IONO = os.path.join(root, 'ionogram', folder_ion)
+    
+    dn = dg.closest_iono(target, PATH_IONO)
+    
+    fmt = f'{site}_%Y%m%d(%j)%H%M%S.PNG'
+    
+    return dn, os.path.join(PATH_IONO, dn.strftime(fmt))
         
 
 class IonoDir(object):
@@ -93,7 +91,7 @@ class IonoDir(object):
         
     
   
-
-p = IonoDir(site, dn)
-
-p.name_folder
+def test_IonoDir(site, dn):
+    p = IonoDir(site, dn)
+    
+    p.name_folder
