@@ -3,12 +3,7 @@ import base as b
 import digisonde as dg 
 import datetime as dt 
 
-b.config_labels()
 
-
-    
-
-    
 dates = [
     dt.datetime(2015, 12, 13, 9),
     dt.datetime(2015, 12, 16, 9), 

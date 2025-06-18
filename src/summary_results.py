@@ -17,7 +17,7 @@ def load_drift(
     
     df = df.drift(smooth)['vz'].to_frame(site)
     
-    df = df.interpolate()
+    # df = df.interpolate()
     
     # df[site] = b.smooth2(df[site], smooth)
     
@@ -27,7 +27,7 @@ def concat_disturbed_quiet(site, dn):
     
     df = dg.quiettime_drift(site)
     
-    df = dg.renew_index_from_date(df, dn)
+    df = b.renew_index_from_date(df, dn)
     
     ds = load_drift(site, dn, cols = [5, 6])
     
@@ -63,7 +63,6 @@ def run_comparation_by_sites(
     dusk_dn = dt.datetime(2015, 12, 20)
     dawn_dn = dt.datetime(2015, 12, 21)
     
-    
     storm_dn = dt.datetime(2015, 12, 21, 6)
     
     for site in sites:
@@ -87,11 +86,10 @@ def run_comparation_by_sites(
     
     return dusk_df, dawn_df
 
-sites = [ 'SAA0K', 'BVJ03', 'FZA0M', 'CAJ2M', 'CGK21']
+# sites = [ 'SAA0K', 'BVJ03', 'FZA0M'] #'CAJ2M', 'CGK21']
 
 
-run_comparation_by_sites(
-         
-        sites
-        )
+# run_comparation_by_sites(sites)
+
+
 

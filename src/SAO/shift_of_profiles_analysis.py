@@ -26,7 +26,7 @@ def region_E_mean(infile):
     
     df = profile_data(infile)
     
-    df = df.loc[(df['alt'] > 80) & (df['alt'] < 150) ]
+    df = df.loc[(df['alt'] > 80) & (df['alt'] < 120) ]
     
     df = df.groupby(df.index).mean()
     df.index = pd.to_datetime(df.index)
@@ -85,20 +85,8 @@ def shift_quiet_storm_time(site, avg, p = 'ne'):
     
     return df
 
-def plot_shift_of_parameters(df):
-    
-    fig, ax = plt.subplots(
-        figsize = (12, 6), 
-        dpi = 300
-        )
-    
-    
-    ax.plot(df['shift'])
-    
-    ax.axhline(0)
-      
-    ax.set(xlim = [df.index[0], df.index[-1]])
-    
+def plot_span_areas(ax):
+
     for day in [19, 20, 21, 22]:
         if day == 20:
             color = 'red'
@@ -122,8 +110,15 @@ def plot_shift_of_parameters(df):
              alpha = 0.2, 
              color = color
              )
+  
+def plot_shift_deviation(ax, df):
     
-    ax.set(ylim = [-20, 20])
+    ax.plot(df['shift'], lw = 2)
+    
+    ax.axhline(0)
+    
+    ax.set(ylim = [-20, 20], 
+           xlim = [df.index[0], df.index[-1]])
     
     b.format_time_axes(
         ax, 
@@ -133,16 +128,41 @@ def plot_shift_of_parameters(df):
         translate = True
         )
     
+    plot_span_areas(ax)
+    
+        
+def plot_region_E(ax, df):
+    ax.plot(df[[p, 'quiet']], lw = 2)
+    
+    ax.set(yscale = 'log')
+    
+    plot_span_areas(ax)
+     
+def plot_shift_of_parameters(df, p):
+    
+    fig, ax = plt.subplots(
+        figsize = (16, 10), 
+        dpi = 300, 
+        nrows = 2, 
+        sharex= True
+        )
+    
+    plot_region_E(ax[0], df)
+    
+    plot_shift_deviation(ax[-1], df)
+  
+    
+ 
     return fig
     
     
 # 
 site = 'FZA0M'
-# site = 'SAA0K'
+site = 'SAA0K'
 
-p = 'freq'
+p = 'ne'
 avg = quiet_time_avg(site, p = p)
 
 df = shift_quiet_storm_time(site, avg, p = p)
 
-fig = plot_shift_of_parameters(df)
+fig = plot_shift_of_parameters(df, p)
