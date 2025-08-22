@@ -62,8 +62,11 @@ class IonoChar(object):
     @property 
     def heights(self):
         
-        ds = dg.freq_fixed(FREQ_PATH + self.file)
-                  
+        try:
+            ds = dg.freq_fixed(FREQ_PATH + self.file)
+        except:
+            ds = dg.freq_fixed(self.file)
+            
         return self.sel_time(ds)[self.cols]
     
     def drift(self, smooth = None):
@@ -99,7 +102,6 @@ class IonoChar(object):
         ds = ds.replace(0, float('nan'))
         
         return self.sel_time(ds)
-
 
 
 

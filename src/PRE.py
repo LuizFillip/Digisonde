@@ -37,49 +37,41 @@ def get_infos(df, dn, site = 'jic', dicts = True):
         return pd.DataFrame(data, index = [dn.date()])
 
 
-def pre_getting(file, site = 'bvj'):
+import matplotlib.pyplot as plt 
+import os 
+from tqdm import tqdm 
+
+path = 'digisonde/data/reduced_freqs/FZ_2014-2015/'
+
+site = 'fza'
+
+def run_by_month(infile, site):
+    df =  dg.IonoChar(infile).drift()
     
-    cols = list(range(5, 9, 1))
-    ds = dg.IonoChar(file, cols, sel_from = None).heights 
-    df = dg.vertical_drift(ds, smooth= 3)
-        
-    dates = sorted(list(set(df.index.date)))
+    dates = pd.to_datetime(np.unique(df.index.date))
     
     out = []
-   
-    for date in dates:
+       
+    for dn in dates:
         
-        dn = dt.datetime.combine(date, dt.time(21,0))
-        
-        out.append(get_infos(df, dn, site))
-        
+        ds = df.loc[df.index.date == dn]
+    
+        out.append(get_infos(ds, dn, site, dicts = False))
+            
     return pd.concat(out)
 
-
-def run_by_files(files):
+def run_by_year(path, site):
     
-    return pd.concat([pre_getting(f) for f in files])
+    out = []
+    
+    for fn in tqdm(os.listdir(path)):
+        
+        infile = path + fn
+        
+        out.append(run_by_month(infile, site))
+        
+    return pd.concat(out).sort_index()
+    
 
-
-
-
-file = 'BVJ03_20130812(224).TXT'
-
-
-files = [
-    # 'BVJ03_20130812(224).TXT',
-    'BVJ03_20140101(001).TXT', 
-    'BVJ03_20140701(182).TXT', 
-    'BVJ03_20150701(182).TXT',
-    'BVJ03_20150701(182).TXT',
-    'BVJ03_20160101(001).TXT',
-    'BVJ03_20170328(087).TXT',
-    # 'BVJ03_20170921(264).TXT'
-    ]
-
-
-
-# df = run_by_files(files)
-
-
-# df.to_csv('digisonde/data/PRE/bvj/2013_2021.txt')
+#%%%%
+# df.to_csv('fza')

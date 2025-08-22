@@ -49,9 +49,12 @@ def quiettime_drift(
         out.append(df['vz'].to_frame(dn.day).dropna())
     
  
-    df = pd.concat(out, axis = 1).mean(axis = 1)
+    df = pd.concat(out, axis = 1).sort_index()
     
-    return df.sort_index().iloc[:-1].to_frame('vz')
+    ds = pd.DataFrame()
+    ds['vz'] = df.mean(axis = 1)
+    ds['svz'] = df.std(axis = 1)
+    return ds 
     
 
 def chars_time_avg( 
@@ -81,8 +84,9 @@ def chars_time_avg(
         out.append(ds[parameter].to_frame(dn.day))
         
     df = pd.concat(out, axis = 1)
-    mean = b.running(df.mean(axis = 1), 3)
-    std =  b.running(df.std(axis = 1), 3)
+    smooth_val = 1
+    mean = b.running(df.mean(axis = 1), smooth_val)
+    std =  b.running(df.std(axis = 1), smooth_val)
     
     data =  {'mean':  mean, 'std':  std}
     return  pd.DataFrame(data, index  = df.index)
@@ -111,6 +115,9 @@ def repeat_quiet_days(
                     cols = cols, 
                     window = window
                     )
+            
+            df = df[~df.index.isna()]
+            # print(df)
         else:
             df = chars_time_avg( 
                     site,  
@@ -198,11 +205,10 @@ def test_join_drift():
             dn,
             parameter = 'drift',
             number = 4,
-            smooth = 3,
             cols = [5, 6]
             )
     
-    df.plot()
+    print(df)
 
 def test_smmoth_drift():
     
@@ -224,8 +230,25 @@ def test_smmoth_drift():
 #'FZA0M', 'SAA0K', 'BVJ03'
 
 # site ='FZA0M'
-# quiettime_drift(
+# ds = quiettime_drift(
 #         site ,
-#         cols = list(range(3, 10, 1)), 
-#         smooth = 3
+#         cols = [5, 6]
 #         )
+
+
+# # test_join_drift()
+
+# start = dt.datetime(2015, 12, 19)
+# window = 3
+# cols = [5, 6]
+
+# df = repeat_quiet_days(
+#      site, 
+#      start, 
+#      parameter = 'drift', 
+#      cols = cols, 
+#      window = window + 1
+#      )
+
+# df.index.day_of_year
+ 
