@@ -59,7 +59,8 @@ def quiettime_drift(
 
 def chars_time_avg( 
         site = 'SAA0K',  
-        parameter = 'hF'
+        parameter = 'hF', 
+        window = 1
         ):
        
     out = []
@@ -84,11 +85,12 @@ def chars_time_avg(
         out.append(ds[parameter].to_frame(dn.day))
         
     df = pd.concat(out, axis = 1)
-    smooth_val = 1
-    mean = b.running(df.mean(axis = 1), smooth_val)
-    std =  b.running(df.std(axis = 1), smooth_val)
     
-    data =  {'mean':  mean, 'std':  std}
+    # mean = b.running(, window)
+    # std =  b.running(, window)
+    
+    data =  {'mean': df.mean(axis = 1),
+             'std':  df.std(axis = 1)}
     return  pd.DataFrame(data, index  = df.index)
 
 def repeat_quiet_days(
@@ -117,12 +119,15 @@ def repeat_quiet_days(
                     )
             
             df = df[~df.index.isna()]
-            # print(df)
+            
         else:
             df = chars_time_avg( 
                     site,  
-                    parameter
+                    parameter, 
+                    window = window
                     )
+            
+            df = df.iloc[2:-4] 
         
         out.append(b.renew_index_from_date(df, dn))
         
@@ -140,6 +145,9 @@ def join_iono_days(
         cols = [5, 6]
         ):
     
+    """
+    
+    """
     base_parameters = ['hF', 'hmF2', 'foF2', 'hF2']
     out = []
     
@@ -154,11 +162,13 @@ def join_iono_days(
         
         if parameter == 'drift':
             
-            df = smooth_in_time(
-                df.drift(), 
-                date, 
-                window = window
-                )
+            # df = smooth_in_time(
+            #     , 
+            #     date, 
+            #     window = window
+            #     )
+            
+            df = df.drift()
             
             out.append(df['vz'].to_frame(site))
             
@@ -235,20 +245,8 @@ def test_smmoth_drift():
 #         cols = [5, 6]
 #         )
 
-
-# # test_join_drift()
-
-# start = dt.datetime(2015, 12, 19)
-# window = 3
-# cols = [5, 6]
-
-# df = repeat_quiet_days(
-#      site, 
-#      start, 
-#      parameter = 'drift', 
-#      cols = cols, 
-#      window = window + 1
-#      )
-
-# df.index.day_of_year
- 
+df = quiettime_drift(
+        site = 'SAA0K',
+        cols = [5, 6], 
+        window = 3
+        )
