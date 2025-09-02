@@ -19,10 +19,12 @@ def smooth_in_time(df, dn, window = 3):
     
     end = dn + delta
     
-    df.loc[dn: end] = df.loc[dn: end].rolling(
-        window = window, 
-        center = True
-        ).mean()
+    df.loc[dn: end] = b.smooth2(df.loc[dn: end], 10)
+    
+    # .rolling(
+    #     window = window, 
+    #     center = True
+    #     ).mean()
     
     return df
 
@@ -30,7 +32,7 @@ def smooth_in_time(df, dn, window = 3):
 def quiettime_drift(
         site = 'SAA0K',
         cols = [5, 6], 
-        window = 3
+        window = 7
         ):
     
     out = []
@@ -41,7 +43,6 @@ def quiettime_drift(
         
         ds = dg.IonoChar(file, cols).drift()
         
-        ds = smooth_in_time(ds, dn, window = window)
         ds = ds.loc[ds.index.date == dn.date()]
         
         df = ds.set_index('time')
@@ -54,6 +55,9 @@ def quiettime_drift(
     ds = pd.DataFrame()
     ds['vz'] = df.mean(axis = 1)
     ds['svz'] = df.std(axis = 1)
+    
+    ds = ds.apply(lambda s: b.smooth2(s, window))
+
     return ds 
     
 
@@ -140,21 +144,18 @@ def join_iono_days(
         site, 
         dn,
         parameter = 'drift',
-        number = 4,
+        periods = 4,
         window = 3,
         cols = [5, 6]
         ):
     
     """
-    
+    Join storm-time days
     """
     base_parameters = ['hF', 'hmF2', 'foF2', 'hF2']
     out = []
-    
-    for day in range(number):
-        
-        delta = dt.timedelta(days = day)
-        date = dn + delta
+    dates = pd.date_range(dn, periods = periods, freq = '1D')
+    for date in dates:
         
         file = dg.dn2fn(date, site)
         
@@ -162,20 +163,24 @@ def join_iono_days(
         
         if parameter == 'drift':
             
+            df = df.drift().interpolate(
+                # method = 'spline',
+                # order = 3
+                )
+            
             # df = smooth_in_time(
-            #     , 
+            #     df, 
             #     date, 
             #     window = window
             #     )
-            
-            df = df.drift()
             
             out.append(df['vz'].to_frame(site))
             
         elif parameter in base_parameters:
             
-            df = df.chars 
-            out.append(df[parameter].to_frame(site))
+            # df = df.chars 
+            out.append(df.chars )
+            # out.append(df[parameter].to_frame(site))
             
         else:
             out.append(df.heights)
@@ -214,7 +219,6 @@ def test_join_drift():
             site, 
             dn,
             parameter = 'drift',
-            number = 4,
             cols = [5, 6]
             )
     
@@ -237,16 +241,20 @@ def test_smmoth_drift():
     
     ds = smooth_in_time(ds, dn)
 
-#'FZA0M', 'SAA0K', 'BVJ03'
+def test_():
+    #'FZA0M', 'SAA0K', 'BVJ03'
+    
+    # site ='FZA0M'
+    # ds = quiettime_drift(
+    #         site ,
+    #         cols = [5, 6]
+    #         )
+    
+    df = quiettime_drift(
+            site = 'SAA0K',
+            cols = [5, 6], 
+            window = 3
+            )
 
-# site ='FZA0M'
-# ds = quiettime_drift(
-#         site ,
-#         cols = [5, 6]
-#         )
 
-df = quiettime_drift(
-        site = 'SAA0K',
-        cols = [5, 6], 
-        window = 3
-        )
+# test_join_drift()

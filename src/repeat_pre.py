@@ -49,16 +49,3 @@ def process_years(infile):
         df.to_csv(infile +  f'R{year}.txt')
     
 
-year = 2023
-infile = 'digisonde/data/drift/PRE/saa/'
-# repeat_single_file(site = 'saa')
-
-# yr = f'{year}.txt'
-# df = repeat_values(infile + yr)
-
-# df.to_csv(infile +  f'R{year}.txt')
-
-
-df = load(infile +  f'R{year}.txt')
-
-df.plot()
