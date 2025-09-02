@@ -51,30 +51,5 @@ def load_profilogram(infile):
     return df
 
 
-def storm_profiles(site = 'FZA0M'):
-    
-    path_profiles = 'digisonde/data/SAO/profiles/'
-    
-    files = [
-        f'{site}_20151219(353).TXT', 
-        f'{site}_20151220(354).TXT', 
-        f'{site}_20151221(355).TXT', 
-        f'{site}_20151222(356).TXT'
-        ]
-    
-    out = []
-    
-    for fn in files:
-        infile = path_profiles + fn 
-        
-        out.append(Profilegram(infile))
-        
-    df = pd.concat(out)
-    
-    df["ne"] = (1.24e4 * df["freq"]**2) * 1e6
-    df["L"] = io.scale_gradient(df["ne"], df["alt"])
-    
-    return df 
-
 
 # 
