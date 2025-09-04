@@ -56,7 +56,8 @@ def quiettime_drift(
     ds['vz'] = df.mean(axis = 1)
     ds['svz'] = df.std(axis = 1)
     
-    ds = ds.apply(lambda s: b.smooth2(s, window))
+    if window is not None:
+        ds = ds.apply(lambda s: b.smooth2(s, window))
 
     return ds 
     
@@ -89,9 +90,6 @@ def chars_time_avg(
         out.append(ds[parameter].to_frame(dn.day))
         
     df = pd.concat(out, axis = 1)
-    
-    # mean = b.running(, window)
-    # std =  b.running(, window)
     
     data =  {'mean': df.mean(axis = 1),
              'std':  df.std(axis = 1)}
@@ -163,25 +161,14 @@ def join_iono_days(
         
         if parameter == 'drift':
             
-            df = df.drift().interpolate(
-                # method = 'spline',
-                # order = 3
-                )
-            
-            # df = smooth_in_time(
-            #     df, 
-            #     date, 
-            #     window = window
-            #     )
+            df = df.drift()
             
             out.append(df['vz'].to_frame(site))
             
         elif parameter in base_parameters:
             
-            # df = df.chars 
             out.append(df.chars )
-            # out.append(df[parameter].to_frame(site))
-            
+
         else:
             out.append(df.heights)
         
