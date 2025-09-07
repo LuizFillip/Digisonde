@@ -29,7 +29,7 @@ def dn2fn(dn, site):
 def ionogram_path(dn, site, root = 'E:\\'):
     
     start = dn - dt.timedelta(days = 1)
-    folder_ion = dn.strftime(f'%Y/%Y%m%d{site[0]}')
+    folder_ion = dn.strftime(f'%Y/%Y%m%d{site[:2]}')
     
     fmt = f'{site}_%Y%m%d(%j)%H%M%S.PNG'
     

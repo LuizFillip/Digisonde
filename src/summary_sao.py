@@ -75,7 +75,7 @@ def concat_quiet_storm(site, p):
     
     df[p] = b.smooth2(df[p], 3)
     
-    df = df.loc[~df.index.duplicated(keep='first')]
+    df = df.loc[~df.index.duplicated(keep = 'first')]
     
     ds = pd.concat([df[p], qt['mean']], axis = 1) 
     
@@ -89,6 +89,7 @@ def concat_quiet_storm(site, p):
 
 
 def summary_from_ref_time(ref_dn, site, p = 'hmF2'):
+    
     ds = concat_quiet_storm(site, p)
     
     delta = dt.timedelta(hours = 2)
@@ -106,21 +107,23 @@ def summary_from_ref_time(ref_dn, site, p = 'hmF2'):
     
     return ds 
 
-ref_dn = dt.datetime(2015, 12, 20, 20)
-
-
-out = []
-for site in sites:
-    dusk = gg.dusk_from_site(
-            ref_dn, 
-            site[:3].lower(),
-            twilight_angle = 18
-            )
-
-
-    out.append(summary_from_ref_time(dusk, site))
+def summary_by_sites():
     
-df = pd.concat(out)
+    ref_dn = dt.datetime(2015, 12, 20, 20)
+    
+    
+    out = []
+    for site in sites:
+        dusk = gg.dusk_from_site(
+                ref_dn, 
+                site[:3].lower(),
+                twilight_angle = 18
+                )
+    
+    
+        out.append(summary_from_ref_time(dusk, site))
+        
+    return pd.concat(out)
 
-df 
+df = summary_by_sites()
 

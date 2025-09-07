@@ -3,9 +3,45 @@ import numpy as np
 import datetime as dt
 import digisonde as dg 
 import GEO as gg 
+import os 
+from tqdm import tqdm 
 
+def new_dataset(
+        day,
+        pre_value,
+        periods = 67, 
+        freq = '10min'
+        ):
+    
+    dn = day + dt.timedelta(hours = 20)
+    
+    idx = pd.date_range(
+        dn, 
+        periods = periods, 
+        freq = freq
+        )
+    
+    dat = {'vzp': [pre_value] * periods}
+    
+    return pd.DataFrame(dat, index = idx)
 
-
+def repeat_values(file):
+    
+    ds = load(file)
+    
+    ds.index = ds.index.date
+    
+    out = []
+    
+    for i, day in enumerate(ds.index):
+        
+        pre_value = ds.iloc[i, 0].item()
+        out.append(new_dataset(
+            pd.to_datetime(day), 
+            pre_value)
+            )
+    
+    return pd.concat(out)
 def get_infos(df, dn, site = 'jic', dicts = True):
 
     dusk = gg.dusk_from_site(
@@ -37,9 +73,7 @@ def get_infos(df, dn, site = 'jic', dicts = True):
         return pd.DataFrame(data, index = [dn.date()])
 
 
-import matplotlib.pyplot as plt 
-import os 
-from tqdm import tqdm 
+
 
 path = 'digisonde/data/reduced_freqs/FZ_2014-2015/'
 
@@ -66,12 +100,6 @@ def run_by_year(path, site):
     
     for fn in tqdm(os.listdir(path)):
         
-        infile = path + fn
-        
-        out.append(run_by_month(infile, site))
+        out.append(run_by_month(path + fn, site))
         
     return pd.concat(out).sort_index()
-    
-
-#%%%%
-# df.to_csv('fza')
