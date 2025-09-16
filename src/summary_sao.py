@@ -4,6 +4,8 @@ import datetime as dt
 import base as b 
 import GEO as gg 
 
+sites = [ 'SAA0K', 'BVJ03', 'FZA0M', 'CAJ2M', 'CGK21']
+
 
 def concat_quiet_and_disturb(site = 'SAA0K'):
       
@@ -43,9 +45,6 @@ def test_join_drift():
 
 
 
-sites = [ 'SAA0K', 'BVJ03', 'FZA0M', 'CAJ2M', 'CGK21']
-
-
 
 
 def concat_quiet_storm(site, p):
@@ -58,13 +57,13 @@ def concat_quiet_storm(site, p):
          parameter = p, 
          )
     
-    if p == 'drift':
-        wsm = 10
-    else:
-        wsm = 3
-        
-    qt = qt.apply(lambda s: b.smooth2(s, wsm))
     
+    if p == 'drift':
+        qt = qt.apply(lambda s: b.smooth2(s, 5))
+        qt['svz'] =  b.smooth2(qt['svz'], 10)
+    else:
+        qt = qt.apply(lambda s: b.smooth2(s, 3))
+        
         
     df = dg.join_iono_days(
             site, 
@@ -73,7 +72,21 @@ def concat_quiet_storm(site, p):
             cols = [5, 6, 7]
             )
     
-    df[p] = b.smooth2(df[p], 3)
+    if p == 'drift':
+        if site in ['SAA0K',  'FZA0M',  'BVJ03']:
+            idx = df.index.indexer_between_time(
+                '00:00', '20:00', include_end = False
+                )
+            
+            df.iloc[idx] = df.iloc[idx].apply(lambda s: b.smooth2(s, 5))
+        else:
+            df = df.apply(lambda s: b.smooth2(s, 5))
+        p = site 
+        qt.rename(columns = {'vz': 'mean'}, inplace = True)
+    else:
+        df[p] = b.smooth2(df[p], 3)
+    
+    
     
     df = df.loc[~df.index.duplicated(keep = 'first')]
     
@@ -96,7 +109,7 @@ def summary_from_ref_time(ref_dn, site, p = 'hmF2'):
     
     sel = ds.loc[
         ((ds.index > ref_dn - delta) & 
-        (ds.index <ref_dn + delta))
+        (ds.index < ref_dn + delta))
         ].copy()
     
     date = sel['storm'].idxmax()
@@ -107,23 +120,18 @@ def summary_from_ref_time(ref_dn, site, p = 'hmF2'):
     
     return ds 
 
-def summary_by_sites():
+def summary_by_sites(ref_dn, p = 'drift'):
     
-    ref_dn = dt.datetime(2015, 12, 20, 20)
-    
-    
+ 
     out = []
     for site in sites:
-        dusk = gg.dusk_from_site(
-                ref_dn, 
-                site[:3].lower(),
-                twilight_angle = 18
-                )
     
-    
-        out.append(summary_from_ref_time(dusk, site))
+        out.append(summary_from_ref_time(ref_dn, site, p = p))
         
     return pd.concat(out)
 
-df = summary_by_sites()
 
+ref_dn = dt.datetime(2015, 12, 21, 6)   
+# ref_dn = dt.datetime(2015, 12, 20, 21)
+summary_by_sites(ref_dn)
+ 
