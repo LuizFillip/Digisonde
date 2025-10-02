@@ -23,6 +23,10 @@ columns_e = [
     'QE', 'foEs', 'hEs', 
     'fminEs',  'fbEs',   'hmF2'
     ]
+
+columns = ['foF2', 'h`F2', 'h`F', 'QF', 'QE', 'foEs', 'h`Es', 'hmF2']
+
+
 def chars(infile):
     f = open(infile).readlines()
 
@@ -54,3 +58,7 @@ def chars(infile):
     
     return df
 
+# infile = 'database/suppression_chars'
+# df = chars(infile)
+
+# df.resample('1D').mean()['foEs'].dropna().plot()

@@ -130,8 +130,8 @@ def summary_by_sites(ref_dn, p = 'drift'):
         
     return pd.concat(out)
 
-
-ref_dn = dt.datetime(2015, 12, 21, 6)   
-# ref_dn = dt.datetime(2015, 12, 20, 21)
-summary_by_sites(ref_dn)
- 
+def main():
+    ref_dn = dt.datetime(2015, 12, 21, 6)   
+    # ref_dn = dt.datetime(2015, 12, 20, 21)
+    summary_by_sites(ref_dn)
+     
