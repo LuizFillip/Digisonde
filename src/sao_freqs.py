@@ -51,7 +51,7 @@ def structure_the_data(data: list) -> np.array:
     return np.array(out_second)
     
       
-def freq_fixed(infile, snum = 2):
+def freq_fixed(infile):
     
     """
     Get pandas dataframe from the data (already organized), 
@@ -60,7 +60,8 @@ def freq_fixed(infile, snum = 2):
 
     header, data = find_header(infile)
     
-    df = pd.DataFrame(structure_the_data(data), 
+    df = pd.DataFrame(
+        structure_the_data(data), 
                       columns = header)
     
     df.rename(columns = {
@@ -82,8 +83,5 @@ def freq_fixed(infile, snum = 2):
         
     df.drop(columns = {"date", "doy"}, inplace = True) 
     
-    # for col in df.columns:
-    #     df[col] = b.smooth2(df[col], snum)
-    
-    return df
 
+    return df

@@ -7,7 +7,28 @@ import numpy as np
 FREQ_PATH = 'digisonde/data/SAO/freqs/'
 PATH_CHAR = 'digisonde/data/SAO/chars/'
 
+def _drift(ds, sf = None, smooth = None):
+    
+    cols = ds.columns
+    
+    ds["time"] = b.time2float(
+        ds.index, 
+        sum_from = sf
+        )
+    
+    for col in cols:
+        
+        if col != "time":                         
 
+            ds[col] = (ds[col].diff() / ds["time"].diff()) / 3.6
+            
+            if smooth is not None:
+                
+                ds[col] = b.smooth2(ds[col], smooth)
+    
+    ds["vz"] = np.mean(ds[cols], axis = 1)
+
+    return ds.replace(0, float('nan'))
 
 
 class IonoChar(object):
@@ -80,28 +101,19 @@ class IonoChar(object):
         
         ds = self.heights
     
-        cols = ds.columns
-        
-        ds["time"] = b.time2float(
-            ds.index, 
-            sum_from = self.sum_from
-            )
-        
-        for col in cols:
-            
-            if col != "time":                         
-
-                ds[col] = (ds[col].diff() / ds["time"].diff()) / 3.6
-                
-                if smooth is not None:
-                    
-                    ds[col] = b.smooth2(ds[col], smooth)
-        
-        ds["vz"] = np.mean(ds[cols], axis = 1)
-
-        ds = ds.replace(0, float('nan'))
-        
-        return self.sel_time(ds)
+        sf = self.sum_from
+    
+        return self.sel_time(_drift(ds, sf = sf, smooth = smooth))
 
 
+import pandas as pd 
 
+infile = 'database/supre/suppression_contour'
+
+df = dg.freq_fixed(infile)
+
+dates = pd.to_datetime(df.index.date) 
+
+ds = df.loc[df.index.date == dates[0]]
+
+_drift(ds, sf = None, smooth = None)

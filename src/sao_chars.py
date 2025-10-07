@@ -58,7 +58,9 @@ def chars(infile):
     
     return df
 
-# infile = 'database/suppression_chars'
+# infile = 'database/supre/suppression_chars'
 # df = chars(infile)
 
-# df.resample('1D').mean()['foEs'].dropna().plot()
+# # df.resample('1D').mean()['foEs'].dropna().plot()
+
+# df 
