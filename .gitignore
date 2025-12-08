@@ -2,7 +2,10 @@
 /data/*
 
 /src/__pycache__/*
-/src/plotting/__pycache__/*
+/src/profilegram/__pycache__/*
+/src/SAO/__pycache__/*
+/src/DRIFT/__pycache__/*
+
 /src/figures/
 *.png
 *.txt

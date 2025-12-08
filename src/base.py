@@ -7,7 +7,7 @@ import numpy as np
 FREQ_PATH = 'digisonde/data/SAO/freqs/'
 PATH_CHAR = 'digisonde/data/SAO/chars/'
 
-def _drift(ds, sf = None, smooth = None):
+def calc_drift(ds, sf = None, smooth = None):
     
     cols = ds.columns
     
@@ -75,8 +75,7 @@ class IonoChar(object):
         if self.sum_from is not None:
             self.dn = self.date.replace(
                 hour = self.sum_from)
-            return b.sel_times(
-                ds, self.dn, hours = 14)
+            return b.sel_times(ds, self.dn, hours = 14)
         else:
             return ds
     
@@ -103,17 +102,7 @@ class IonoChar(object):
     
         sf = self.sum_from
     
-        return self.sel_time(_drift(ds, sf = sf, smooth = smooth))
+        return self.sel_time(calc_drift(ds, sf = sf, smooth = smooth))
 
 
-import pandas as pd 
 
-infile = 'database/supre/suppression_contour'
-
-df = dg.freq_fixed(infile)
-
-dates = pd.to_datetime(df.index.date) 
-
-ds = df.loc[df.index.date == dates[0]]
-
-_drift(ds, sf = None, smooth = None)

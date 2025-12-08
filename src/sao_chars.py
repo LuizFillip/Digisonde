@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import base as b 
-import os 
 
 def velocity(df, col = 'hF2'):
     

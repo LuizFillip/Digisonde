@@ -5,6 +5,7 @@ import digisonde as dg
 import GEO as gg 
 import os 
 from tqdm import tqdm 
+import base as b 
 
 def new_dataset(
         day,
@@ -27,7 +28,7 @@ def new_dataset(
 
 def repeat_values(file):
     
-    ds = load(file)
+    ds = b.load(file)
     
     ds.index = ds.index.date
     
@@ -42,6 +43,8 @@ def repeat_values(file):
             )
     
     return pd.concat(out)
+
+
 def get_infos(df, dn, site = 'jic', dicts = True):
 
     dusk = gg.dusk_from_site(
