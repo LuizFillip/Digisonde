@@ -83,3 +83,4 @@ def process_drift(year, site):
     df = process_year(path)
     save_in = f'digisonde/data/drift/data/{site}/{year}_drift.txt'
     df.to_csv(save_in)
+    

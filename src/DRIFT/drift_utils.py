@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-from base import time2float
-
+import matplotlib.pyplot as plt 
 
 def get_avg_std(df, only_values = True):
     
@@ -139,4 +138,41 @@ def load_drift(infile, freq = "2min"):
         
     return sampled(df, freq = freq)
 
+import GEO as gg 
 
+infile = 'digisonde/data/drift/data/saa/2015_drift.txt'
+
+df = b.load(infile)
+
+dn = dt.datetime(2015, 12, 20, 15)
+# delta = dt.timedelta(hours = 12)
+# df = df.loc[(df.index > dn) & (df.index < dn + delta)]
+
+def get_infos(df, dn):
+
+    dusk = gg.dusk_from_site(
+            dn, 
+            site = site,
+            twilight_angle = 18
+            )
+    
+    delta = dt.timedelta(minutes = 120)
+    
+    sel = df.loc[
+        (df.index > dusk - delta) &
+        (df.index < dusk + delta), ['vz']
+        ]
+    
+    if len(sel) == 0:
+        time = np.nan
+        vp = np.nan 
+        
+    else:
+        time = sel['vz'].idxmax()
+        vp = sel.max().item()
+    
+    data = {'time': time, 'vp': vp, 'dusk': dusk}
+    return pd.DataFrame(data, index = [dn.date()])
+
+
+get_infos(df, dn)
