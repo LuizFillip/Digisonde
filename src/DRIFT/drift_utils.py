@@ -2,151 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt 
 
-def get_avg_std(df, only_values = True):
-    
-    avg = df.mean(axis = 1)
-    std = df.std(axis = 1)
-    
-    if only_values:
-        return (avg.values, std.values)
-    else:
-        return avg, std
 
-def filter_values(df, 
-                  std_factor = 1, 
-                  replace_nan = True):
-    
-    """df must be pivot table (time x date)"""
-    
-    avg, std = get_avg_std(df)
-    
-    out = []
-       
-    for col in df.columns:
-        
-        arr = df[col].values
-        right = avg + (std_factor * std)
-        left = avg - (std_factor * std)
-    
-        res = np.where((arr < right) & 
-                       (arr > left), 
-                       arr, 
-                       np.nan)
-        
-        out.append(pd.DataFrame(
-            {col: res}, 
-            index = df.index)
-            )
-        
-    df = pd.concat(out, axis = 1)    
-    if replace_nan:
-        
-        df["avg"] = avg
-        for col in df.columns:
-            df.loc[
-                df[col].isnull(), col
-                ] = df['avg']
-            
-        del df["avg"]
-        return df
-    else:
-        return df
-
-
-def pivot_data(
-        n, col, 
-               smoothed = True, 
-               resample = True):
-
-    df = load_drift(
-        n, 
-        smoothed = smoothed, 
-        resample = resample
-        )
-    
-   
-    df["time"] = time2float(df.index.time)
-    
-    
-    return pd.pivot_table(
-        df, 
-        values = col, 
-        columns = df.index.date, 
-        index = "time"
-        )
-
-def reindex_and_concat(df, name):
-
-    out = []
-    
-    for col in df.columns:
-    
-        idx = pd.date_range(
-            f"{col}", 
-            freq = "5min", 
-            periods = len(df)
-            )
-        
-        new_df = df[col]
-        
-        new_df.index = idx
-        
-        out.append(
-            new_df.to_frame(name)
-            )
-        
-    return pd.concat(out)
-
-
-def process_year(name):
-    out = []
-    
-    for n in range(1, 13, 1):
-        print("processing...", n, name)
-        df = pivot_data(n, smoothed = True, col = name)
-        df_filtered = filter_values(df, std_factor = 1)
-        
-        out.append(reindex_and_concat(
-            df_filtered, name))
-    
-    return pd.concat(out)
-
-
-
-def sampled(ds, freq = "2min"):
-    
-    sts = ds.index[0].date()
-    end = ds.index[-1].date()
-    
-    df1 = pd.DataFrame(
-        index = pd.date_range(
-            f"{sts} 00:02", 
-            f"{end} 23:58", 
-            freq = freq
-    ))
-    
-    ds = pd.concat( [ds, df1], axis = 1
-                   ).interpolate().bfill()
-    return ds.resample(freq).asfreq()
-
-
-def load_drift(infile, freq = "2min"):
-    
-    df = pd.read_csv(infile, index_col = 0)
-
-    df.index = pd.to_datetime(df.index)
-        
-    return sampled(df, freq = freq)
-
-import GEO as gg 
-
-infile = 'digisonde/data/drift/data/saa/2015_drift.txt'
-
-df = b.load(infile)
-
-dn = dt.datetime(2015, 12, 20, 15)
-# delta = dt.timedelta(hours = 12)
-# df = df.loc[(df.index > dn) & (df.index < dn + delta)]
 
 def get_infos(df, dn):
 
@@ -174,5 +30,22 @@ def get_infos(df, dn):
     data = {'time': time, 'vp': vp, 'dusk': dusk}
     return pd.DataFrame(data, index = [dn.date()])
 
-
-get_infos(df, dn)
+def run_year()
+    outw = []
+    for year in range(2013, 2023):
+        
+        dates = pd.date_range(f'{year}-01-01', f'{year}-12-31')
+        
+        infile = f'digisonde/data/drift/data/saa/{year}_drift.txt'
+        
+        df = b.load(infile)
+        
+        out = []
+        for dn in tqdm(dates, str(year)):
+            out.append(get_infos(df, dn))
+        
+        outw.append(pd.concat(out))
+    
+    ds = pd.concat(outw)
+    
+    ds.to_csv('drift_pre_test1') 

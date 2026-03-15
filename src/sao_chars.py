@@ -57,9 +57,42 @@ def chars(infile):
     
     return df
 
-# infile = 'database/supre/suppression_chars'
-# df = chars(infile)
+import datetime as dt 
+import os 
 
-# # df.resample('1D').mean()['foEs'].dropna().plot()
 
-# df 
+path = 'digisonde/data/CG/'
+
+def get_vals(infile):
+    df = chars(infile).interpolate()
+    dn = dt.time(22, 0)
+    return df.loc[df.index.time == dn]  
+
+out = []
+for fn in os.listdir(path):
+    try:
+        out.append(get_vals(path + fn))
+    except:
+        # print(fn)
+        continue
+    
+df = pd.concat(out)
+
+# garantir que o índice é datetime
+df.index = pd.to_datetime(df.index)
+
+# criar índice completo diário
+full_index = pd.date_range(
+    start=df.index.min(),
+    end=df.index.max(),
+    freq="1D"
+)
+
+# inserir dias faltantes
+df = df.reindex(full_index)
+
+# interpolar
+df = df.interpolate(method="time")
+
+df.index = df.index.day_of_year
+df.to_csv('campina')

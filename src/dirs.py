@@ -50,11 +50,11 @@ def iono_path_from_target(target, site, root = 'E:\\'):
 
 class IonoDir(object):
     
-    def __init__(self, site, dn):
+    def __init__(self, site, dn, root = 'D'):
         
         self.site = site
         self.dn = dn 
-        self.root = 'E:/ionogram/'
+        self.root = f'{root}:/ionogram/'
         self.ext = self.site[:2]
         
     @property
