@@ -37,7 +37,8 @@ def chars(infile):
     columns = [c.replace('`', '') for c in columns]
     
     try:
-        df = pd.DataFrame(raw_data, columns = columns)
+        df = pd.DataFrame(
+            raw_data, columns = columns)
     except:
         df = pd.DataFrame(raw_data, columns = columns_e)
         
@@ -53,46 +54,8 @@ def chars(infile):
     df = df.replace("---", np.nan)
     
     for col in df.columns:
-        df[col] = pd.to_numeric(df[col])
+        df[col] = pd.to_numeric(df[col],  errors="coerce")
     
     return df
 
-import datetime as dt 
-import os 
-
-
-path = 'digisonde/data/CG/'
-
-def get_vals(infile):
-    df = chars(infile).interpolate()
-    dn = dt.time(22, 0)
-    return df.loc[df.index.time == dn]  
-
-out = []
-for fn in os.listdir(path):
-    try:
-        out.append(get_vals(path + fn))
-    except:
-        # print(fn)
-        continue
-    
-df = pd.concat(out)
-
-# garantir que o índice é datetime
-df.index = pd.to_datetime(df.index)
-
-# criar índice completo diário
-full_index = pd.date_range(
-    start=df.index.min(),
-    end=df.index.max(),
-    freq="1D"
-)
-
-# inserir dias faltantes
-df = df.reindex(full_index)
-
-# interpolar
-df = df.interpolate(method="time")
-
-df.index = df.index.day_of_year
-df.to_csv('campina')
+ 

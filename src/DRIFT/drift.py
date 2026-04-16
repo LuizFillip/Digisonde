@@ -67,8 +67,8 @@ def process_day(folder: str, ext: str = "DVL") -> pd.DataFrame:
     folder = Path(folder)
     files = sorted(folder.glob(f"*.{ext}")) if not ext.startswith(".") else sorted(folder.glob(f"*{ext}"))
 
-    if not tqdm(files):
-        return pd.DataFrame(columns=NAMES)
+    # if not tqdm(files):
+    #     return pd.DataFrame(columns=NAMES)
 
     out = []
     for fn in files:
@@ -124,3 +124,9 @@ def process_drf():
     df = pd.concat(out)
     
     df.to_csv('2023') 
+
+folder = Path("E:\\database\\CAS_ionossonda\\2025\\2025\\02\\01\\")
+              
+df = process_day(folder)
+
+df['vy'].plot()
