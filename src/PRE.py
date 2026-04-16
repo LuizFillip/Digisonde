@@ -77,32 +77,4 @@ def get_infos(df, dn, site = 'jic', dicts = True):
 
 
 
-
-path = 'digisonde/data/reduced_freqs/FZ_2014-2015/'
-
-site = 'fza'
-
-def run_by_month(infile, site):
-    df =  dg.IonoChar(infile).drift()
-    
-    dates = pd.to_datetime(np.unique(df.index.date))
-    
-    out = []
-       
-    for dn in dates:
-        
-        ds = df.loc[df.index.date == dn]
-    
-        out.append(get_infos(ds, dn, site, dicts = False))
-            
-    return pd.concat(out)
-
-def run_by_year(path, site):
-    
-    out = []
-    
-    for fn in tqdm(os.listdir(path)):
-        
-        out.append(run_by_month(path + fn, site))
-        
-    return pd.concat(out).sort_index()
+ 
