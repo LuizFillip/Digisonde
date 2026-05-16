@@ -14,6 +14,7 @@ dates = [
 
 
 def quiettime_drift(
+        dates,
         site = 'SAA0K',
         cols = [5, 6], 
         window = 7
