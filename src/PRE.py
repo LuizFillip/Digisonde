@@ -7,74 +7,169 @@ import os
 from tqdm import tqdm 
 import base as b 
 
-def new_dataset(
-        day,
-        pre_value,
-        periods = 67, 
-        freq = '10min'
+def find_outliers_mean_std(
+        data, col= 'vz_max', 
+        threshold=2):
+    """
+    Encontra valores discrepantes 
+    usando média e desvio-padrão.
+
+    Critério:
+        |x - média| >= threshold * std
+
+    Parameters
+    ----------
+    data : pd.Series ou pd.DataFrame
+    col : str, opcional
+        Nome da coluna, caso data seja DataFrame.
+    threshold : float
+        Número de desvios-padrão. Ex: 3.
+
+    Returns
+    -------
+    outliers : pd.DataFrame
+        Dados discrepantes com valor, z-score, média e std.
+    """
+    
+    if isinstance(data, pd.DataFrame):
+        if col is None:
+            raise ValueError("Informe 'col' quando data for DataFrame.")
+        s = data[col].copy()
+    else:
+        s = data.copy()
+
+    mean = s.mean(skipna=True)
+    std = s.std(skipna=True)
+
+    z = (s - mean) / std
+
+    mask = np.abs(z) >= threshold
+
+ 
+    return pd.DataFrame({
+        'value': s[mask],
+        'zscore': z[mask],
+        'mean': mean,
+        'std': std,
+        'threshold_upper': mean + threshold * std,
+        'threshold_lower': mean - threshold * std
+    })
+# 
+
+def filter_timedusk(ds, dusk, window_min=30):
+    
+
+    t0 = dusk - pd.Timedelta(minutes = window_min)
+    t1 = dusk + pd.Timedelta(minutes = window_min)
+
+    return ds.loc[(ds.index >= t0) &  (ds.index <= t1)].copy()
+
+def extract_vz_around_dusk(df, window_min=30):
+    """
+    Extrai, para cada dia:
+    - dusk
+    - vz máximo em ±window_min ao redor do dusk
+    - horário do máximo
+    - vz médio e mediano na janela
+    """
+
+    out = []
+
+    for day in np.unique(df.index.date):
+        dn = pd.Timestamp(day)
+
+        ds = df.loc[df.index.date == dn.date()].copy()
+        if ds.empty:
+            continue
+
+        # dusk do dia
+        
+        
+        dusk = pd.Timestamp(gg.terminator(dn))
+        dw = filter_timedusk(ds, dusk, window_min)
+        
+        if dw.empty or dw['vz'].dropna().empty:
+            out.append({
+                'date': dn,
+                'dusk': dusk,
+                'vz_max': np.nan,
+                'time_vz_max': pd.NaT,
+                'vz_mean': np.nan,
+                
+            })
+            continue
+
+        idxmax = dw['vz'].idxmax()
+
+        out.append({
+            'date': dn,
+            'dusk': dusk,
+            'vz_max': dw.loc[idxmax, 'vz'],
+            'time_vz_max': idxmax,
+            'vz_mean': dw['vz'].mean(), 
+        })
+
+    out = pd.DataFrame(out).set_index('date')
+    return out
+
+ 
+def remove_outliers_std(df, col, n_std=3):
+    
+    def filt(x):
+        mu = x.mean()
+        sigma = x.std()
+        return x[(x >= mu - n_std*sigma) &
+                 (x <= mu + n_std*sigma)]
+    freq = df.index.to_period('M')
+    return df.groupby(freq)[col].transform(filt).dropna()
+
+def compute_vz_from_contour(
+        infile, 
+        low_freq = 2, 
+        high_freq = 7                
         ):
     
-    dn = day + dt.timedelta(hours = 20)
+    df = dg.freq_fixed(infile)
+     
+    df = df.between_time('20:00', '23:50').copy().interpolate()
+ 
+    df['time'] = b.time2float(df.index)
+ 
+    df['so'] = df[list(range(low_freq, high_freq + 1))].mean(axis=1)
     
-    idx = pd.date_range(
-        dn, 
-        periods = periods, 
-        freq = freq
-        )
+    df['vz'] = (df['so'].diff() / df['time'].diff()) / 3.6
+    df['vz'] = b.smooth2(df['vz'], 2)
     
-    dat = {'vzp': [pre_value] * periods}
-    
-    return pd.DataFrame(dat, index = idx)
+    return df
 
-def repeat_values(file):
+def run_pre_all_years(
+        window_min = 60, 
+        low_freq = 4, 
+        high_freq = 8
+        ):
     
-    ds = b.load(file)
-    
-    ds.index = ds.index.date
     
     out = []
-    
-    for i, day in enumerate(ds.index):
-        
-        pre_value = ds.iloc[i, 0].item()
-        out.append(new_dataset(
-            pd.to_datetime(day), 
-            pre_value)
+    desc = 'Computing PRE from freqs'
+    for year in tqdm(range(2013, 2025), desc):
+        infile = f'SuppressionEPBs/data/freqs/{year}'
+        df = compute_vz_from_contour(
+            infile, 
+            low_freq = low_freq, 
+            high_freq = high_freq
             )
-    
-    return pd.concat(out)
-
-
-def get_infos(df, dn, site = 'jic', dicts = True):
-
-    dusk = gg.dusk_from_site(
-            dn, 
-            site = site,
-            twilight_angle = 18
+            
+        out.append(
+            extract_vz_around_dusk(
+                df, 
+                window_min = window_min
+                )
             )
+     
+    df = pd.concat(out) 
+    save_in = 'SuppressionEPBs/data/'
+    filename = f'pre_sao_luis_{window_min}min_{low_freq}{high_freq - 1}'
+    df.to_csv(save_in + filename)
     
-    delta = dt.timedelta(minutes = 60)
-    
-    sel = df.loc[
-        (df.index > dusk - delta) &
-        (df.index < dusk + delta), ['vz']
-        ]
-    
-    
-    if len(sel) == 0:
-        time = np.nan
-        vp = np.nan 
-        
-    else:
-        time = sel['vz'].idxmax()
-        vp = sel.max().item()
-    
-    data = {'time': time, 'vp': vp, 'dusk': dusk}
-    if dicts:
-        return data
-    else:
-        return pd.DataFrame(data, index = [dn.date()])
-
-
-
+    return df
  
