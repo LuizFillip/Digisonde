@@ -3,7 +3,6 @@ import numpy as np
 import datetime as dt
 import digisonde as dg 
 import GEO as gg 
-import os 
 from tqdm import tqdm 
 import base as b 
 
@@ -124,22 +123,30 @@ def remove_outliers_std(df, col, n_std=3):
     return df.groupby(freq)[col].transform(filt).dropna()
 
 def compute_vz_from_contour(
-        infile, 
-        low_freq = 2, 
-        high_freq = 7                
-        ):
+    infile, 
+    low_freq = 2, 
+    high_freq = 7, 
+    sunset = True                
+    ):
     
     df = dg.freq_fixed(infile)
-     
-    df = df.between_time('20:00', '23:50').copy().interpolate()
+    
+    num_cols = df.select_dtypes(include='number').columns
+
+    df[num_cols] = df[num_cols].interpolate()
+  
+    if sunset:
+        df = df.between_time('20:00', '23:50').copy().interpolate()
  
     df['time'] = b.time2float(df.index)
- 
-    df['so'] = df[list(range(low_freq, high_freq + 1))].mean(axis=1)
     
-    df['vz'] = (df['so'].diff() / df['time'].diff()) / 3.6
-    df['vz'] = b.smooth2(df['vz'], 2)
-    
+    if low_freq is None:
+        df['vz'] = (df[high_freq].diff() / df['time'].diff()) / 3.6
+    else:
+        df['so'] = df[list(range(low_freq, high_freq + 1))].mean(axis=1)
+        
+        df['vz'] = (df['so'].diff() / df['time'].diff()) / 3.6
+   
     return df
 
 def run_pre_all_years(
@@ -173,3 +180,45 @@ def run_pre_all_years(
     
     return df
  
+def main():
+    year = 2017
+    infile = f'SuppressionEPBs/data/freqs/{year}'
+    df = compute_vz_from_contour(
+        infile, 
+        low_freq = 4, 
+        high_freq = 8
+        )
+    
+    ds = df.loc[df.index.date == dt.date(2017, 1, 4)]
+
+    infile = 'epbs_sporadic_e/freqs'
+    df = compute_vz_from_contour(
+        infile, 
+        low_freq = 4, 
+        high_freq = 7, 
+        sunset = False
+        )
+
+
+    from scipy.signal import savgol_filter
+    # import matplotlib.pyplot as plt
+    
+    # # y = sua série
+    df['vz'] = savgol_filter(df['vz'], window_length=20, polyorder = 1)
+    
+    
+    
+    # df['vz'] =  b.smooth2(df['vz'], 5)
+    
+    
+    
+    df = df.loc[df.index.date == dt.date(2017, 1, 8)]
+    
+    df['vz'].plot() 
+    
+    # df = dg.freq_fixed(infile)#.interpolate()
+    # low_freq = 3 
+    # high_freq = 7
+    # ds = df[list(range(low_freq, high_freq + 1))]
+    
+    # ds.plot()
